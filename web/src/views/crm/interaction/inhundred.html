@@ -1,0 +1,587 @@
+<title>
+    100天跟进</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table id="interaction-inhundred" lay-filter="interaction-inhundred-table"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="crm-interaction-inhundred-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+
+<script type="text/html" id="inhundredDemohd">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="inhundred_del">删除</a>
+</script>
+
+<script type="text/html" id="inhundred_Demo_small">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="look_small">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit_small">编辑</a>
+</script>
+
+<script type="text/html" id="inhundredDemotable">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="inhundred_detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="inhundred_edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="inhundred_del">删除</a>
+</script>
+
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'dtree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , dtree = layui.dtree
+            , router = layui.router();
+
+        //100天跟进
+        var inhundred = function (where = '') {
+            table.render({
+                elem: '#interaction-inhundred'
+                , height: 'full-150'
+                , toolbar: '#crm-interaction-inhundred-toolbar'
+                , url: '/index.php/webInhundredSel/'//数据接口
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , cols: [[ //表头 
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'vgname', title: '组织机构', sort: true, align: 'center' }
+                    , { field: 'name', title: '互动名称', sort: true, align: 'center' }
+                    , { fixed: 'right', title: '操作', width: 170, align: 'center', toolbar: '#inhundredDemotable' }
+                ]]
+                , page: true
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        inhundred();
+
+        //查找信息
+        var inhundredSea = function () {
+            layer.prompt({ title: '按(组织机构,互动名称)查询', formType: 0 }, function (text, index) {
+                inhundred($.trim(text));
+                layer.close(index);
+                return false;
+            });
+        };
+
+        // 表头事件监听
+        table.on('toolbar(interaction-inhundred-table)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    inhundredAdd();
+                    break;
+                case 'search':
+                    inhundredSea();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    var bill = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                        bill += checkStatus.data[i].code + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        inhundredDel(ids, bill);
+                    })
+                    break;
+            };
+        });
+
+        // 批量删除
+        var inhundredDel = function (ids, bill) {
+            admin.req({
+                url: '/index.php/webInhundredDelAll/',
+                type: 'post',
+                data: {
+                    ids: ids,
+                    bill: bill
+                },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        inhundred();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //监听表中事件
+        table.on('tool(interaction-inhundred-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event;//获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+            if (layEvent === 'inhundred_detail') {//查看
+
+                layer.open({
+                    title: '查看详情'
+                    , type: 1
+                    , area: ["800px", "610px"] // 弹出层的大小
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<table id="inhundred-tablebill" lay-filter="interaction_inhundred_table_look"></table><form class="layui-form" lay-filter="interaction_inhundred_look"><div class="layui-form-item"><label class="layui-form-label">组织机构:</label><div class="layui-input-inline"><input type="text" name="splb" disabled class="layui-input"></div><label class="layui-form-label">互动名称:</label><div class="layui-input-inline"><input type="text" name="name" disabled class="layui-input"></div></div></form>'
+                    //关闭弹出层
+                    , success: function (layero, index) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        form.val('interaction_inhundred_look', {
+                            splb: obj.data.vgname,
+                            name: obj.data.name
+                        });
+                    }
+                });
+
+                var smallhund = function () {
+                    table.render({//100天跟进表
+                        elem: '#inhundred-tablebill'
+                        , height: 433
+                        , url: "/index.php/webInhundredDillSel/"
+                        , where: { access_token: layui.data(layui.setter.tableName).access_token, bill: obj.data.code }
+                        , page: true //开启分页
+                        , cols: [[ //表头 
+                            { field: 'time', title: '时间节点(天)', width: 130, align: 'center' }
+                            , { field: 'purpose', title: '互动目的', width: 150, align: 'center' }
+                            , { field: 'function', title: '运用方式', width: 150, align: 'center' }
+                            , { field: 'speech', title: '执行话术', width: 200, align: 'center' }
+                            , { fixed: 'right', title: '操作', width: 124, align: 'center', toolbar: '#inhundred_Demo_small' }
+                        ]]
+                        , limit: 9
+                        , limits: [9]
+                    });
+                }
+                smallhund();
+
+                table.on('tool(interaction_inhundred_table_look)', function (smobj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                    var data = smobj.data; //获得当前行数据
+                    var layEvent = smobj.event;//获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                    if (layEvent === 'look_small') {
+
+                        layer.open({
+                            title: "查看"
+                            , type: 1
+                            , shade: 0.3
+                            , shadeClose: false
+                            , anim: 1
+                            , offset: 'auto'
+                            , area: ["600px", "410px"]
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<form class="layui-form layui-form-pane" lay-filter="inhundred_interaction_form_look"><div class="layui-form-item"><label class="layui-form-label">时间节点</label><div class="layui-input-block"><input type="text" name="time" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动目的</label><div class="layui-input-block"><input type="text" name="purpose" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动方式</label><div class="layui-input-block"><input type="text" name="function" disabled class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">执行话术</label><div class="layui-input-block"><textarea disabled class="layui-textarea" name="speech"></textarea></div></div></form>'
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                form.val('inhundred_interaction_form_look', {
+                                    time: data.time,
+                                    purpose: data.purpose,
+                                    function: data.function,
+                                    speech: data.speech,
+                                });
+                            }
+                        });
+
+                    } else if (layEvent === 'edit_small') {
+
+                        layer.open({
+                            title: "修改100天跟进"
+                            , type: 1
+                            , shade: 0.3
+                            , shadeClose: false
+                            , anim: 1
+                            , offset: 'auto'
+                            , area: ["600px", "470px"]
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<form class="layui-form layui-form-pane" lay-filter="inhundred_form_edit_small"><div class="layui-form-item"><label class="layui-form-label">时间节点</label><div class="layui-input-block"><input type="text" name="time" id="time_id_edit" lay-verify="required|number" autocomplete="off" placeholder="请输入天数" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动目的</label><div class="layui-input-block"><input type="text" name="purpose" lay-verify="required" autocomplete="off" placeholder="请输入目的" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动方式</label><div class="layui-input-block"><input type="text" name="function" lay-verify="required" autocomplete="off" placeholder="请输入方式" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">执行话术</label><div class="layui-input-block"><textarea placeholder="请输入内容" lay-verify="required" class="layui-textarea" name="speech"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="inhundred_Demo_edit">执行修改</button></div></form>'
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                //获取焦点
+                                $("#time_id_edit").focus();
+                                //赋值
+                                form.val('inhundred_form_edit_small', {
+                                    time: data.time,
+                                    purpose: data.purpose,
+                                    function: data.function,
+                                    speech: data.speech,
+                                });
+                                //渲染
+                                form.render(null, 'inhundred_form_edit_small');
+                                //执行实例
+                                form.on('submit(inhundred_Demo_edit)', function (data) {
+                                    var loadindex = layer.load(1, { time: 10 * 1000 });
+                                    admin.req({
+                                        url: "/index.php/webInhundredEditSmall/",
+                                        type: "post",
+                                        data: {
+                                            id: smobj.data.id,
+                                            time: data.field.time,
+                                            purpose: data.field.purpose,
+                                            function: data.field.function,
+                                            speech: data.field.speech
+                                        },
+                                        done: function (res) {
+                                            layer.close(loadindex);
+                                            if (res.msg == 'error') {
+                                                layer.msg(res.data, { icon: 2, title: res.msg });
+                                            } else if (res.msg == 'yes') {
+                                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                                layer.close(index);
+                                                smallhund();
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                    return false;
+                                });
+                            }
+                        });
+
+                    }
+
+                });
+
+            } else if (layEvent === 'inhundred_del') { //删除
+
+                layer.confirm('确认删除该条数据？', function (index) {
+                    admin.req({
+                        url: "/index.php/webInhundredDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id,
+                            bill: obj.data.code
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                inhundred();
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+
+            } else if (layEvent === 'inhundred_edit') { //编辑
+
+                layer.open({
+                    title: "修改100天跟进"
+                    , type: 1
+                    , shade: 0.3
+                    , shadeClose: false
+                    , anim: 1
+                    , offset: 'auto'
+                    , area: ["520px", "290px"]
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<form class="layui-form" lay-filter="interaction_inhundred_edit"><div class="layui-form-item"><label class="layui-form-label">组织机构:</label><div class="layui-input-inline"><input type="text" name="splb_name" id="inhundred_splb_name_edit" required autocomplete="off" disabled placeholder="组织机构" class="layui-input"></div><input type="hidden" name="splb" id="inhundred_splb_id_edit" class="layui-input"><div class="layui-form-mid layui-bg-green" id="inhundred_list_classtree_edit" style="text-align:center;width:130px">点击选择组织机构</div></div><div class="layui-form-item"><label class="layui-form-label">互动名称:</label><div class="layui-input-block"><input type="text" name="name" lay-verify="required" placeholder="请输入100天跟进名称" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item" style="text-align:center;"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="interaction_inhundred_Demo_edit" style="width:190px;">确认添加</button></div></form>'
+                    , success: function (layero, newslist) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            admin.req({
+                                url: "/index.php/webInhundredCacheClean/",
+                                type: "post",
+                                done: function (res) {
+                                    layer.close(newslist);
+                                }
+                            });
+                        });
+                        //赋值
+                        form.val('interaction_inhundred_edit', {
+                            splb_name: obj.data.vgname,
+                            splb: obj.data.org_code,
+                            name: obj.data.name
+                        });
+                        //组织机构
+                        organization("#inhundred_list_classtree_edit", "#inhundred_splb_id_edit", "#inhundred_splb_name_edit");
+                        //渲染
+                        form.render(null, "interaction_inhundred_edit");
+                        //执行实例
+                        form.on('submit(interaction_inhundred_Demo_edit)', function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            var msg = '组织机构不能为空!';
+                            if (data.field.splb_name == '') {
+                                layer.msg(msg, { icon: 2 });
+                                layer.close(loadindex);
+                                return false;
+                            }
+                            admin.req({
+                                url: "/index.php/webInhundredEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    splb: data.field.splb,
+                                    name: $.trim(data.field.name)
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(newslist);
+                                        inhundred();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+
+            }
+        });
+
+        //组织结构
+        var organization = function (u, i, n) {
+            $(u).click(function () {
+                layer.open({
+                    type: 1,
+                    //type:0 也行
+                    title: "选择组织机构",
+                    area: ["400px", "80%"],
+                    content: '<ul id="openTree1" class="dtree" data-id="0"></ul>',
+                    btn: ['确认选择'],
+                    success: function (layero, index) {
+                        dtree.render({
+                            elem: "#openTree1",
+                            url: "/index.php/webCategoryList/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                            method: 'get',
+                            skin: "theme",
+                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                            // dot: false, //前面的小黑点取消
+                            checkbar: true,
+                            checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                        });
+                        // 绑定节点的双击
+                        dtree.on("nodedblclick('openTree1')", function (obj) {
+                            $(i).val(obj.param.nodeId);
+                            $(n).val(obj.param.context);
+                            layer.close(index);
+                        });
+                    },
+                    yes: function (index, layero) {
+                        var param = dtree.getNowParam("openTree1"); // 获取当前选中节点
+
+                        $(i).val(param.nodeId);
+                        $(n).val(param.context);
+                        layer.close(index);
+                    }
+                });
+            });
+        }
+
+        //新建100天跟进
+        var inhundredAdd = function () {
+            //弹出100天跟进
+            admin.req({
+                url: '/index.php/webInhundredCacheClean/',
+                type: 'post',
+                done: function (res) { }
+            });
+            layer.open({
+                title: "100天跟进"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["1000px", "600px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<button class="layui-btn layui-btn-sm" id="crm-interaction-inhundred-newslist">新建100天跟进</button><form class="layui-form" lay-filter="crm-interaction-inhundred-list"><table class="layui-hide" id="inhundred-return-interaction-table" lay-filter="crm-interaction-inhundredtable"></table><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>组织机构</label><div class="layui-input-inline"><input type="text" name="splb_name" id="inhundred_splb_name_id" required autocomplete="off" disabled placeholder="组织机构" class="layui-input"></div><input type="hidden" name="splb" id="inhundred_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="inhundred_list_classtree" style="text-align:center;width:130px">点击选择组织机构</div><label class="layui-form-label"><span style="color:red">*</span>互动名称:</label><div class="layui-input-inline"><input type="text" name="name" lay-verify="required" placeholder="请输入100天跟进名称" autocomplete="off" class="layui-input"></div><div class="layui-input-inline" style="float:right"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="inhundred_listDemoAdd" style="width:190px">确认添加</button></div></div></form>'
+                , success: function (layero, newslist) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        admin.req({
+                            url: "/index.php/webInhundredCacheClean/",
+                            type: "post",
+                            done: function (res) {
+                                layer.close(newslist);
+                            }
+                        });
+                    });
+                    //组织机构
+                    organization("#inhundred_list_classtree", "#inhundred_splb_id", "#inhundred_splb_name_id");
+                    //渲染
+                    form.render(null, "crm-interaction-inhundred-list");
+                    //执行实例
+                    form.on('submit(inhundred_listDemoAdd)', function (data) {
+                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                        var msg = '组织机构不能为空!';
+                        if (data.field.splb_name == '') {
+                            layer.msg(msg, { icon: 2 });
+                            layer.close(loadindex);
+                            return false;
+                        }
+                        admin.req({
+                            url: "/index.php/webInhundredAdd/",
+                            type: "post",
+                            data: {
+                                splb: data.field.splb,
+                                name: $.trim(data.field.name)
+                            },
+                            done: function (res) {
+                                layer.close(loadindex);
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(newslist);
+                                    inhundred();
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+            //新建100天跟进
+            $("#crm-interaction-inhundred-newslist").click(function () {
+                layer.open({
+                    title: "新建100天跟进"
+                    , type: 1
+                    , shade: 0.3
+                    , shadeClose: false
+                    , anim: 1
+                    , offset: 'auto'
+                    , area: ["600px", "470px"]
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<form class="layui-form layui-form-pane" id="inhundred_return_form" lay-filter="inhundred-return-interaction-form"><div class="layui-form-item"><label class="layui-form-label">时间节点</label><div class="layui-input-block"><input type="text" name="time" id="inhundred_time_id" lay-verify="required|number" autocomplete="off" placeholder="请输入天数" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动目的</label><div class="layui-input-block"><input type="text" name="purpose" lay-verify="required" autocomplete="off" placeholder="请输入目的" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动方式</label><div class="layui-input-block"><input type="text" name="function" lay-verify="required" autocomplete="off" placeholder="请输入方式" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">执行话术</label><div class="layui-input-block"><textarea placeholder="请输入内容" lay-verify="required" class="layui-textarea" name="speech"></textarea></div></div><input type="hidden" name="delid" autocomplete="off" class="layui-input"><div class="layui-form-item" style="text-align:center;"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="inhundred_returninteractionDemoAdd">确认添加</button></div></form>'
+                    , success: function (layero, index) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        //获取焦点
+                        $("#inhundred_time_id").focus();
+                        //渲染
+                        form.render(null, 'inhundred-return-interaction-form');
+                        //执行实例
+                        form.on('submit(inhundred_returninteractionDemoAdd)', function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            $('#inhundred_return_form').html("");
+                            admin.req({
+                                url: "/index.php/webInhundredCacheAdd/",
+                                type: "post",
+                                data: {
+                                    time: data.field.time,
+                                    purpose: data.field.purpose,
+                                    function: data.field.function,
+                                    speech: data.field.speech
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                        layer.close(index);
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        inhundredtwo("/index.php/webInhundredCacheSel/");
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                        layer.close(index);
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+            });
+
+            //100天跟进表
+            var inhundredtwo = function (u) {
+                table.render({//100天跟进表
+                    elem: '#inhundred-return-interaction-table'
+                    , height: 391
+                    , url: u//数据接口
+                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                    , cols: [[ //表头 
+                        { field: 'time', title: '时间节点(天)', width: 200 }
+                        , { field: 'purpose', title: '互动目的', width: 200 }
+                        , { field: 'function', title: '运用方式', width: 200 }
+                        , { field: 'speech', title: '执行话术', width: 254 }
+                        , { title: '操作', width: 100, align: 'center', toolbar: '#inhundredDemohd', fixed: 'right' }
+                    ]]
+                });
+            }
+            inhundredtwo("/index.php/webInhundredCacheSel/");
+            //table监听
+            table.on('tool(crm-interaction-inhundredtable)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                if (layEvent === 'inhundred_del') { //删除
+                    layer.confirm('确认删除该条数据？', function (index) {
+                        admin.req({
+                            url: "/index.php/webInhundredCacheDel/",
+                            type: "post",
+                            data: {
+                                id: obj.data.delid
+                            },
+                            done: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg(res.msg, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    inhundredtwo("/index.php/webInhundredCacheSel/");
+                                } else {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+    });
+</script>

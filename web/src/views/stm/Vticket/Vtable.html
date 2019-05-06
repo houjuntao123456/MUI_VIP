@@ -1,0 +1,47 @@
+<title>V票报表</title>
+<div class="layui-fluid">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+                <div class="layui-form-item">
+                    <table class="layui-hide" id="crm_Vticket_Vtable" lay-filter="crm_Vticket_Vtable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'tree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , router = layui.router();
+
+        var Vtable = function () {
+            table.render({
+                elem: '#crm_Vticket_Vtable',
+                height: 'full-150',
+                url: '/index.php/webVtableIndex/',
+                where: {
+                    access_token: layui.data(layui.setter.tableName).access_token
+                },
+                totalRow: true,
+                page: true, //开启分页
+                limit: 20,
+                limits: [20, 50, 100, 200, 500],
+                cols: [[ //表头
+                    { field: 'name', title: 'V票持有人', align: 'center', sort: true, totalRowText: '合计' },
+                    { field: 'draw_number', title: 'V票领取数量', align: 'center', sort: true, totalRow: true },
+                    { field: 'exchange_number', title: 'V票兑换数量', align: 'center', sort: true, totalRow: true },
+                    { field: 'receive_number', title: 'V票持有数量', align: 'center', sort: true, totalRow: true },
+                    { field: 'price', title: '持有V票总金额', align: 'center', sort: true, totalRow: true }
+                ]],
+                toolbar: '#crm_Vticket_Vtable_lookup_toolbar',
+                defaultToolbar: ['filter', 'print', 'exports'], // 开启右侧 筛选列 导出 打印
+            });
+        }
+        Vtable();
+    });
+</script>

@@ -1,0 +1,483 @@
+<title>
+    专场跟进营销</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 这段样式只是用于演示 */
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table class="layui-table" id="rfield_table" lay-filter="vip_rfield_tablelist"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="switch_rfield_status">
+    <input type="checkbox" {{# if (d.status==1 ) { }} checked="" {{# } }} name="{{# if (d.status == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="rfield_status_table_switch" lay-text="已完成|未完成" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.status == 1) { }}已完成{{# } else { }}未完成{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<script type="text/html" id="switch_rfield_status_sm">
+    <input type="checkbox" {{# if (d.status==1 ) { }} checked="" {{# } }} name="{{# if (d.status == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="switch_rfield_status_small" lay-text="已审核|未审核" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.status == 1) { }}已审核{{# } else { }}未审核{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<script type="text/html" id="vip_rfield_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+
+<script type="text/html" id="rfield_Demo">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="rfield_detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="rfield_edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="rfield_del">删除</a>
+</script>
+
+<script type="text/html" id="rfield_Demo_small">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail_sm">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit_sm">编辑</a>
+    <!-- <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del_sm">删除</a> -->
+</script>
+
+<script>
+    layui.use(['admin', 'form', 'table', 'laydate'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , form = layui.form
+            , table = layui.table
+            , laydate = layui.laydate
+            , router = layui.router();
+
+        //专场跟进列表
+        var rfield = function (where = '') {
+            table.render({
+                elem: '#rfield_table'
+                , height: 'full-150'
+                , url: '/index.php/webRfieldSel/'//数据接口
+                , toolbar: '#vip_rfield_toolbar'
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'code', title: '单号', sort: true, width: 200, fixed: 'left' }
+                    , { field: 'name', title: '互动名称', sort: true, width: 110, fixed: 'left' }
+                    , { field: 'vgname', title: '组织机构', sort: true, width: 110 }
+                    , { field: 'vsname', title: '门店名称', sort: true, width: 110 }
+                    , { field: 'vip_code', title: '卡号', sort: true, width: 110 }
+                    , { field: 'vyname', title: '专场顾客', sort: true, width: 110 }
+                    , { field: 'vyphone', title: '手机号', sort: true, width: 120 }
+                    , { field: 'end_time', title: '最后购物时间', sort: true, width: 170 }
+                    , { field: 'vlname', title: '会员级别', sort: true, width: 110 }
+                    , { field: 'vhname', title: '执行人', sort: true, width: 100 }
+                    , { field: 'vhhname', title: '监督人', sort: true, width: 100 }
+                    , { field: 'time_g', title: '创建时间', sort: true, width: 170 }
+                    , { field: 'suc', title: '完成率', sort: true, width: 100, fixed: 'right' }
+                    , { field: 'status', title: '互动状态', templet: '#switch_rfield_status', unresize: true, width: 110, sort: true, fixed: 'right' }
+                    , { fixed: 'right', title: '内容', width: 170, align: 'center', toolbar: '#rfield_Demo' }
+                ]]
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        rfield();
+
+        // 表头事件监听
+        table.on('toolbar(vip_rfield_tablelist)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'search':
+                    layer.prompt({ title: '按(互动名称, 组织机构, 门店名称, 卡号, 专场顾客, 手机号, 会员级别)查询', formType: 0 }, function (text, index) {
+                        rfield($.trim(text));
+                        layer.close(index);
+                        return false;
+                    });
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    var bill = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                        bill += checkStatus.data[i].code + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        rfieldDel(ids, bill);
+                    })
+                    break;
+            };
+        });
+
+        // 批量删除
+        var rfieldDel = function (ids, bill) {
+            admin.req({
+                url: '/index.php/webRfieldDelAll/',
+                type: 'post',
+                data: {
+                    ids: ids,
+                    bill: bill
+                },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        rfield();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //表格监听事件
+        table.on('tool(vip_rfield_tablelist)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event;//获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+            if (layEvent === 'rfield_detail') {//查看
+
+                layer.open({
+                    title: '查看详情'
+                    , type: 1
+                    , area: ["1200px", "570px"] // 弹出层的大小
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<table id="vip_rfield_tablebill" lay-filter="vip_rfield_tablebill_tool"></table>'
+                    //关闭弹出层
+                    , success: function (layero, index) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                    }
+                });
+
+                //弹出表
+                var tablebillfun = function () {
+                    table.render({
+                        elem: '#vip_rfield_tablebill'
+                        , height: 450
+                        , url: "/index.php/webVipinfoFieldFootDill/"
+                        , where: { access_token: layui.data(layui.setter.tableName).access_token, token: 'tablebill', footprint_bill: obj.data.code } //如果无需传递额外参数，可不加该参数
+                        , method: 'post' //如果无需自定义HTTP类型，可不加该参数
+                        , cols: [[ //表头
+                            { field: 'field_foot_code', title: '单号', width: 200 }
+                            , { field: 'time_g', title: '时间节点(日期)', width: 183 }
+                            , { field: 'purpose', title: '互动目的', width: 200 }
+                            , { field: 'function', title: '运用方式', width: 200 }
+                            , { field: 'speech', title: '执行话术', width: 200 }
+                            , { field: 'status', fixed: 'right', title: '审核状态', templet: '#switch_rfield_status_sm', unresize: true, width: 110 }
+                            , { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#rfield_Demo_small' }
+                        ]]
+                        , page: true
+                    });
+                }
+                tablebillfun();
+
+                // 表格事件监听
+                table.on('tool(vip_rfield_tablebill_tool)', function (tablebill) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                    var data = tablebill.data; //获得当前行数据
+                    var layEvent = tablebill.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                    if (layEvent === 'del_sm') { //删除查看小专场跟进
+
+                        layer.confirm('确认删除该条数据？', function (index) {
+                            admin.req({
+                                url: "/index.php/webrfielddeltablebill/",
+                                type: "post",
+                                data: {
+                                    id: tablebill.data.id
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        tablebillfun();
+                                        layer.close(index);
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                        });
+
+                    } else if (layEvent === 'edit_sm') { //编辑查看小专场跟进
+
+                        layer.open({
+                            title: "编辑小专场跟进",
+                            type: 1,
+                            shade: 0.3,
+                            shadeClose: false,
+                            anim: 1,
+                            area: ["600px", "520px"],
+                            skin: "layui-layer-admin layui-anim",
+                            content: '<form class="layui-form layui-form-pane" lay-filter="vip_rfield_form_deit_sm"><div class="layui-form-item"><label class="layui-form-label">单号</label><div class="layui-input-inline"><input type="text" name="code" disabled class="layui-input"></div><div class="layui-form-mid" style="color:red">*单号不可修改</div></div><div class="layui-form-item"><label class="layui-form-label">时间节点</label><div class="layui-input-block"><input type="text" name="time" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" id="tabletime_id_edit_sm" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动目的</label><div class="layui-input-block"><input type="text" name="purpose" lay-verify="required" autocomplete="off" placeholder="请输入目的" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动方式</label><div class="layui-input-block"><input type="text" name="function" lay-verify="required" autocomplete="off" placeholder="请输入方式" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">执行话术</label><div class="layui-input-block"><textarea placeholder="请输入内容" class="layui-textarea" lay-verify="required" name="speech"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip_rfield_DemoEdit_sm">执行修改</button></div></form>',
+                            success: function (layero, index) {
+                                // 右上角叉号
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+
+                                //日期
+                                laydate.render({
+                                    elem: '#tabletime_id_edit_sm',
+                                    value: tablebill.data.time_g
+                                });
+                                // form表单渲染
+                                form.render(null, 'vip_rfield_form_deit_sm');
+
+                                // 表单初始赋值
+                                form.val("vip_rfield_form_deit_sm", {
+                                    code: tablebill.data.field_foot_code,
+                                    purpose: tablebill.data.purpose,
+                                    function: tablebill.data.function,
+                                    speech: tablebill.data.speech
+                                });
+                                // 表单提交事件
+                                form.on("submit(vip_rfield_DemoEdit_sm)", function (data) {
+                                    var loadindex = layer.load(1, { time: 10 * 1000 });
+                                    admin.req({
+                                        url: "/index.php/webRfieldDillEdit/",
+                                        type: "post",
+                                        data: {
+                                            id: tablebill.data.id,
+                                            time: data.field.time,
+                                            purpose: data.field.purpose,
+                                            function: data.field.function,
+                                            speech: data.field.speech
+                                        },
+                                        done: function (res) {
+                                            layer.close(loadindex);
+                                            if (res.msg == 'error') {
+                                                layer.msg(res.data, { icon: 2, title: res.msg });
+                                            } else if (res.msg == 'yes') {
+                                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                                tablebillfun();
+                                                layer.close(index);
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                    return false;
+                                });
+                            }
+                        });
+
+                    } else if (layEvent === 'detail_sm') { //查看详情，查看小专场跟进
+
+                        layer.open({
+                            title: '查看详情'
+                            , type: 1
+                            , area: ["600px", "450px"] // 弹出层的大小
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<form class="layui-form" lay-filter="vip_rfield_form_look"><div class="layui-form-item"><label class="layui-form-label">单号</label><div class="layui-input-inline"><input type="text" name="code" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">时间节点</label><div class="layui-input-block"><input type="text" name="time" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动目的</label><div class="layui-input-block"><input type="text" name="purpose" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">互动方式</label><div class="layui-input-block"><input type="text" name="function" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">执行话术</label><div class="layui-input-block"><textarea class="layui-textarea" disabled name="speech"></textarea></div></div></form>'
+                            //关闭弹出层
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                // 表单赋值
+                                form.val("vip_rfield_form_look", {
+                                    code: tablebill.data.field_foot_code,
+                                    time: tablebill.data.time_g,
+                                    purpose: tablebill.data.purpose,
+                                    function: tablebill.data.function,
+                                    speech: tablebill.data.speech
+                                });
+                            }
+                        });
+
+                    }
+                });
+
+            } else if (layEvent === 'rfield_del') { //删除大专场
+
+                layer.confirm('确认删除该条数据？', function (index) {
+                    admin.req({
+                        url: "/index.php/webRfieldDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id,
+                            bill: obj.data.code
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                rfield();
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+
+            } else if (layEvent === 'rfield_edit') { //编辑大专场
+
+                layer.open({
+                    title: "编辑专场跟进营销",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["500px", "460px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<br><br><form class="layui-form layui-form-pane" lay-filter="vip-rfield-form-edit"><h3>仅编辑(执行人,监督人)</h3><br><div class="layui-form-item"><label class="layui-form-label">单号:</label><div class="layui-input-inline"><input type="text" name="code" disabled autocomplete="off" class="layui-input"></div><div class="layui-form-mid" style="color:red">*单号不可修改</div></div><div class="layui-form-item"><label class="layui-form-label">互动名称:</label><div class="layui-input-inline"><input type="text" name="name" disabled autocomplete="off" class="layui-input"></div><div class="layui-form-mid" style="color:red">*互动名称不可修改</div></div><div class="layui-form-item"><label class="layui-form-label">监督人:</label><div class="layui-input-block"><select name="custodian" placeholder="请选择员工" lay-search lay-verify="required" id="vip_rfield_custodian_staff"></select></div></div><div class="layui-form-item"><label class="layui-form-label">执行人:</label><div class="layui-input-block"><select name="executor" placeholder="请选择员工" lay-search lay-verify="required" id="vip_rfield_executor_staff"></select></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip_rfield_DemoEdit">执行修改</button></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        //日期
+                        laydate.render({
+                            elem: '#date_rfield'
+                            , type: 'datetime'
+                            , value: data.time_g
+                        });
+                        //执行人
+                        stafffun('#vip_rfield_custodian_staff', "vip-rfield-form-edit", data.custodian_code);
+                        //监督人
+                        stafffun('#vip_rfield_executor_staff', "vip-rfield-form-edit", data.executor_code);
+                        //渲染
+                        form.render(null, "vip-rfield-form-edit");
+                        // 表单初始赋值
+                        form.val("vip-rfield-form-edit", {
+                            name: obj.data.name,
+                            code: obj.data.code
+                        });
+                        // 表单提交事件
+                        form.on("submit(vip_rfield_DemoEdit)", function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            admin.req({
+                                url: "/index.php/webRfieldEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    custodian: data.field.custodian,
+                                    executor: data.field.executor
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        rfield();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+
+            }
+        });
+
+        //状态专场跟进状态
+        form.on("switch(rfield_status_table_switch)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webRfieldStatus/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        rfield();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        rfield();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                        rfield();
+                    }
+                }
+            });
+        });
+
+        //状态小专场跟进状态
+        form.on("switch(switch_rfield_status_small)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webRfieldDillStatus/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        rfield();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        rfield();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                        rfield();
+                    }
+                }
+            });
+        });
+
+        //员工
+        var stafffun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStaffSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择员工</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+    });
+</script>

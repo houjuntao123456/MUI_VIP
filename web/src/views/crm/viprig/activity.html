@@ -1,0 +1,681 @@
+<title>活动折扣</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <table class="layui-hide" id="crm-vip-viprights-activitytable" lay-filter="crm-vip-viprights-activitytable"></table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="crm-vip-viprig-activity-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+      <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+      <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script type="text/html" id="crm-vip-activity-barDemo">
+    <!-- <a class="layui-btn layui-btn-xs" lay-event="crm-vip-viprights-show">消费项目</a> -->
+    <a class="layui-btn layui-btn-xs" lay-event="crm-vip-viprights-edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-vip-viprights-del">删除</a>
+</script>
+<!-- 选择优惠项目商品头工具栏按钮 -->
+<script type="text/html" id="crm-vip-viprig-activity-type-goods-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<!-- 消费项目查看头 -->
+<script type="text/html" id="crm-vip-viprig-activity-show-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="edit">修改</button>
+    </div>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'tree', 'checkbox'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , tree = layui.tree
+            , checkbox = layui.checkbox
+            , router = layui.router();
+
+        var activity = function (activityUrl) {
+            table.render({
+                elem: '#crm-vip-viprights-activitytable'
+                , height: 'full-150'
+                , url: activityUrl
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'name', width: 370, title: '规则名称', align: 'center' }
+                    , { field: 'vpname', title: '所属店面', align: 'center' }
+                    , { field: 'vgname', title: '会员级别', align: 'center', sort: true }
+                    , { field: 'exclusive_discounts', title: '专属折扣', align: 'center', sort: true }
+                    // , { field: 'integral_multiple', width: 160, title: '积分倍数', align: 'center', sort: true }
+                    , { field: 'exclusive_days', width: 370, title: '时间', align: 'center', sort: true }
+                    , { fixed: 'right', width: 200, title: '操作', align: 'center', toolbar: '#crm-vip-activity-barDemo' }
+                ]]
+                , toolbar: '#crm-vip-viprig-activity-toolbar'
+            });
+        }
+        activity('/index.php/webActivitylist/');
+
+        // 表头事件监听
+        table.on('toolbar(crm-vip-viprights-activitytable)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            // console.log(checkStatus.data); return false;
+            switch (obj.event) {
+                case 'add':
+                    crmVipActAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2 });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3 }, function (index) {
+                        crmVipActDel(ids);
+                    })
+                    break;
+                case 'search':
+                    crmVipActSea();
+                    break;
+            };
+        });
+
+        // 批量删除
+        var crmVipActDel = function (ids) {
+            admin.req({
+                url: '/index.php/webActivityDelMany/',
+                type: 'post',
+                data: { ids: ids },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.close(layer.index);
+                        activity('/index.php/webActivitylist/');
+                        layer.msg(res.data, { icon: 1 });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2 });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //查找信息
+        var crmVipActSea = function () {
+            layer.prompt({ title: '查找（按照 规则名称 / 所属店面 / 会员级别）', formType: 0 }, function (text, index) {
+                layer.close(index);
+                activity('/index.php/webActivitylist/?activitylookup=' + text);
+                return false;
+            });
+        };
+
+        //循环得到会员等级下拉框信息
+        var initList = function (u, d, value) {
+            admin.req({
+                url: u,
+                done: function (res) {
+                    var json = res.data;
+                    var listD = $(d);
+                    listD.empty();
+                    listD.append("<option value=''>请输入 / 选择</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        listD.append("<option value='" + json[i].code + "'>" + json[i].username + "</option>");
+                    }
+                    $(d).val(value);
+                    form.render(null, "crm-vip-viprights-activity");
+                    form.render(null, 'crm-vip-viprights-activityedit');
+                }
+            });
+        }
+
+        //循环得到门店下拉框信息
+        var initList1 = function (u, d, value) {
+            admin.req({
+                url: u,
+                done: function (res) {
+                    var json = res.data;
+                    var listD = $(d);
+                    listD.empty();
+                    listD.append("<option value=''>请输入 / 选择</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        listD.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    $(d).val(value);
+                    form.render(null, "crm-vip-viprights-activity");
+                    form.render(null, 'crm-vip-viprights-activityedit');
+                }
+            });
+        }
+        //获取所属类别列表
+        var initcategoryTree = function (d) {
+            admin.req({
+                url: "/index.php/webTableTree/"
+                , done: function (res) {//res.data
+                    tree({
+                        elem: d
+                        , nodes: res.data
+                        , click: function (node) {
+                            // console.log(node);
+                            // var $select = $($(this)[0].elem).parents(".layui-form-select");
+                            // $select.removeClass("layui-form-selected").find(".layui-select-title span").html(node.name).end().find("input:hidden[name='splb']").val(node.id);
+                            layer.open({
+                                title: '选择商品（友情提示：每个活动只能选择同类别下的商品，类别不限于哪一级。注意：第二次选择会覆盖第一次选择的商品）',
+                                type: 1,
+                                shade: 0.3,
+                                shadeClose: false,
+                                anim: 1,
+                                offset: 'auto',
+                                area: ['1000px', '500px'],
+                                skin: "layui-layer-admin layui-anim",
+                                content: '<table class="layui-hide" id="crm-vip-viprights-activity-add-type-goods" lay-filter="crm-vip-viprights-activity-add-type-goods"></table>',
+                                success: function (listLayero, listIndex) {
+                                    var elem2Close = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    listLayero.append(elem2Close);
+                                    elem2Close.on('click', function () {
+                                        layer.close(listIndex);
+                                    });
+                                    // 列表请求
+                                    var type_goods_check_list = function (where = '') {
+                                        table.render({
+                                            elem: '#crm-vip-viprights-activity-add-type-goods'
+                                            , height: 390
+                                            , url: '/index.php/webActivityGoods/'
+                                            , where: { code: node.code, path: node.path, access_token: layui.data(layui.setter.tableName).access_token }
+                                            , cols: [[ //表头
+                                                { type: 'checkbox', fixed: 'left' },
+                                                { field: 'bar_code', width: 200, title: '条码', align: 'center' },
+                                                { field: 'frenum', minwidth: 120, title: '货号', align: 'center' },
+                                                { field: 'name', minwidth: 120, title: '商品名', align: 'center' },
+                                                { field: 'unit_name', width: 60, title: '单位', align: 'center' },
+                                                { field: 'color', width: 70, title: '颜色', align: 'center' },
+                                                { field: 'size', width: 70, title: '尺码', align: 'center' },
+                                                { field: 'price', width: 100, title: '价格', align: 'center' }
+                                            ]]
+                                            , toolbar: '#crm-vip-viprig-activity-type-goods-toolbar'
+                                        });
+                                    }
+                                    type_goods_check_list();
+
+                                    table.on('toolbar(crm-vip-viprights-activity-add-type-goods)', function (objDisGoods) {
+                                        var checkStatus = table.checkStatus(objDisGoods.config.id);
+                                        var listWhere = objDisGoods.config.where.where;
+                                        switch (objDisGoods.event) {
+                                            case 'add':
+                                                var checkNum = checkStatus.data.length;
+                                                if (checkNum < 1) {
+                                                    layer.msg('请选择至少一款商品', { icon: 2 });
+                                                    return false;
+                                                }
+                                                var goods = '';
+                                                if (checkStatus.isAll == true && typeof (listWhere) == 'undefined') {
+                                                    // 分类的ID
+                                                    goods = node.code;
+                                                    var type = 0;
+                                                } else {
+                                                    for (var i = 0; i < checkNum; i++) {
+                                                        goods += checkStatus.data[i].code + ',';
+                                                    }
+                                                    var type = 1;
+                                                }
+                                                admin.req({
+                                                    url: '/index.php/webActivityGoodsCache/',
+                                                    type: 'post',
+                                                    data: { goods: goods, type: type },
+                                                    done: function (res) {
+                                                        if (res.msg == 'error') {
+                                                            layer.msg(res.data, { icon: 2 });
+                                                        } else if (res.msg == 'yes') {
+                                                            layer.close(listIndex);
+                                                            layer.msg(res.data, { icon: 1 });
+                                                        } else if (res.msg == 'no') {
+                                                            layer.msg(res.data, { icon: 2 });
+                                                        }
+                                                    }
+                                                });
+                                                return false;
+                                                break;
+                                            case 'sea':
+                                                layer.prompt({ title: '可以按(商品名,条码,货号,单位,颜色,尺码,价格)查询', formType: 0 }, function (text, index) {
+                                                    type_goods_check_list(text);
+                                                    layer.close(index);
+                                                    return false;
+                                                });
+                                                break;
+                                        };
+                                    })
+                                }
+                            });
+
+                        }
+                    });
+                }
+            });
+            //--------------------------------------------------------------------编辑的所属类别点击事件
+            $(".downpanel").on("click", ".layui-select-title", function (e) {
+                // console.log(e);
+                $(".layui-form-select").not($(this).parents(".layui-form-select")).removeClass("layui-form-selected");
+                $(this).parents(".downpanel").toggleClass("layui-form-selected");
+                layui.stope(e);
+            }).on("click", "dl i", function (e) {
+                layui.stope(e);
+            });
+        };
+
+        //添加信息
+        var crmVipActAdd = function () {
+            layer.open({
+                title: "添加信息"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["800px", "380px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-activity"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">规则名称</label><div class="layui-input-inline"><input type="text" name="rulename" id="add_rule" autocomplete="off" placeholder="请输入规则名称" lay-verify="required" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">所属店面</label><div class="layui-input-inline"><div class="layui-btn layui-btn-normal" id="add_actovoty_ssmd">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;添&nbsp;&nbsp;加&nbsp;&nbsp;门&nbsp;&nbsp;店&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">会员级别</label><div class="layui-input-inline"><select name="levelname" id="crm-vip-activity-hydj" lay-verify="required" lay-search></select></div></div><div class="layui-inline"><label class="layui-form-label">消费项目</label><div class="layui-input-inline"><div class="layui-unselect layui-form-select downpanel"><div class="layui-select-title" id="crm_viprig_activity_type_select_add"><span class="layui-input layui-unselect" style="line-height:35px">商品类别</span> <input type="hidden" name="splb"> <i class="layui-edge"></i></div><dl class="layui-layer-admin layui-anim"><dd><ul id="crm-vip-viprig-activity-classtree-add"></ul></dd></dl></div></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">专属折扣</label><div class="layui-input-inline"><input type="text" name="exclusive_discounts" autocomplete="off" placeholder="请输入折扣" class="layui-input"></div><div class="layui-form-mid layui-word-aux">例如:0.95</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">时间</label><div class="layui-input-inline"><input type="text" name="time_start" id="activitytime_start" autocomplete="off" placeholder="请选择" class="layui-input"></div><label class="layui-form-mid">至</label><div class="layui-input-inline"><input type="text" name="time_end" id="activitytime_end" autocomplete="off" placeholder="请选择" class="layui-input"></div></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-activitySub">确定添加</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    $("#add_rule").focus();
+
+                    admin.req({ // ---------------------------------------------------------------------------------------------清除缓存
+                        url: '/index.php/webActivityGoodsCacheNull/',
+                        type: 'post',
+                        done: function (res) {
+                        }
+                    });
+
+                    $("#add_actovoty_ssmd").click(function () { // ----------------------------------------------------------------------添加所属门店信息
+                        layer.open({
+                            title: "添加所属店面"
+                            , type: 1
+                            , shade: 0.3
+                            , shadeClose: false
+                            , anim: 1
+                            , offset: 'auto'
+                            , area: ["465px", "300px"]
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<div class="layui-form-item"><form class="layui-form layui-form-pane" action="" lay-filter="crm-viprig-activity-ssmd"><label class="layui-form-label">所属店面：</label><div class="layui-input-inline"><select name="ssmd_activity_name" id="ssmd_activity_name" lay-search lay-filter="aihao lay-search" lay-verify="required" lay-search></select></div><label class="layui-form-mid"></label><div class="layui-input-inline" style="width:50px"><button class="layui-btn" lay-submit="" lay-filter="crm_viprig_activity_add_normal">添加</button></div></form></div><div class="layui-form-item"><ul id="crm-viprig-activity-add-ul"></ul></div>'
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+
+                                admin.req({ // ---------------------------------------------------------------------------------------------循环得到所属门店下拉表信息
+                                    url: "/index.php/websetDisstore/",
+                                    done: function (res) {
+                                        var jsona = res.data;
+                                        var listDj = $('#ssmd_activity_name');
+                                        listDj.empty();
+                                        listDj.append("<option value=''>请输入 / 选择</option>");
+                                        for (var i = 0, l = jsona.length; i < l; i++) {
+                                            listDj.append("<option value='" + jsona[i].code + "' id='activity-fuxiao-add-" + jsona[i].code + "'>" + jsona[i].name + "</option>");
+                                        }
+                                        form.render(null, "crm-viprig-activity-ssmd");
+                                    }
+                                });
+
+                                form.on("submit(crm_viprig_activity_add_normal)", function (date) { // -------------------------------------监听执行添加
+                                    admin.req({
+                                        url: "/index.php/webgetAcacheAdd/",
+                                        type: "post",
+                                        data: {// 给控制器传递数据
+                                            ssmd_activity_name: date.field.ssmd_activity_name, //所属门店
+                                            name: $('#activity-fuxiao-add-' + date.field.ssmd_activity_name).text()
+                                        }, done: function (res) {
+                                            if (res.msg == 'error') {
+                                                layer.msg(res.data, { icon: 2 });
+                                            } else if (res.msg == 'yes') {
+                                                activityinfo();
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2 });
+                                            }
+                                        }
+                                    });
+                                    return false;
+                                });
+                                form.render(null, "crm-viprig-activity-ssmd");
+
+                                var activityinfo = function () {
+                                    admin.req({
+                                        url: "/index.php/webgetgetActivitycacheAdd/"
+                                        , done: function (res) {
+                                            $("#crm-viprig-activity-add-ul").empty();
+                                            checkbox({
+                                                elem: "#crm-viprig-activity-add-ul"
+                                                , nodes: res.data
+                                                , del: function (node) {
+                                                    admin.req({ // 删除扩展信息
+                                                        url: "/index.php/webgetactcacheDel/"
+                                                        , data: {
+                                                            id: node.id
+                                                        }, done: function (res) {
+                                                            if (res.msg == 'yes') {
+                                                                activityinfo();
+                                                            } else {
+                                                                layer.msg(res.msg, { icon: 2 });
+                                                            }
+                                                        }
+                                                    });
+                                                    return true;
+                                                }
+                                            });
+                                            form.render(null, "crm-viprig-activity-ssmd");
+                                        }
+                                    });
+                                };
+                                activityinfo();
+                            }
+                        });
+                    });
+
+                    //日期
+                    laydate.render({
+                        elem: '#activitytime_start',
+                        type: 'datetime'
+                    });
+                    laydate.render({
+                        elem: '#activitytime_end',
+                        type: 'datetime'
+                    });
+
+                    form.render(null, 'crm-vip-viprights-activity');
+
+                    //下拉框信息
+                    initList("/index.php/webDroplevel/", "#crm-vip-activity-hydj");
+                    initList1("/index.php/webStores/", "#crm-vip-activity-ssdm");
+
+                    //获取所属类别列表
+                    initcategoryTree("#crm-vip-viprig-activity-classtree-add");
+
+                    // 表单提交事件
+                    form.on("submit(crm-vip-viprights-activitySub)", function (data) {
+                        var reg = /^(1|0(\.\d{1,2})?)$/;
+                        if (!reg.test(data.field.exclusive_discounts)) {
+                            layer.msg('专属折扣必须是0-1之间的两位小数', { icon: 2, title: '提示' });
+                            return false;
+                        }
+                        var vreg = /^[0-9]*$/;
+                        if (!vreg.test(data.field.integral_multiple)) {
+                            layer.msg('积分倍数只能是数字类型', { icon: 2, title: '提示' });
+                        }
+                        admin.req({
+                            url: "/index.php/webActivityAdd/",
+                            type: "post",
+                            data: {
+                                rulename: $.trim(data.field.rulename), //规则名称
+                                levelname: data.field.levelname, //会员级别
+                                project: data.field.project, //消费项目
+                                exclusive_discounts: $.trim(data.field.exclusive_discounts), //专属折扣
+                                // integral_multiple: $.trim(data.field.integral_multiple), //积分倍数
+                                time_start: data.field.time_start, //时间 开始
+                                time_end: data.field.time_end, //时间 结束
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.close(index);
+                                    activity('/index.php/webActivitylist/');
+                                    layer.msg(res.data, { icon: 1 });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        };
+
+        //监听工具条
+        table.on('tool(crm-vip-viprights-activitytable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'crm-vip-viprights-del') {
+                layer.confirm('确定要删除这条信息么?', function (index) {
+                    admin.req({
+                        url: "/index.php/webActivityDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                activity('/index.php/webActivitylist/');
+                                layer.msg(res.data, { icon: 1 });
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2 });
+                            }
+                        }
+                    });
+                });
+            } else if (obj.event === 'crm-vip-viprights-edit') {
+                layer.open({
+                    title: "编辑信息",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["800px", "380px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-activityedit"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">规则名称</label><div class="layui-input-inline"><input type="text" name="rulename" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">所属店面</label><div class="layui-input-inline"><select name="storefront" id="crm-vip-activity-ssdmE" lay-search></select></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">会员级别</label><div class="layui-input-inline"><select name="levelname" id="crm-vip-activity-hydjE" lay-search></select></div></div><div class="layui-inline"><label class="layui-form-label">消费项目</label><div class="layui-input-inline"><div class="layui-unselect layui-form-select downpanel"><div class="layui-select-title" id="crm_viprig_activity_type_select_edit"><span class="layui-input layui-unselect" style="line-height:35px">商品类别</span> <input type="hidden" name="splb"> <i class="layui-edge"></i></div><dl class="layui-layer-admin layui-anim"><dd><ul id="crm-vip-viprig-activity-classtree-edit"></ul></dd></dl></div></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">专属折扣</label><div class="layui-input-inline"><input type="text" name="exclusive_discounts" autocomplete="off" class="layui-input"></div><div class="layui-form-mid layui-word-aux">例如:0.95</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">时间</label><div class="layui-input-inline"><input type="text" name="time_start" id="activitytime_startE" autocomplete="off" class="layui-input"></div><label class="layui-form-mid">至</label><div class="layui-input-inline"><input type="text" name="time_end" id="activitytime_endE" autocomplete="off" class="layui-input"></div></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-activitySubE">确定修改</button></div></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+
+                        admin.req({ // ---------------------------------------------------------------------------------------------清除缓存
+                            url: '/index.php/webActivityGoodsCacheNull/',
+                            type: 'post',
+                            done: function (res) {
+                            }
+                        });
+
+                        // 将初始数据加入缓存
+                        admin.req({
+                            url: '/index.php/webActivityGoodsCache/',
+                            type: 'post',
+                            data: { goods: obj.data.project, type: obj.data.type },
+                            done: function (res) {
+
+                            }
+                        });
+
+                        //日期
+                        laydate.render({
+                            elem: '#activitytime_startE',
+                            type: 'datetime'
+                        });
+                        laydate.render({
+                            elem: '#activitytime_endE',
+                            type: 'datetime'
+                        });
+
+                        // form表单渲染
+                        form.render(null, 'crm-vip-viprights-activityedit');
+
+                        // 表单初始赋值
+                        form.val("crm-vip-viprights-activityedit", {
+                            rulename: obj.data.name,//规则名称
+                            // project: obj.data.project,//消费项目
+                            exclusive_discounts: obj.data.exclusive_discounts, //专属折扣
+                            // integral_multiple: obj.data.integral_multiple, //积分倍数
+                            time_start: obj.data.time_start, //时间 开始
+                            time_end: obj.data.time_end, //时间 结束
+                        });
+
+                        //获取所属类别列表
+                        initcategoryTree("#crm-vip-viprig-activity-classtree-edit");
+
+                        initList1("/index.php/webStores/", "#crm-vip-activity-ssdmE", data.store_code);
+                        initList("/index.php/webDroplevel/", "#crm-vip-activity-hydjE", data.level_code);
+
+                        // 表单提交事件
+                        form.on("submit(crm-vip-viprights-activitySubE)", function (data) {
+                            var reg = /^(1|0(\.\d{1,2})?)$/;
+                            if (!reg.test(data.field.exclusive_discounts)) {
+                                layer.msg('专属折扣必须是0-1之间的两位小数', { icon: 2, title: '提示' });
+                                return false;
+                            }
+                            var vreg = /^[0-9]*$/;
+                            if (!vreg.test(data.field.integral_multiple)) {
+                                layer.msg('积分倍数只能是数字类型', { icon: 2, title: '提示' });
+                                return false;
+                            }
+                            admin.req({
+                                url: "/index.php/webActivityEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    rulename: $.trim(data.field.rulename), //规则名称
+                                    storefront: data.field.storefront, //所属店面
+                                    levelname: data.field.levelname, //会员级别
+                                    // project: data.field.project, //消费项目
+                                    exclusive_discounts: $.trim(data.field.exclusive_discounts), //专属折扣
+                                    // integral_multiple: $.trim(data.field.integral_multiple), //积分倍数
+                                    time_start: data.field.time_start, //时间 开始
+                                    time_end: data.field.time_end //时间 结束
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.close(index);
+                                        activity('/index.php/webActivitylist/');
+                                        layer.msg(res.data, { icon: 1 });
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2 });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+
+                    }
+                });
+            }
+            // else if (obj.event = 'crm-vip-viprights-show') {
+            //     layer.open({
+            //         title: '消费项目(修改悉知：消费项目修改之后，未勾选的产品将不再显示，一经修改，消费项目只能是产品 不会再是分类，有特殊需求请在编辑中修改)',
+            //         type: 1,
+            //         shade: 0.3,
+            //         shadeClose: false,
+            //         anim: 1,
+            //         offset: 'auto',
+            //         area: ['1000px', '500px'],
+            //         skin: "layui-layer-admin layui-anim",
+            //         content: '<table class="layui-hide" lay-filter="crm-vip-viprights-activity-show-type-goods" id="crm-vip-viprights-activity-show-type-goods"></table>',
+            //         success: function (listLayero, listIndex) {
+            //             var elem2Close = $('<i class="layui-icon" close>&#x1006;</i>');
+            //             listLayero.append(elem2Close);
+            //             elem2Close.on('click', function () {
+            //                 layer.close(listIndex);
+            //             });
+            //             // 列表请求
+            //             var gdxfxm_list = function (ids) {
+            //                 table.render({
+            //                     elem: '#crm-vip-viprights-activity-show-type-goods'
+            //                     , height: 390
+            //                     , url: '/index.php/webActivityProjects/'
+            //                     , where: { id: ids, type: obj.data.type, dis: obj.data.exclusive_discounts, access_token: layui.data(layui.setter.tableName).access_token }
+            //                     , cols: [[ //表头
+            //                         { type: 'checkbox', fixed: 'left' },
+            //                         { field: 'bar_code', width: 200, title: '条码', align: 'center' },
+            //                         { field: 'frenum', minwidth: 120, title: '货号', align: 'center' },
+            //                         { field: 'name', minwidth: 120, title: '商品名', align: 'center' },
+            //                         { field: 'unit_name', width: 60, title: '单位', align: 'center' },
+            //                         { field: 'color', width: 70, title: '颜色', align: 'center' },
+            //                         { field: 'size', width: 70, title: '尺码', align: 'center' },
+            //                         { field: 'price', width: 100, title: '价格', align: 'center' },
+            //                         { field: 'dis_price', width: 100, title: '折后价格', align: 'center' },
+            //                     ]]
+            //                     , toolbar: '#crm-vip-viprig-activity-show-toolbar'
+            //                 });
+            //             }
+            //             gdxfxm_list(obj.data.project);
+
+
+            //             table.on('toolbar(crm-vip-viprights-activity-show-type-goods)', function (objDisGoods) {
+            //                 var checkStatus = table.checkStatus(objDisGoods.config.id);
+            //                 switch (objDisGoods.event) {
+            //                     case 'edit':
+            //                         if (checkStatus.isAll == true) {
+            //                             layer.msg('未修改', { icon: 2 });
+            //                             return false;
+            //                         }
+
+            //                         if (checkStatus.data.length < 1) {
+            //                             layer.msg('消费项目不能为空', { icon: 2 });
+            //                             return false;
+            //                         }
+
+            //                         var goods = '';
+            //                         for (var i = 0; i < checkStatus.data.length; i++) {
+            //                             goods += checkStatus.data[i].code + ',';
+            //                         }
+
+            //                         layer.confirm('确认修改？消费项目修改之后，未勾选的产品将不再显示，一经修改，消费项目只能是产品 不会再是分类，有特殊需求请在编辑中修改', { icon: 3, title: '提示' }, function (index) {
+            //                             admin.req({
+            //                                 url: '/index.php/webActivityGoodsEdit/',
+            //                                 type: 'post',
+            //                                 data: { goods: goods, id: obj.data.id },
+            //                                 done: function (res) {
+            //                                     if (res.msg == 'error') {
+            //                                         layer.msg(res.data, { icon: 2, title: res.msg });
+            //                                     } else if (res.msg == 'yes') {
+            //                                         layer.msg('成功', { icon: 1, title: '提示' });
+            //                                         layer.close(index);
+            //                                         gdxfxm_list(res.data);
+            //                                         activity('/index.php/webActivitylist/');
+            //                                     } else if (res.msg == 'no') {
+            //                                         layer.msg(res.data, { icon: 2, title: '提示' });
+            //                                     }
+            //                                 }
+            //                             });
+            //                             return false;
+            //                         });
+            //                         break;
+            //                 };
+            //             })
+            //         }
+            //     });
+            // }
+        });
+    });
+</script>

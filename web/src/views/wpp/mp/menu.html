@@ -1,0 +1,213 @@
+<title>菜单设置</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body" id="wpp_mp_menu_body">
+                    <div class="layui-tab" lay-filter="wpp_mp_menu">
+                        <ul class="layui-tab-title">
+                            <li id="wpp_mp_menu_top" class="layui-this">主菜单设置</li>
+                        </ul>
+                        <div class="layui-tab-content">
+                            <div class="layui-tab-item layui-show">
+                                <table id="wpp-mp-menu-top" lay-filter="wpp-mp-menu-top"></table>
+                            </div>
+                            <div class="layui-tab-item layui-show">
+                                <table id="wpp-mp-menu-1" lay-filter="wpp-mp-menu-1"></table>
+                            </div>
+                            <div class="layui-tab-item layui-form layui-form-pane" layui-filter="wpp_mp_menu_form1">
+                                <table id="wpp-mp-menu-2" lay-filter="wpp-mp-menu-2"></table>
+                            </div>
+                            <div class="layui-tab-item">
+                                <table id="wpp-mp-menu-3" lay-filter="wpp-mp-menu-3"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="wpp-mp-menu-top-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="wpp-mp-menu-top-tool">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script type="text/html" id="wpp-mp-menu-1-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="wpp-mp-menu-1-tool">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script type="text/html" id="wpp-mp-menu-2-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="wpp-mp-menu-2-tool">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script type="text/html" id="wpp-mp-menu-3-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="wpp-mp-menu-3-tool">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script>
+    layui.use(['form', 'table', 'admin'], function () {
+        var $ = layui.$
+            , table = layui.table
+            , form = layui.form
+            , admin = layui.admin;
+
+        function table_top() {
+            table.render({
+                elem: '#wpp-mp-menu-top'
+                , height: 312
+                , url: '/index.php/WechatMenuTop/' //数据接口
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , cols: [[ //表头
+                    { field: 'name', title: '按钮名称', width: 150, align: 'center', fixed: 'left' },
+                    { field: 'type', title: '按钮类型', width: 150, align: 'center' },
+                    { field: 'url', title: '跳转链接', width: 150, align: 'center' },
+                    { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#wpp-mp-menu-top-bar' }
+                ]]
+                , height: 'full-210'
+                , toolbar: '#wpp-mp-menu-top-tool'
+                , done: function (res, curr, count) {
+                    if (count > 0) {
+                        var menuStr = '';
+                        for (var i = 0; i < count; i++) {
+                            var n = i + 1;
+                            menuStr += '<li id="wpp_mp_menu_' + n + '" data-key="'+res.data[i].id+'">' + res.data[i].name + '</li>';
+                        }
+                        table_1();
+                        $('#wpp_mp_menu_top').after(menuStr);
+                    }
+                    if (count > 1) {
+                        table_2();
+                    }
+                    if (count > 2) {
+                        table_3();
+                    }
+                }
+            });
+        }
+        function table_1() {
+            table.render({
+                elem: '#wpp-mp-menu-1'
+                , height: 312
+                , url: '/index.php/WechatReplyCdr/' //数据接口
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 500]
+                , cols: [[ //表头
+                    { field: 'name', title: '按钮名称', width: 150, align: 'center', fixed: 'left' },
+                    { field: 'type', title: '按钮类型', width: 150, align: 'center' },
+                    { field: 'url', title: '跳转链接', width: 150, align: 'center' },
+                    { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#wpp-mp-menu-1-bar' }
+                ]]
+                , height: 'full-210'
+                , toolbar: '#wpp-mp-menu-1-tool'
+            });
+        }
+        function table_2() {
+            table.render({
+                elem: '#wpp-mp-menu-2'
+                , height: 312
+                , url: '/index.php/WechatReplyCdr/' //数据接口
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 500]
+                , cols: [[ //表头
+                    { field: 'name', title: '按钮名称', width: 150, align: 'center', fixed: 'left' },
+                    { field: 'type', title: '按钮类型', width: 150, align: 'center' },
+                    { field: 'url', title: '跳转链接', width: 150, align: 'center' },
+                    { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#wpp-mp-menu-2-bar' }
+                ]]
+                , height: 'full-210'
+                , toolbar: '#wpp-mp-menu-2-tool'
+            });
+        }
+        function table_3() {
+            table.render({
+                elem: '#wpp-mp-menu-3'
+                , height: 312
+                , url: '/index.php/WechatReplyCdr/' //数据接口
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 500]
+                , cols: [[ //表头
+                    { field: 'name', title: '按钮名称', width: 150, align: 'center', fixed: 'left' },
+                    { field: 'type', title: '按钮类型', width: 150, align: 'center' },
+                    { field: 'url', title: '跳转链接', width: 150, align: 'center' },
+                    { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#wpp-mp-menu-3-bar' }
+                ]]
+                , height: 'full-210'
+                , toolbar: '#wpp-mp-menu-3-tool'
+            });
+        }
+        table_top();
+
+        function add(pid) {
+            layer.open({
+                title: '添加菜单'
+                , type: 1
+                , area: ["425px", "335px"] // 弹出层的大小
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<div id="wpp_mp_menu_add"></div>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    $('#wpp_mp_menu_add').load('/src/views/wpp/mp/menu/add.html');
+                }
+            })
+        }
+
+        table.on('toolbar(wpp-mp-menu-top)', function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    add(0);
+                    break;
+            };
+        })
+        table.on('toolbar(wpp-mp-menu-1)', function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    add($('#wpp_mp_menu_1').data('key'));
+                    break;
+            };
+        })
+        table.on('toolbar(wpp-mp-menu-2)', function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    add($('#wpp_mp_menu_2').data('key'));
+                    break;
+            };
+        })
+        table.on('toolbar(wpp-mp-menu-3)', function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    add($('#wpp_mp_menu_3').data('key'));
+                    break;
+            };
+        })
+    })
+</script>

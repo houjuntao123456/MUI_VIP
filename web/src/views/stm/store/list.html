@@ -1,0 +1,407 @@
+<title>门店列表</title>
+
+<style>
+    .downpanel .layui-select-title span {
+    line-height: 38px;
+  }
+
+  .downpanel dl dd:hover {
+    background-color: inherit;
+  }
+
+  .inputS {
+    height: 36px;
+    width: 138px;
+    vertical-align: bottom;
+    border-radius: 2px;
+    border: 1px solid #D2D2D2;
+    padding-left: 10px;
+  }
+
+  .inputB {
+    height: 38px;
+    width: 40px;
+    padding-left: 5px;
+  }
+</style>
+
+<div class="layui-fluid" lay-filter="stm-store-list">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table class="layui-hide" id="stm_store_department" lay-filter="stm-store-listtable"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="stm-store-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+        <!-- <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button> -->
+    </div>
+</script>
+
+<script type="text/html" id="barDemomd">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="store_detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="store_edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="store_del">删除</a>
+</script>
+
+<!-- 引用城市js三级联动 -->
+<script src="/libs/js/citys.js"></script>
+
+<script>
+    layui.use(['admin', 'form', 'dtree', 'checkbox', 'cascader', 'table'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , dtree = layui.dtree
+            , checkbox = layui.checkbox
+            , cascader = layui.cascader
+            , router = layui.router();
+
+        //组织机构
+        var organization = function (u, i, n) {
+            $(u).click(function () {
+                layer.open({
+                    type: 1,
+                    //type:0 也行
+                    title: "选择组织机构",
+                    area: ["400px", "80%"],
+                    content: '<ul id="openTree1" class="dtree" data-id="0"></ul>',
+                    btn: ['确认选择'],
+                    success: function (layero, index) {
+                        dtree.render({
+                            elem: "#openTree1",
+                            url: "/index.php/webCategoryList/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                            method: 'get',
+                            skin: "theme",
+                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                            // dot: false, //前面的小黑点取消
+                            checkbar: true,
+                            checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                        });
+                        // 绑定节点的双击
+                        dtree.on("nodedblclick('openTree1')", function (obj) {
+                            $(i).val(obj.param.nodeId);
+                            $(n).val(obj.param.context);
+                            layer.close(index);
+                        });
+                    },
+                    yes: function (index, layero) {
+                        var param = dtree.getNowParam("openTree1"); // 获取当前选中节点
+
+                        $(i).val(param.nodeId);
+                        $(n).val(param.context);
+                        layer.close(index);
+                    }
+                });
+            });
+        }
+
+        //门店列表
+        var departmentli = function (where = '') {
+            table.render({
+                elem: '#stm_store_department'
+                , url: '/index.php/webStoreSel/' //数据接口
+                , toolbar: '#stm-store-toolbar'
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , height: 'full-150'
+                , cols: [[ //表头 
+                    // { type: 'checkbox', fixed: 'left' }
+                    // ,
+                    { field: 'vgname', title: '组织机构', width: 150, sort: true }
+                    , { field: 'code', title: '门店编码', width: 220, sort: true }
+                    , { field: 'name', title: '门店名称', width: 150, sort: true }
+                    , { field: 'contacts', title: '联系人', width: 150, sort: true }
+                    , { field: 'phone', title: '联系电话', width: 150, sort: true }
+                    , { field: 'address', title: '所在地区', width: 192, sort: true }
+                    , { field: 'full_address', title: '详情地址', width: 220, sort: true }
+                    , { field: 'create_time', title: '创建时间', width: 220, sort: true }
+                    , { title: '操作', width: 178, align: 'center', toolbar: '#barDemomd', fixed: 'right' }
+                ]]
+                , page: true
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        departmentli();
+
+        // 表头事件监听
+        table.on('toolbar(stm-store-listtable)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    storeAdd();
+                    break;
+                case 'del': //已经去掉
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                        store_codes += checkStatus.data[i].store_code + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        storeDel(ids, store_codes);
+                    })
+                    break;
+                case 'search': //按照查询门店
+                    layer.prompt({ title: '按(组织机构,门店编号,门店名称,联系人,联系电话)查询', formType: 0 }, function (text, index) {
+                        departmentli($.trim(text));
+                        layer.close(index);
+                        return false;
+                    });
+                    break;
+            }
+        });
+
+        // 批量删除
+        var storeDel = function (ids, store_codes) {
+            admin.req({
+                url: '/index.php/webStoreDelAll/',
+                type: 'post',
+                data: { ids: ids, store_codes: store_codes },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        departmentli();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //添加
+        var storeAdd = function () {
+            layer.open({
+                title: "新建门店"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["620px", "470px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form layui-form-pane" lay-filter="stm_store_list_add"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>组织机构:</label><div class="layui-input-block"><div class="layui-input-inline" style="width:300px"><input type="text" name="splb_name" id="store_splb_name_id" required autocomplete="off" disabled placeholder="组织机构" class="layui-input"></div><input type="hidden" name="splb" id="store_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="store_list_classtree" style="text-align:center;width:130px">点击选择组织机构</div></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>门店名称:</label><div class="layui-input-block"><input type="text" name="name" autocomplete="off" placeholder="请输入门店" lay-verify="required" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>联系人:</label><div class="layui-input-block"><input type="text" name="contacts" autocomplete="off" placeholder="请输入联系人" lay-verify="required" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>联系电话:</label><div class="layui-input-block"><input type="text" name="phone" autocomplete="off" placeholder="请输入电话" lay-verify="required|phone" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所在地址:</label><div class="layui-input-block"><input type="text" name="address" placeholder="请输入地址" lay-verify="required" autocomplete="off" id="address_casc" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">详情地址:</label><div class="layui-input-block"><input type="text" name="full_address" placeholder="请输入地址" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="store_list_Demo_Add">确认添加</button> <button type="reset" class="layui-btn layui-btn-primary layui-btn-radius">确认重置</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    //渲染表单
+                    form.render(null, 'stm_store_list_add');
+
+                    //获取区地址
+                    cascader({
+                        elem: '#address_casc',
+                        data: citys,
+                        name: ['其他'],
+                        success: function (data) {
+                        }
+                    });
+
+                    //组织结构
+                    organization("#store_list_classtree", "#store_splb_id", "#store_splb_name_id");
+
+                    // 表单提交事件
+                    form.on("submit(store_list_Demo_Add)", function (data) {
+                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                        var msg = '组织机构不能为空!';
+                        if (data.field.splb_name == '') {
+                            layer.msg(msg, { icon: 2 });
+                            layer.close(loadindex);
+                            return false;
+                        }
+                        admin.req({
+                            url: "/index.php/webStoreAdd/",
+                            type: "post",
+                            data: {
+                                name: $.trim(data.field.name),
+                                contacts: $.trim(data.field.contacts),
+                                address: data.field.address,
+                                full_address: data.field.full_address,
+                                splb: data.field.splb,
+                                phone: data.field.phone
+                            },
+                            done: function (res) {
+                                layer.close(loadindex);
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    departmentli();
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        };
+
+        //表格监听事件
+        table.on('tool(stm-store-listtable)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+            if (layEvent === 'store_detail') { //查看详情
+
+                layer.open({
+                    title: '查看详情'
+                    , type: 1
+                    , area: ["600px", "480px"]
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<form class="layui-form layui-form-pane" lay-filter="stm_store_list_look"><div class="layui-form-item"><label class="layui-form-label">组织机构:</label><div class="layui-input-block"><input type="text" name="splb" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">门店编号:</label><div class="layui-input-block"><input type="text" name="code" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">门店名称:</label><div class="layui-input-block"><input type="text" name="name" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">联系人:</label><div class="layui-input-block"><input type="text" name="contacts" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">联系电话:</label><div class="layui-input-block"><input type="text" name="phone" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">所在地址:</label><div class="layui-input-block"><input type="text" name="address" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">详情地址:</label><div class="layui-input-block"><input type="text" name="full_address" disabled class="layui-input"></div></div></form>'
+                    //关闭弹出层
+                    , success: function (layero, index) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        // 表单赋值
+                        form.val("stm_store_list_look", {
+                            splb: obj.data.vgname,
+                            code: obj.data.code,
+                            contacts: obj.data.contacts,
+                            name: obj.data.name,
+                            address: obj.data.address,
+                            full_address: obj.data.full_address,
+                            phone: obj.data.phone
+                        });
+                    }
+                });
+
+            } else if (layEvent === 'store_del') { //删除
+
+                layer.confirm('确认删除该条数据？', function (index) {
+                    admin.req({
+                        url: "/index.php/webStoreDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id,
+                            code: obj.data.code
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                departmentli();
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+
+            } else if (layEvent === 'store_edit') { //编辑
+
+                layer.open({
+                    title: "编辑门店",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["620px", "470px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form layui-form-pane" lay-filter="stm_store_list_edit"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>组织机构:</label><div class="layui-input-block"><div class="layui-input-inline" style="width:300px"><input type="text" name="splb_name" id="store_splb_name_id_edit" required autocomplete="off" disabled placeholder="组织机构" class="layui-input"></div><input type="hidden" name="splb" id="store_splb_id_edit" class="layui-input"><div class="layui-form-mid layui-bg-green" id="store_list_classtree_edit" style="text-align:center;width:130px">点击选择组织机构</div></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>门店名称:</label><div class="layui-input-block"><input type="text" name="name" autocomplete="off" placeholder="请输入门店" lay-verify="required" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>联系人:</label><div class="layui-input-block"><input type="text" name="contacts" autocomplete="off" placeholder="请输入联系人" lay-verify="required" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>联系电话:</label><div class="layui-input-block"><input type="text" name="phone" autocomplete="off" placeholder="请输入电话" lay-verify="required|phone" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所在地址:</label><div class="layui-input-block"><input type="text" name="address" placeholder="请输入地址" lay-verify="required" autocomplete="off" id="address_casc_edit" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">详情地址:</label><div class="layui-input-block"><input type="text" name="full_address" placeholder="请输入地址" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="store_Edit_Demo">执行修改</button></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+
+                        // form表单渲染
+                        form.render(null, 'stm_store_list_edit');
+
+                        var area_str = obj.data.address
+                        var area_arr = [];
+                        if (area_str == "") { //如果获得信息为空 赋值空的字符串 , 否则将字符串按 / 分割
+                            area_arr = ['其他'];
+                        } else {
+                            area_arr = area_str.split("/");
+                        }
+                        //三级联动 省市县
+                        cascader({
+                            elem: "#address_casc_edit",
+                            data: citys,
+                            name: area_arr,
+                            success: function (data) {
+                            }
+                        });
+
+                        //组织结构
+                        organization("#store_list_classtree_edit", "#store_splb_id_edit", "#store_splb_name_id_edit");
+
+                        // 表单赋值
+                        form.val("stm_store_list_edit", {
+                            contacts: obj.data.contacts,
+                            name: obj.data.name,
+                            address: obj.data.address,
+                            full_address: obj.data.full_address,
+                            phone: obj.data.phone,
+                            splb_name: obj.data.vgname,
+                            splb_id: obj.data.org_code
+                        });
+                        // 表单提交事件
+                        form.on("submit(store_Edit_Demo)", function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            var msg = '组织机构不能为空!';
+                            if (data.field.splb_name == '') {
+                                layer.msg(msg, { icon: 2 });
+                                layer.close(loadindex);
+                                return false;
+                            }
+                            admin.req({
+                                url: "/index.php/webStoreEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    contacts: $.trim(data.field.contacts),
+                                    name: $.trim(data.field.name),
+                                    address: data.field.address,
+                                    full_address: data.field.full_address,
+                                    phone: data.field.phone,
+                                    splb: data.field.splb
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        departmentli();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+
+            }
+        });
+
+    });
+</script>

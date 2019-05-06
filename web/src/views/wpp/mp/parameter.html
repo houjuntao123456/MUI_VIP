@@ -1,0 +1,137 @@
+<title>参数设置</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body" id="wpp_mp_parameter_body">
+
+                    <div class="layui-tab" lay-filter="wpp_mp_parameter">
+                        <ul class="layui-tab-title">
+                            <li class="layui-this" id="wpp_mp_parameter_1">公众号对接</li>
+                            <li id="wpp_mp_parameter_2">开发者配置</li>
+                            <!-- <li>微信支付</li> -->
+                        </ul>
+                        <div class="layui-tab-content layui-form-pane">
+                            <div class="layui-tab-item layui-show">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">URL</label>
+                                    <div class="layui-input-inline" style="width:350px;">
+                                        <input type="text" autocomplete="off" class="layui-input" id="wechat_set_url"
+                                            disabled>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Token</label>
+                                    <div class="layui-input-inline" style="width:350px;">
+                                        <input type="text" autocomplete="off" class="layui-input" id="wechat_set_token"
+                                            disabled>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <div class="layui-input-inline">
+                                        <button class="layui-btn" id="wechat_set_token_reset">重置 Token</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">开发者ID</label>
+                                    <div class="layui-input-inline" style="width:350px;">
+                                        <input type="text" autocomplete="off" class="layui-input" id="wechat_set_appid">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">开发者密码</label>
+                                    <div class="layui-input-inline" style="width:350px;">
+                                        <input type="text" autocomplete="off" class="layui-input" id="wechat_set_app_secret">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <div class="layui-input-inline">
+                                        <button class="layui-btn" id="wechat_set_developer_update">提交修改</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-tab-item">内容3</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['jquery', 'form', 'admin', 'table', 'element'], function () {
+        var $ = layui.jquery, form = layui.form, admin = layui.admin, table = layui.table, element = layui.element;
+        // element.on('tab(wpp_mp_parameter)', function (data) {
+        //     switch (data.index) {
+        //         case 0:
+        //             getUrlAndToken();
+        //         break;
+        //         case 1:
+        //             getAppidAndSecret();
+        //         break;
+        //     }
+        // });
+        $('#wpp_mp_parameter_body').css('height', $(document).height() * 0.8);
+        var getWechatSet = function () {
+            admin.req({
+                url: '/index.php/webWechatSet/',
+                type: 'post',
+                done: function (res) {
+                    $('#wechat_set_url').val(res.data.url);
+                    $('#wechat_set_token').val(res.data.token);
+                    $('#wechat_set_appid').val(res.data.appid);
+                    $('#wechat_set_app_secret').val(res.data.app_secret);
+                }
+            })
+        }
+        getWechatSet();
+
+        // 重置Token
+        $('#wechat_set_token_reset').click(function () {
+            layer.confirm('确认重置?', { icon: 3, title: '提示' }, function (index) {
+                admin.req({
+                    url: '/index.php/webWechatSetTokenReset/',
+                    type: 'post',
+                    done: function (res) {
+                        if (res.msg == 'yes') {
+                            layer.msg('重置成功', { icon: 1 });
+                            getWechatSet();
+                        } else {
+                            layer.msg('重置失败', { icon: 2 });
+                        }
+                    }
+                })
+                layer.close(index);
+            });
+            return false;
+        })
+
+        // 开发者配置修改
+        $('#wechat_set_developer_update').click(function () {
+            layer.confirm('确认修改?', { icon: 3, title: '提示' }, function (index) {
+                admin.req({
+                    url: '/index.php/webWechatSetDeveloper/',
+                    type: 'post',
+                    data: {
+                        appid: $('#wechat_set_appid').val(),
+                        app_secret: $('#wechat_set_app_secret').val()
+                    },
+                    done: function (res) {
+                        if (res.msg == 'yes') {
+                            layer.msg('修改成功', { icon: 1 });
+                            getWechatSet();
+                        } else {
+                            layer.msg(res.data, { icon: 2 });
+                        }
+                    }
+                })
+                layer.close(index);
+            });
+            return false;
+        })
+
+    });
+</script>

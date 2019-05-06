@@ -1,0 +1,218 @@
+<title>
+    提成记录</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 这段样式只是用于演示 */
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table class="layui-hide" id="staff_commission_table" lay-filter="staff_commission_tablelist"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="stm_staff_commission_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="lookup">查询</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['admin', 'layer', 'form', 'table', 'dtree', 'laydate'], function () {
+        var $ = layui.$
+            , layer = layui.layer
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , dtree = layui.dtree
+            , laydate = layui.laydate
+            , router = layui.router();
+
+        //所属结构
+        var organization = function (u, i, n) {
+            $(u).click(function () {
+                layer.open({
+                    type: 1,
+                    //type:0 也行
+                    title: "选择所属机构",
+                    area: ["400px", "80%"],
+                    content: '<ul id="openTree1" class="dtree" data-id="0"></ul>',
+                    btn: ['确认选择'],
+                    success: function (layero, index) {
+                        dtree.render({
+                            elem: "#openTree1",
+                            url: "/index.php/webCategoryList/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                            method: 'get',
+                            skin: "theme",
+                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                            // dot: false, //前面的小黑点取消
+                            checkbar: true,
+                            checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                        });
+                        // 绑定节点的双击
+                        dtree.on("nodedblclick('openTree1')", function (obj) {
+                            $(i).val(obj.param.nodeId);
+                            $(n).val(obj.param.context);
+                            layer.close(index);
+                        });
+                    },
+                    yes: function (index, layero) {
+                        var param = dtree.getNowParam("openTree1"); // 获取当前选中节点
+
+                        $(i).val(param.nodeId);
+                        $(n).val(param.context);
+                        layer.close(index);
+                    }
+                });
+            });
+        }
+
+        //门店
+        var shop_frontfun = function (d, f, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStoreSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择门店</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name +
+                            "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, f);
+                }
+            });
+        }
+
+        //员工
+        var stafffun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStaffSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择员工</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //提成列表
+        var commissiontest = function (splb = '', store_code = '', staff_code = '', commission = '', start = '', end = '') {
+            table.render({
+                elem: '#staff_commission_table'
+                , height: 'full-150'
+                , toolbar: '#stm_staff_commission_toolbar'
+                , url: '/index.php/webCommissionSel/' //数据接口
+                , where: {
+                    access_token: layui.data(layui.setter.tableName).access_token,
+                    splb: splb,
+                    store_code: store_code,
+                    staff_code: staff_code,
+                    commission: commission,
+                    start: start,
+                    end: end
+                }
+                , cols: [[ //表头 
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'vgname', title: '组织机构', width: 200, sort: true }
+                    , { field: 'vggname', title: '门店', width: 200, sort: true }
+                    , { field: 'staff_code', title: '员工工号', width: 180, sort: true }
+                    , { field: 'staff_name', title: '员工姓名', width: 180, sort: true }
+                    , { field: 'source', title: '提成来源', width: 180, sort: true }
+                    , { field: 'price', title: '提成金额', width: 180, sort: true }
+                    , { field: 'time_g', title: '提成时间', width: 200, sort: true }
+                    , { field: 'remark', title: '备注', width: 300, sort: true }
+                    , { fixed: 'right', title: '操作', align: 'center', width: 300, toolbar: '#staff_commission_Demo' }
+                ]]
+                , page: true
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        commissiontest();
+
+        // 表头事件监听
+        table.on('toolbar(staff_commission_tablelist)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'lookup': //查询
+
+                    layer.open({
+                        title: "查询"
+                        , type: 1
+                        , shade: 0.3
+                        , shadeClose: false
+                        , anim: 1
+                        , offset: 'auto'
+                        , area: ["590px", "510px"]
+                        , skin: "layui-layer-admin layui-anim"
+                        , content: '<form class="layui-form layui-form-pane" lay-filter="commission_form_look"><div class="layui-form-item"><label class="layui-form-label">组织机构:</label><div class="layui-input-inline" style="width:270px"><input type="text" name="splb_name" id="commission_splb_name" required autocomplete="off" disabled placeholder="组织机构" class="layui-input"></div><input type="hidden" name="splb" id="commission_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="commission_openTree" style="text-align:center;width:130px">点击选择组织机构</div></div><div class="layui-form-item"><label class="layui-form-label">门店:</label><div class="layui-input-block"><select name="store_code" lay-search id="commission_stores"></select></div></div><div class="layui-form-item"><label class="layui-form-label">员工工号:</label><div class="layui-input-block"><select name="staff_code" lay-search id="commission_staff"></select></div></div><div class="layui-form-item"><label class="layui-form-label">提成来源:</label><div class="layui-input-block"><input type="text" name="commission" autocomplete="off" placeholder="请输入提成来源" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">开始时间</label><div class="layui-input-block"><input type="text" name="start" id="stm-staff-com-sea-date1" lay-verify="datetime" placeholder="年-月-日 时:分:秒" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">结束时间</label><div class="layui-input-block"><input type="text" name="end" id="stm-staff-com-sea-date2" lay-verify="datetime" placeholder="年-月-日 时:分:秒" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="stm_staff_com_look_Demo">查找</button></div></form>'
+                        , success: function (layero, index) {
+                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                            layero.append(elemClose);
+                            elemClose.on('click', function () {
+                                layer.close(index);
+                            });
+                            //组织机构
+                            organization('#commission_openTree', '#commission_splb_id', '#commission_splb_name');
+                            //门店
+                            shop_frontfun('#commission_stores', 'commission_form_look');
+                            //员工
+                            stafffun('#commission_staff', 'commission_form_look');
+                            //日期
+                            laydate.render({
+                                elem: '#stm-staff-com-sea-date1',
+                                type: 'datetime'
+                            });
+                            laydate.render({
+                                elem: '#stm-staff-com-sea-date2',
+                                type: 'datetime'
+                            });
+                            //渲染
+                            form.render(null, 'commission_form_look');
+                            // 表单提交事件
+                            form.on("submit(stm_staff_com_look_Demo)", function (data) {
+                                commissiontest(
+                                    data.field.splb,
+                                    data.field.store_code,
+                                    data.field.staff_code,
+                                    $.trim(data.field.commission),
+                                    data.field.start,
+                                    data.field.end
+                                );
+                                layer.close(index);
+                                return false;
+                            });
+
+                        }
+                    });
+
+                    break;
+            };
+        });
+
+    });
+</script>

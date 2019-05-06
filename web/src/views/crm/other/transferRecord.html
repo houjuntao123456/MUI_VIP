@@ -1,0 +1,64 @@
+<title>会员转移记录</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <table class="layui-hide" id="crm-other-transferRecord" lay-filter="crm-other-transferRecord"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="other_transfer_screendel">
+    <div class="layui-btn layui-btn-sm" id="crm_other_transfer_screendel">查找</div>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , router = layui.router();
+
+        var transferRecord = function (URL) {
+            table.render({
+                elem: '#crm-other-transferRecord'
+                , height: 'full-150'
+                , url: URL
+                , page: true //开启分页
+                , where: {
+                    access_token: layui.data(layui.setter.tableName).access_token
+                }
+                , cols: [[ //表头
+                    { field: 'vip_code', title: '会员卡号', align: 'center' }
+                    , { field: 'username', title: '会员姓名', align: 'center' }
+                    , { field: 'pre_transfer_name', title: '转移前形象顾问', align: 'center' }
+                    , { field: 'post_transfer_name', title: '转移后形象顾问', align: 'center' }
+                    , { field: 'pre_transfer_store_name', title: '转移前所属门店', align: 'center' }
+                    , { field: 'post_transfer_store_name', title: '转移后所属门店', align: 'center' }
+                    , { field: 'transfer_time', title: '操作时间', align: 'center', sort: true }
+                    , { field: 'operate_name', title: '操作人', align: 'center' }
+                ]]
+                , initSort: { field: 'transfer_time', type: 'desc' } //
+                , toolbar: '#other_transfer_screendel'
+                , defaultToolbar: ['filter', 'print', 'exports'] // 开启右侧 筛选列 导出 打印
+            });
+
+            $("#crm_other_transfer_screendel").click(function () {
+                layer.prompt({ title: '查找（按照 会员姓名 / 操作人）', formType: 0 }, function (text, index) {
+                    layer.close(index);
+                    transferRecord('/index.php/webTransferRecord/?lookup=' + text);
+                    return false;
+                });
+            });
+        }
+        transferRecord('/index.php/webTransferRecord/');
+    });
+</script>

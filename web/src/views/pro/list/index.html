@@ -1,0 +1,986 @@
+<title>商品列表</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+
+                    <!-- 列表遍历开始 -->
+                    <table id="vip_goods_List" lay-filter="vip_goods_List"></table>
+                    <!-- 列表遍历结束 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--行工具栏-->
+<script type="text/html" id="pro-list-Goods-bar">
+    <a class="layui-btn  layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">商品标签</a>
+    <!-- <a class="layui-btn layui-btn-xs" lay-event="store_price">门店价格</a> -->
+</script>
+
+<!-- 列表头工具栏 -->
+<script type="text/html" id="pro-list-Goods-bar-look-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="classify_search">分类搜索</button>
+        <button class="layui-btn layui-btn-sm" lay-event="all_editExtends">批量编辑商品标签</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="high_search">高级筛选</button>
+    </div>  
+</script>
+
+<!--高级筛选 行工具栏-->
+<script type="text/html" id="vip_pro-goods-screenDemo">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="vip-pro-goods-tiaojian-del">删除</a>
+</script>
+
+<!--筛选器列表-->
+<script type="text/html" id="vip-pro-goods-sxq-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="vip-pro-goods-sxq-edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="vip-pro-goods-sxq-del">删除</a>
+</script>
+
+<script>
+    layui.use(['admin', 'table', 'laydate', 'checkbox', "upload", "dtree", "tree"], function () {
+        var $ = layui.jquery,
+            table = layui.table,
+            form = layui.form,
+            checkbox = layui.checkbox,
+            admin = layui.admin,
+            upload = layui.upload,
+            laydate = layui.laydate,
+            dtree = layui.dtree,
+            tree = layui.tree
+
+
+
+        //  商品列表
+        var vipGoodsList = function (classify = '', high_screen = false, sizer = false) {
+            table.render({
+                elem: '#vip_goods_List', //table 的 id
+                url: '/index.php/webGoodsIndex/', //数据接口路由
+                where: {
+                    access_token: layui.data(layui.setter.tableName).access_token,
+                    classify: classify,
+                    high_screen: high_screen,
+                    sizer: sizer
+                },    //搜索时的 where 条件  
+                page: true, //开启分页
+                loading: true, //开启加载条
+                cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' },
+                    { field: 'name', title: '商品名称', width: 180, align: 'center', sort: true },
+                    { field: 'frenum', title: '商品货号', width: 150, align: 'center', sort: true },
+                    { field: 'bar_code', title: '商品条码', width: 150, align: 'center', sort: true },
+                    { field: 'cname', title: '商品分类', width: 150, align: 'center', sort: true },
+                    { field: 'unit', title: '商品单位', width: 100, align: 'center', sort: true, },
+                    { field: 'color', title: '商品颜色', width: 150, align: 'center', sort: true },
+                    { field: 'size', title: '商品尺码', width: 120, align: 'center', sort: true },
+                    { field: 'price', title: '总部价格', width: 120, align: 'center', sort: true },
+                    { field: 'sprice', title: '本店价格', width: 120, align: 'center', sort: true },
+                    { field: 'remark', title: '备注', width: 119, align: 'center', sort: true },
+                    { title: '操作', width: 220, align: 'center', toolbar: '#pro-list-Goods-bar', fixed: 'right' }
+                ]],
+                height: 'full-150', // 高度自适应
+                toolbar: '#pro-list-Goods-bar-look-toor', // 查询按钮
+                page: true, //开启分页
+                limit: 20,
+                limits: [20, 50, 100, 200, 500],
+            });
+        }
+        vipGoodsList(); // 封装成函数
+
+        // 头工具栏监听
+        table.on('toolbar(vip_goods_List)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'classify_search': // 分类搜索
+                    vip_classify_search();
+                    break;
+                case 'high_search':     // 高级筛选
+                    vip_high_search();
+                    break;
+                case 'all_editExtends': // 批量编辑扩展信息
+                    vip_all_editExtends();
+                    break;
+            }
+        })
+
+        // ----------------------------------------- 表格行工具栏监听事件 
+        table.on("tool(vip_goods_List)", function (obj) {
+            var layEvent = obj.event;
+            if (layEvent === 'detail') {    // 详情
+                detail(obj);
+            } else if (layEvent === 'edit') {
+                edit(obj);
+            } else if (layEvent == 'store_price') { // 查看该商品在各个门店的售价
+                store_price(obj);
+            }
+        });
+
+        var detail = function (obj) {
+            layer.open({
+                title: '查看商品详情',
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["700px", "600px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="goods_detail"><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品名称</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="name" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品货号</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="frenum" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品条码</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="bar_code" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品分类</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="type_name" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品单位</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="unit" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品颜色</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="color" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">商品尺码</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="size" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">总部价格</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="price" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">门店售价</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="store_price" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">备注</label><div class="layui-input-inline" style="width:65%"><input id="erp-set-commodity-spmc-tm" name="remark" autocomplete="off" class="layui-input" type="text" disabled></div></div><div><label class="layui-form-label" style="width:30%">扩展信息</label><div class="layui-input-inline" style="width:65%" id="pro_list_info_extends"></div></div><div class="layui-form-item" style="text-align:center"><img src="" alt="" id="goods_img"></div></form>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    form.val("goods_detail", {
+                        "name": obj.data.name,  // 商品名称
+                        "frenum": obj.data.frenum,  // 货号
+                        "bar_code": obj.data.bar_code,  // 条码
+                        "type_name": obj.data.cname,    //商品分类
+                        "unit": obj.data.unit,    // 单位
+                        "color": obj.data.color,    // 颜色
+                        "size": obj.data.size,      // 尺码
+                        "price": obj.data.price,    // 总店价格
+                        "store_price": obj.data.sprice,    // 门店价格
+                        "remark": obj.data.remark,  // 备注
+                    })
+
+                    // 请求商品的扩展信息
+                    if (obj.data.extend_info != '') {
+                        admin.req({
+                            url: "/index.php/webGoodsDetail/",
+                            type: "post",
+                            data: {
+                                code: obj.data.code //商品的code
+                            },
+                            done: function (res) {
+                                $('#pro_list_info_extends').html(res.data);
+                            }
+                        });
+                    }
+
+                }
+            })
+        }
+
+        var edit = function (obj) {
+            layer.open({
+                title: '编辑商品扩展',
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["1028px", "500px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="goods_detail"><div class="layui-form-item"><div id="vip_goods_edit_extends"></div></div><div class="layui-form-item" style="text-align:center"><img src="" alt="" id="goods_img"></div><div class="layui-form-item"><div class="layui-input-block"><button class="layui-btn" id="goods_edit_extends">立即提交</button> </div></div></form>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    })
+
+                    // 清空缓存
+                    admin.req({
+                        url: '/index.php/webGoodCacheClear/',
+                        done: function () { }
+                    })
+
+                    form.render(null, 'goods_edit_extends_demo');  // 表单渲染
+
+                    // 编辑扩展标签的展示
+                    admin.req({
+                        url: 'index.php/webGoodsEditExtends/',
+                        type: 'post',
+                        data: { id: obj.data.id },
+                        done: function (res) {
+                            var ext = res.data.extend;
+                            var json = res.data.label;
+                            // 将获得到的 内容拼接成html    放入 div
+                            var kzxx = $("#vip_goods_edit_extends")  // 获得存放html的 div 的 id
+                            var i = 0, kzxxinfo = "";       // 定义一个空字符串
+                            var text_arr = new Array(); // 文本型
+                            var date_arr = new Array(); // 日期型
+                            var extend_arr = new Array();   // 扩展型 
+                            kzxx.empty();
+                            for (var key in json) {     // 相当于 i=0;i<json.length;i++
+                                if ((i % 3) == 0) {     // 每三个一行
+                                    kzxxinfo += '<div class="layui-form-item">';          //  拼接html的头
+                                }
+                                if (json[key]['type'] == '文本型') {
+                                    kzxxinfo += '<label class="layui-form-label">' + json[key]['name'] + '</label><div class="layui-input-inline" style="width:20%;"><input name="' + json[key].name + '" id="' + json[key].name + '" autocomplete="off" class="layui-input" type="text"></div>';
+                                    text_arr.push({ "name": json[key]['name'] });
+                                } else if (json[key]['type'] == '扩展型') {
+                                    kzxxinfo += '<label class="layui-form-label">' + json[key]['name'] + '</label><div class="layui-input-inline" style="width:20%;"><div class="layui-btn layui-btn-primary" id="' + json[key].name + '" style="width: 190px;">请选择或添加 ' + json[key]['name'] + '</div></div>';
+                                    extend_arr.push({ "name": json[key]['name'], "pid": json[key].code });
+                                } else if (json[key]['type'] == '日期型') {
+                                    kzxxinfo += '<label class="layui-form-label">' + json[key]['name'] + '</label><div class="layui-input-inline" style="width:20%;"><input name="' + json[key].name + '" id="' + json[key].name + '" autocomplete="off" class="layui-input" readonly="" type="text"></div>';
+                                    date_arr.push({ "name": json[key]['name'] });
+                                }
+                                if ((i % 3) == 2) {
+                                    kzxxinfo += '</div>';             // 拼接html的尾
+                                }
+                                i++;
+                            }
+                            kzxx.append(kzxxinfo);
+
+                            // -------------------------------------------------------- 日期类型存入缓存
+                            var date_kz_cache = function (ename) {  // 接收标签的名字
+                                laydate.render({            //  -------------------------渲染日期   引入日期
+                                    elem: '#' + ename,
+                                    name: ename,
+                                    theme: '#393D49',
+                                    done: function (value, date) {      // 获取日期发送ajax  存入缓存
+                                        admin.req({
+                                            url: '/index.php/webGoodsEditExtendAddInfoCache/',
+                                            type: 'post',
+                                            data: {
+                                                val: value,    // 传值
+                                                key: ename,     // 携带name
+                                                type: 'string'    // 类型
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            for (var d = 0; d < date_arr.length; d++) {
+                                date_kz_cache(date_arr[d].name);    // 循环拿到标签的名字
+                            }
+
+                            // 文本型加入缓存
+                            for (var t = 0; t < text_arr.length; t++) {
+                                $('#' + text_arr[t].name).blur({ id: '#' + text_arr[t].name, name: text_arr[t].name }, function (dat) {
+                                    admin.req({
+                                        url: '/index.php/webGoodsEditExtendAddInfoCache/',
+                                        type: 'post',
+                                        data: {
+                                            key: dat.data.name,    //文本名字
+                                            val: $(dat.data.id).val(),  //文本内容
+                                            type: 'string'
+                                        }
+                                    });
+                                });
+                            }
+
+                            // 文本 日期类型赋初始值
+                            if (ext != '') {
+                                for (var key in json) {
+                                    if (json[key].type == '日期型' || json[key].type == '文本型')
+                                        $("#" + json[key].name).val(ext[json[key].name]);
+                                }
+                            }
+                            // 扩展类型的点击事件  弹出模态框 携带参数
+                            for (var e = 0; e < extend_arr.length; e++) {
+                                $('#' + extend_arr[e].name).click({ id: extend_arr[e].pid, name: extend_arr[e].name }, function (dat) {
+                                    admin.popup({
+                                        title: "请选择 [" + dat.data.name + "]"
+                                        , shade: 0.3
+                                        , shadeClose: false
+                                        , anim: 1
+                                        , area: ["580px", "550px"]
+                                        , skin: "layui-layer-admin layui-anim"
+                                        , content: '<div class="layui-form-item"><form class="layui-form layui-form-pane" lay-filter="zdinfo' + dat.data.id + '"><label class="layui-form-label">' + dat.data.name + '</label><div class="layui-input-inline"><input name="kzzdm" id="kzzdm' + dat.data.id + '" autocomplete="off" lay-verify="required" class="layui-input" type="text"></div><button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="zdinfo' + dat.data.id + '-submit">添加' + dat.data.name + '</button></form></div><div class="layui-form-item"><form class="layui-form layui-form-pane" lay-filter="erp-set-commodity-kzzdinfo"><ul id="zdinfobox' + dat.data.id + '"></ul><button class="layui-btn" style="display:none" lay-submit="" lay-filter="erp-set-commodity-kzzdinfo-submit" id="erp-set-commodity-kzzdinfo-submit"></button></form></div>'
+                                    });
+                                    // 监听表单  button    lay-filter="zdinfo' + dat.data.id + '-submit"
+                                    form.on("submit(zdinfo" + dat.data.id + "-submit)", function (data) {
+                                        admin.req({                                                                     //  添加标签实际内容
+                                            url: "/index.php/webGoodsEditExtendsInfo/",    // 获得表单提交的标签内容插入到数据库
+                                            type: 'post',
+                                            data: {
+                                                name: dat.data.name,
+                                                code: dat.data.id,
+                                                info: data.field["kzzdm"]
+                                            }, done: function (res) {
+                                                if (res.msg == 'yes') {
+                                                    extendInfoList();
+                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                } else if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                                    });
+
+                                    // 扩展标签的展示
+                                    var extendInfoList = function () {
+                                        admin.req({                         // 查询数据库
+                                            url: "/index.php/webGoodsEditExtendInfoList/",
+                                            type: 'post',
+                                            data: {
+                                                name: dat.data.name
+                                            },
+                                            // 开始追加
+                                            done: function (res) {
+                                                $("#kzzdm" + dat.data.id).val("");  // 清空输入框
+                                                $("#zdinfobox" + dat.data.id).empty();
+                                                //  checkbox 底层封装 扩展标签内容的展示
+                                                checkbox({
+                                                    elem: "#zdinfobox" + dat.data.id,
+                                                    nodes: res.data,
+                                                    click: function (node) {
+                                                        admin.req({                                       // 点击扩展类型的内容加入缓存
+                                                            url: '/index.php/webGoodsEditExtendAddInfoCache/',
+                                                            type: 'post',
+                                                            data: {
+                                                                type: 'array',
+                                                                key: dat.data.name,
+                                                                val: node.name
+                                                            }
+                                                        });
+                                                    },
+                                                    del: function (node) {        //  删除扩展类型的内容
+                                                        admin.req({
+                                                            url: "/index.php/webGoodsEditExtendDelInfo/",
+                                                            type: 'post',
+                                                            data: {
+                                                                id: node.id,
+                                                            }, done: function (res) {
+                                                                if (res.msg == 'yes') {
+                                                                    extendInfoList();
+                                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                                } else if (res.msg == 'no') {
+                                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                                }
+                                                            }
+                                                        });
+                                                        return true;
+                                                    }
+                                                });
+                                                form.render(null, "zdinfo" + dat.data.id);
+                                            }
+                                        })
+
+                                    }
+                                    extendInfoList();
+
+                                })
+                            }
+
+                        }
+                    })
+
+                    $('#goods_edit_extends').click(function () {
+                        admin.req({
+                            url: '/index.php/webGoodsEditSubmit/',
+                            type: 'post',
+                            data: { id: obj.data.id },
+                            done: function (res) {
+                                if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, time: 800 }, function () {
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+                }
+
+            })
+        }
+
+        var store_price = function (obj) {
+            layer.open({
+                title: '选择组织结构',
+                type: 1,
+                area: ["550px", "280px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<div class="layui-form layui-form-pane"><div class="layui-form-item"><label class="layui-form-label">组织机构</label><div class="layui-input-block"><table id="pro_goods_price_select_org" lay-filter="pro_goods_price_select_org"></table></div></div><div class="layui-form-item"><div class="layui-input-block"><div class="layui-btn" id="pro_goods_price_select_org_sub">提交</div></div></div></div>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    // 组织结构列表
+                    dtree.render({
+                        elem: "#pro_goods_price_select_org",
+                        url: "/index.php/webGoodOrg/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                        initLevel: 1,
+                        method: 'get',
+                        skin: "theme",
+                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                        // dot: false,
+                        checkbar: true,
+                        checkbarType: "only", // 默认就是all，其他的值为： no-all  p-casc   self  only
+                    });
+
+                    // 点击选择组织结构
+                    $('#pro_goods_price_select_org_sub').click(function () {
+                        var dtreeNodes = dtree.getCheckbarNodesParam('pro_goods_price_select_org');
+                        if (dtreeNodes.length < 1) {
+                            layer.msg('请选择组织结构', { icon: 2 });
+                            return false;
+                        }
+
+                        // 弹出模态框  列表展示其他门店价格信息
+                        layer.open({
+                            title: "查看其它门店价格",
+                            type: 1,
+                            shade: 0.3,
+                            shadeClose: false,
+                            anim: 1,
+                            area: ["894px", "500px"],
+                            skin: "layui-layer-admin layui-anim",
+                            content: '<table id="store_goods_price_search_demo" lay-filter="store_goods_price_search_demo"></table>',
+                            success: function (layero, index) {
+                                // 右上角叉号
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                // console.log(dtreeNodes[0].nodeId);return false;
+                                var store_price_list = function (where = '') {
+                                    table.render({
+                                        elem: '#store_goods_price_search_demo', //table 的 id
+                                        height: 315,
+                                        url: '/index.php/webGoodStoreList/', //  查询自己管理的所有门店
+                                        where: {
+                                            access_token: layui.data(layui.setter.tableName).access_token,
+                                            org: dtreeNodes[0].nodeId,  // 组织结构的code
+                                            where: where,
+                                            goods_code: obj.data.code
+                                        },    //搜索时的 where 条件
+                                        page: true,
+                                        text: {
+                                            none: '暂无数据'
+                                        },
+                                        cols: [[ //表头
+                                            { type: 'checkbox', fixed: 'left' },
+                                            { field: 'store_name', title: '门店名称', width: 160, sort: true, align: 'center' },
+                                            { field: 'gname', title: '商品名称', width: 160, sort: true, align: 'center' },
+                                            { field: 'bar_code', title: '商品条码', width: 160, sort: true, align: 'center' },
+                                            { field: 'frenum', title: '商品货号', width: 160, sort: true, align: 'center' },
+                                            { field: 'price', title: '门店价格', width: 159, sort: true, align: 'center' },
+
+                                        ]],
+                                        height: 390, //高度自适应
+                                        toolbar: '#pro-storePrice-list-sub-toobar',
+                                    });
+                                }
+                                store_price_list();
+                            }
+                        })
+                    })
+                }
+            })
+        }
+
+        // 依据分类搜索
+        var vip_classify_search = function () {
+            layer.open({
+                title: "分类查找",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["600px", "260px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<div class="layui-form layui-form-pane"><div class="layui-form-item"><label class="layui-form-label">分类</label><div class="layui-input-block"><table id="pro_extend_select_classify" lay-filter="pro_extend_select_classify"></table></div></div><div class="layui-form-item"><div class="layui-input-block"><div class="layui-btn" id="pro_extend_select_classify_sub">提交</div></div></div></div>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    // 分类列表
+                    dtree.render({
+                        elem: "#pro_extend_select_classify",
+                        url: "/index.php/webGoodVipGoogsVipClassify/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                        initLevel: 1,
+                        method: 'get',
+                        skin: "theme",
+                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                        // dot: false,
+                        checkbar: true,
+                        checkbarType: "only", // 默认就是all，其他的值为： no-all  p-casc   self  only
+                    });
+                    // 点击选择分类
+                    $('#pro_extend_select_classify_sub').click(function () {
+
+                        // 获得选择类的全部信息 数组
+                        var dtreeNodes = dtree.getCheckbarNodesParam('pro_extend_select_classify');
+                        // 进行判定
+                        if (dtreeNodes.length < 1) {
+                            layer.msg('请选择分类', { icon: 2 });
+                            return false;
+                        }
+                        // 提交选择的分类 调用商品列表  org: dtreeOrgs
+                        vipGoodsList(dtreeNodes[0].nodeId);
+                        layer.close(index);
+                        return false;
+                    })
+
+                }
+            })
+        }
+        // 批量编辑扩展信息
+        var vip_all_editExtends = function (obj) {
+            // console.log(table.checkStatus('vip_goods_List'));return  false;
+            str = '';
+            var num = table.checkStatus('vip_goods_List').data.length;
+            if (num == 0) {
+                layer.msg('请勾选要编辑的商品', { icon: 2, title: '警告' });
+                return false;
+            }
+            // 获得批量编辑的商品的id
+            for (var i = 0; i < num; i++) {
+                str += table.checkStatus('vip_goods_List').data[i].id + ',';
+            }
+
+            layer.open({
+                title: '批量编辑商品扩展信息',
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["1028px", "500px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="all_goods_edit_extends"><div class="layui-form-item"><div id="all_vip_goods_edit_extends"></div></div><div class="layui-form-item" style="text-align:center"><img src="" alt="" id="goods_img"></div><div class="layui-form-item"><div class="layui-input-block"><div class="layui-btn" id="all_goods_edit_extends_sub">立即提交</div></div></div></form>',
+                success: function (layero, index) {
+                    // 又上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    })
+                    form.render(null, 'all_goods_edit_extends');  // 表单渲染
+
+                    // 清空缓存
+                    admin.req({
+                        url: '/index.php/webGoodCacheClear/',
+                        done: function () { }
+                    })
+
+                    // 批量编辑扩展标签的展示
+                    admin.req({
+                        url: '/index.php/webGoodsEditExtends/',
+                        type: 'post',
+                        // data: { id: obj.data.id },
+                        done: function (res) {
+                            var json = res.data.label;
+                            // 将获得到的 内容拼接成html    放入 div
+                            var allkzxx = $("#all_vip_goods_edit_extends")  // 获得存放html的 div 的 id
+                            var i = 0, allkzxxinfo = "";       // 定义一个空字符串
+                            var text_arr_all = new Array(); // 文本型
+                            var date_arr_all = new Array(); // 日期型
+                            var extend_arr_all = new Array();   // 扩展型 
+                            allkzxx.empty();
+                            for (var key in json) {     // 相当于 i=0;i<json.length;i++
+                                if ((i % 3) == 0) {     // 每三个一行
+                                    allkzxxinfo += '<div class="layui-form-item">';          //  拼接html的头
+                                }
+                                if (json[key]['type'] == '文本型') {
+                                    allkzxxinfo += '<label class="layui-form-label">' + json[key]['name'] + '</label><div class="layui-input-inline" style="width:20%;"><input name="' + json[key].name + '" id="' + json[key].name + '" autocomplete="off" class="layui-input" type="text"></div>';
+                                    text_arr_all.push({ "name": json[key]['name'] });
+                                } else if (json[key]['type'] == '扩展型') {
+                                    allkzxxinfo += '<label class="layui-form-label">' + json[key]['name'] + '</label><div class="layui-input-inline" style="width:20%;"><div class="layui-btn layui-btn-primary" id="' + json[key].name + '" style="width: 190px;">请选择或添加 ' + json[key]['name'] + '</div></div>';
+                                    extend_arr_all.push({ "name": json[key]['name'], "pid": json[key].code });
+                                } else if (json[key]['type'] == '日期型') {
+                                    allkzxxinfo += '<label class="layui-form-label">' + json[key]['name'] + '</label><div class="layui-input-inline" style="width:20%;"><input name="' + json[key].name + '" id="' + json[key].name + '" autocomplete="off" class="layui-input" readonly="" type="text"></div>';
+                                    date_arr_all.push({ "name": json[key]['name'] });
+                                }
+                                if ((i % 3) == 2) {
+                                    allkzxxinfo += '</div>';             // 拼接html的尾
+                                }
+                                i++;
+                            }
+                            allkzxx.append(allkzxxinfo);
+
+                            // 批量编辑-------------------------------------------------------- 日期类型存入缓存
+                            var all_date_kz_cache = function (ename) {  // 接收标签的名字
+                                laydate.render({            //  -------------------------渲染日期   引入日期
+                                    elem: '#' + ename,
+                                    name: ename,
+                                    theme: '#393D49',
+                                    done: function (value, date) {      // 获取日期发送ajax  存入缓存
+                                        admin.req({
+                                            url: '/index.php/webGoodsEditExtendAddInfoCache/',
+                                            type: 'post',
+                                            data: {
+                                                val: value,    // 传值
+                                                key: ename,     // 携带name
+                                                type: 'string'    // 类型
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            for (var d = 0; d < date_arr_all.length; d++) {
+                                all_date_kz_cache(date_arr_all[d].name);    // 循环拿到标签的名字
+                            }
+
+                            // 批量编辑的 文本型加入缓存
+                            for (var t = 0; t < text_arr_all.length; t++) {
+                                $('#' + text_arr_all[t].name).blur({ id: '#' + text_arr_all[t].name, name: text_arr_all[t].name }, function (dat) {
+                                    admin.req({
+                                        url: '/index.php/webGoodsEditExtendAddInfoCache/',
+                                        type: 'post',
+                                        data: {
+                                            key: dat.data.name,    //文本名字
+                                            val: $(dat.data.id).val(),  //文本内容
+                                            type: 'string'
+                                        }
+                                    });
+                                });
+                            }
+
+                            // 批量编辑的 扩展类型的点击事件  弹出模态框 携带参数
+                            for (var e = 0; e < extend_arr_all.length; e++) {
+                                $('#' + extend_arr_all[e].name).click({ id: extend_arr_all[e].pid, name: extend_arr_all[e].name }, function (alldat) {
+                                    admin.popup({
+                                        title: "请选择 [" + alldat.data.name + "]"
+                                        , shade: 0.3
+                                        , shadeClose: false
+                                        , anim: 1
+                                        , area: ["580px", "550px"]
+                                        , skin: "layui-layer-admin layui-anim"
+                                        , content: '<div class="layui-form-item"><form class="layui-form layui-form-pane" lay-filter="allzdinfo' + alldat.data.id + '"><label class="layui-form-label">' + alldat.data.name + '</label><div class="layui-input-inline"><input name="kzzdm" id="kzzdm' + alldat.data.id + '" autocomplete="off" lay-verify="required" class="layui-input" type="text"></div><button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="zdinfo' + alldat.data.id + '-submit">添加' + alldat.data.name + '</button></form></div><div class="layui-form-item"><form class="layui-form layui-form-pane" lay-filter="pro-list-alledit-extends-info-demo"><ul id="zdinfobox' + alldat.data.id + '"></ul><button class="layui-btn" style="display:none" id="pro-list-alledit-extends-info-demo-submit"></button></form></div>'
+                                    });
+                                    // 监听表单  button    zdinfo' + alldat.data.id + '-submit
+                                    form.on("submit(zdinfo" + alldat.data.id + "-submit)", function (data) {
+                                        // console.log(alldat);return false;
+                                        admin.req({                                                                     //  添加标签实际内容
+                                            url: "/index.php/webGoodsEditExtendsInfo/",    // 获得表单提交的标签内容插入到数据库
+                                            type: 'post',
+                                            data: {
+                                                name: alldat.data.name,
+                                                code: alldat.data.id,
+                                                info: data.field["kzzdm"]
+                                            }, done: function (res) {
+                                                if (res.msg == 'yes') {
+                                                    allextendInfoList();
+                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                } else if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                                    });
+
+                                    // 扩展标签的展示
+                                    var allextendInfoList = function () {
+                                        admin.req({                         // 查询数据库
+                                            url: "/index.php/webGoodsEditExtendInfoList/",
+                                            type: 'post',
+                                            data: {
+                                                name: alldat.data.name
+                                            },
+                                            // 开始追加
+                                            done: function (res) {
+                                                $("#kzzdm" + alldat.data.id).val("");  // 清空输入框
+                                                $("#zdinfobox" + alldat.data.id).empty();
+                                                //  checkbox 底层封装 扩展标签内容的展示
+                                                checkbox({
+                                                    elem: "#zdinfobox" + alldat.data.id,
+                                                    nodes: res.data,
+                                                    click: function (node) {
+                                                        admin.req({                                       // 点击扩展类型的内容加入缓存
+                                                            url: '/index.php/webGoodsEditExtendAddInfoCache/',
+                                                            type: 'post',
+                                                            data: {
+                                                                type: 'array',
+                                                                key: alldat.data.name,
+                                                                val: node.name
+                                                            }
+                                                        });
+                                                    },
+                                                    del: function (node) {        //  删除扩展类型的内容
+                                                        admin.req({
+                                                            url: "/index.php/webGoodsEditExtendDelInfo/",
+                                                            type: 'post',
+                                                            data: {
+                                                                id: node.id,
+                                                            }, done: function (res) {
+                                                                if (res.msg == 'yes') {
+                                                                    allextendInfoList();
+                                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                                } else if (res.msg == 'no') {
+                                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                                }
+                                                            }
+                                                        });
+                                                        return true;
+                                                    }
+                                                });
+                                                form.render(null, "allzdinfo" + alldat.data.id);
+                                            }
+                                        })
+
+                                    }
+                                    allextendInfoList();
+                                })
+                            }
+                        }
+                    })
+                    // 提交批量编辑
+                    $('#all_goods_edit_extends_sub').click(function () {
+                        admin.req({
+                            url: '/index.php/webGoodsEditSubmit/',
+                            type: 'post',
+                            data: { id: str },      // 获得全部勾选的商品的id
+                            done: function (res) {
+                                if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, time: 800 }, function () {
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+
+                }
+
+            })
+        }
+        // -------------------------------------------------------------------------------------高级筛选
+        var vip_high_search = function () {
+            layer.open({
+                title: "添加高级筛选信息",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["910px", "520px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<div class="layui-form-item"><form class="layui-form" action="" lay-filter="vip-pro-goodslist-screen-form"><div class="layui-input-inline"><select name="vip-goodsList-screen-tit" id="vip-pro-goods-screen-search" lay-filter="" lay-search=""></select></div><div class="layui-input-inline" style="width:100px"><select name="goodsList-screen-symbol" id="vip-goodsList-screen-symbol" lay-filter="" lay-search=""><option value="=">等于</option><option value="<>">不等于</option><option value=">">大于</option><option value=">=">大于等于</option><option value="<">小于</option><option value="<=">小于等于</option><option value="LIKE">包含</option></select></div><div class="layui-input-inline"><input name="vip-goodsList-screen-value" id="vip-goodsList-screen-value" autocomplete="off" class="layui-input" type="tel"></div></form><div class="layui-btn-group"><div class="layui-btn layui-btn-normal" id="vip-pro-goodsList-addcondition">添加条件</div><div class="layui-btn layui-btn-normal" id="vip-pro-goodsList-screen-sx">筛选</div><div class="layui-btn layui-btn-normal" id="vip-pro-goodsList-bc">保存并筛选</div><div class="layui-btn layui-btn-normal" id="vip-pro-goodsList-bcq">筛选器</div></div></div><!-- 表格 --><div class="layui-form-item"><table class="layui-hide" id="vip-pro-goodslist-screen-table" lay-filter="vip-pro-goodslist-screen-table"></table></div>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+
+                    // 清除筛选器缓存
+                    admin.req({
+                        url: '/index.php/webGoodScreenClearHighScreenCache/',
+                        done: function () { }
+                    });
+
+                    // -------------下拉选择搜索条件
+                    admin.req({
+                        url: '/index.php/webGoodScreenSelectField/',
+                        done: function (res) {
+                            var json = res.data;
+                            var listD = $("#vip-pro-goods-screen-search");  // select的id
+                            listD.empty();
+                            listD.append("<option value=''>请输入 / 选择</option>");    // 追加option
+                            for (var i = 0, l = json.length; i < l; i++) {
+                                listD.append("<option value='" + json[i].value + "'>" + json[i].name + "</option>");
+                            }
+                            form.render(null, 'vip-pro-goodslist-screen-form'); // 渲染表单
+                        }
+                    });
+
+                    // --------高级筛选信息列表
+                    var vipGoodsScreentable = function () {
+                        table.render({
+                            elem: "#vip-pro-goodslist-screen-table",
+                            url: '/index.php/webGoodScreenVipHighScreenList/',
+                            page: true,
+                            where: { access_token: layui.data(layui.setter.tableName).access_token },
+                            cols: [[
+                                { field: 'tit', title: '标题' },
+                                { field: 'sym', title: '条件' },
+                                { field: 'val', title: '值', edit: 'text' },
+                                { width: 120, title: "操作", align: "center", toolbar: "#vip_pro-goods-screenDemo" }
+                            ]],
+                            height: '350'
+                        });
+                    }
+                    vipGoodsScreentable();
+
+                    // 点击添加筛选条件
+                    $('#vip-pro-goodsList-addcondition').click(function () {
+                        admin.req({
+                            url: '/index.php/webGoodScreenHighScreenAdd/',
+                            type: 'post',
+                            data: {
+                                tit: $('#vip-pro-goods-screen-search').val(), // 获得选择的条件
+                                sym: $('#vip-goodsList-screen-symbol').val(),   // 获得选择的条件方式   (> < =)
+                                val: $('#vip-goodsList-screen-value').val()     // 获得输入的条件
+                            },
+                            done: function (res) {
+                                vipGoodsScreentable(); // 加载显示列表函数
+                            }
+                        })
+                        return false;
+                    });
+
+                    // 删除添加的筛选条件
+                    table.on('tool(vip-pro-goodslist-screen-table)', function (obj) {
+                        var data = obj.data; //获得当前行数据
+                        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                        var tr = obj.tr; //获得当前行 tr 的DOM对象
+                        if (layEvent === 'vip-pro-goods-tiaojian-del') { //删除
+                            admin.req({
+                                url: '/index.php/webGoodScreenTiaojianDel/',
+                                type: 'post',
+                                data: { id: obj.data.id },
+                                done: function (res) {
+                                    vipGoodsScreentable();
+                                }
+                            })
+                            return false;
+                        }
+                    });
+
+                    //   点击筛选 先检查筛选条件 不为空则加载列表进行筛选
+                    $('#vip-pro-goodsList-screen-sx').click(function () {
+                        admin.req({
+                            url: '/index.php/webGoodScreenCheckScreenIsEmpty/',
+                            done: function (res) {
+                                if (res.data == false) {
+                                    layer.msg('请添加筛选条件', { icon: 2 });
+                                    return false;
+                                } else {
+                                    layer.closeAll();
+                                    vipGoodsList('', true); // 因为没有条件进行传递(在缓存里) 所以传递一个true
+                                }
+                            }
+                        });
+                        return false;
+                    });
+
+                    // 点击筛选并保存
+                    $('#vip-pro-goodsList-bc').click(function () {
+                        admin.req({
+                            url: '/index.php/webGoodScreenCheckScreenIsEmpty/',
+                            done: function (res) {
+                                if (res.data == false) {
+                                    layer.msg('请添加筛选条件', { icon: 2 });
+                                    return false;
+                                } else {
+                                    layer.prompt({ title: '请输入筛选标题', formType: 0 }, function (text, index) {
+                                        admin.req({
+                                            url: '/index.php/webGoodScreenSizerAdd/',
+                                            type: "post",
+                                            data: {
+                                                text: text
+                                            },
+                                            done: function (res) {
+                                                if (res.msg == 'yes') {
+                                                    layer.closeAll();
+                                                    vipGoodsList('', true);
+                                                } else {
+                                                    layer.msg('添加失败', { icon: 2 });
+                                                    return false;
+                                                }
+                                            }
+                                        });
+                                    });
+
+                                }
+                            }
+                        });
+                        return false;
+                    });
+
+                    // 筛选器
+                    $('#vip-pro-goodsList-bcq').click(function () {
+                        layer.open({
+                            title: "筛选器",
+                            type: 1,
+                            shade: 0.3,
+                            shadeClose: true,
+                            anim: 1,
+                            offset: 'auto',
+                            area: ["800px", "500px"],
+                            skin: "layui-layer-admin layui-anim",
+                            content: '<table id="vip-pro--goods-sxqlist" lay-filter="vip-pro--goods-sxqlist"></table>',
+                            success: function (layero, sindex) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(sindex);
+                                });
+
+                                var vipSxqTable = function () { // ------------------------------------------------筛选器列表
+                                    table.render({
+                                        elem: "#vip-pro--goods-sxqlist",
+                                        url: '/index.php/webGoodScreenSxqList/',
+                                        page: true,
+                                        where: { access_token: layui.data(layui.setter.tableName).access_token },
+                                        cols: [[
+                                            { field: 'name', title: '筛选标题' },
+                                            { fixed: 'right', width: 120, title: '操作', align: 'center', toolbar: '#vip-pro-goods-sxq-bar' },
+                                        ]],
+                                        height: '350'
+                                    });
+                                }
+                                vipSxqTable();
+                                // 筛选器的操作
+                                table.on('tool(vip-pro--goods-sxqlist)', function (obj) {
+                                    var data = obj.data;
+                                    var layEvent = obj.event;
+                                    var tr = obj.tr;
+                                    // 筛选器列表的删除
+                                    if (layEvent === 'vip-pro-goods-sxq-del') {
+                                        layer.confirm('确认删除该条数据？', function (index) {
+                                            admin.req({
+                                                url: '/index.php/webGoodScreenSxqDel/',
+                                                type: 'post',
+                                                data: {
+                                                    id: data.id
+                                                },
+                                                done: function (res) {
+                                                    if (res.msg == 'yes') {
+                                                        vipSxqTable();
+                                                        layer.close(index);
+                                                        layer.msg('删除成功', { icon: 1 });
+                                                    } else if (res.msg == 'no') {
+                                                        layer.msg('删除失败', { icon: 2 });
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    } else if (layEvent === 'vip-pro-goods-sxq-edit') {   // 筛选器的编辑
+                                        admin.req({
+                                            url: '/index.php/webGoodScreenSxqEdit/',
+                                            type: "post",
+                                            data: {
+                                                id: obj.data.id
+                                            }
+                                        });
+                                        vipGoodsScreentable();
+                                        layer.close(sindex);
+                                    }
+                                })
+
+                                table.on('rowDouble(vip-pro--goods-sxqlist)', function (obj) { // -------------------监听table双击获取信息
+                                    vipGoodsList('', true, obj.data.id);
+                                    layer.closeAll();
+                                });
+                                
+                            }
+                        })
+                    });
+
+                }
+            })
+        }
+
+    })
+</script>

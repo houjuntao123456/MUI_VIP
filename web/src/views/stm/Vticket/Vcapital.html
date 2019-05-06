@@ -1,0 +1,189 @@
+<title>V票资金来源</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+
+                    <!-- 列表遍历开始 -->
+                    <table id="vip_vticket_vcapital_demo" lay-filter="vip_vticket_vcapital_demo"></table>
+                    <!-- 列表遍历结束 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--列表头工具栏目-->
+<script type="text/html" id="pro-stm-Vcapital-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+        <button class="layui-btn layui-btn-sm" lay-event="search">搜索</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['admin', 'table', 'checkbox'], function () {
+        var $ = layui.jquery,
+            table = layui.table,
+            form = layui.form,
+            checkbox = layui.checkbox,
+            admin = layui.admin
+
+        table.on('toolbar(vip_vticket_vcapital_demo)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    vcapital_add();
+                    break;
+                case 'search':
+                    vcapital_search();
+                    break;
+            }
+        })
+        // 查找
+        var vcapital_search = function () {
+            layer.open({
+                title: "查找",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["537px", "180px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="vcapital-search"><div class="layui-form-item"><label class="layui-form-label">名字搜索</label><div class="layui-input-inline" style="width:75%"><input name="search" id="stock_search_value" lay-verify="required|title" placeholder="请输入乐捐人名字关键字搜索" autocomplete="off" class="layui-input" type="text" style="width:340px"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="pro-stm-vcapital-search-submit">查找</button></div></div></form>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    // 执行搜索
+                    form.on("submit(pro-stm-vcapital-search-submit)", function (data) {
+                        vipVcapitalTable(data.field.search);
+                        layer.close(index);
+                        return false;
+
+                    })
+                }
+            })
+        }
+        //表格数据遍历  表格重载
+        var vipVcapitalTable = function (where = '') {
+            table.render({
+                elem: '#vip_vticket_vcapital_demo', //table 的 id
+                url: '/index.php/webVcapitalIndex/', //数据接口路由
+                where: { search: where, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                page: true, //开启分页
+                loading: true, //开启加载条
+                cols: [[ //表头
+                    { field: 'name', title: '乐捐人', width: 400, align: 'center', sort: true },
+                    { field: 'capital_money', title: '乐捐金额（元）', width: 435, align: 'center', sort: true },
+                    { field: 'capital_reason', title: '乐捐理由', width: 400, align: 'center', sort: true },
+                    { field: 'capital_time', title: '乐捐时间', width: 400, align: 'center', sort: true },
+                ]],
+
+                height: 'full-150', //高度自适应
+                toolbar: '#pro-stm-Vcapital-toor',
+                limit: 20,
+                limits: [20, 50, 100, 200, 500]
+            })
+        }
+        vipVcapitalTable();
+
+        // 添加
+        var vcapital_add = function () {
+            layer.open({
+                title: "添加信息",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                offset: 'auto',
+                area: ["500px", "350px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="crm-Vticket-Vcapital"><div class="layui-form-item"><label class="layui-form-label">V票规则：</label><div class="layui-input-block"><select name="vRule_name" id="vRule_sellect_id" lay-filter="vRule_sellect_id" lay-verify="required"></select></div></div><div class="layui-form-item"><label class="layui-form-label">乐捐人：</label><div class="layui-input-block"><select name="capital_name" id="capital_name" lay-filter="aihao lay-search" lay-verify="required"></select></div></div><div class="layui-form-item"><label class="layui-form-label">乐捐金额：</label><div class="layui-input-block"><input name="capital_money" placeholder="请输入金额" autocomplete="off" class="layui-input" lay-verify="required" type="text"></div></div><div class="layui-form-item"><label class="layui-form-label">乐捐理由：</label><div class="layui-input-block"><input name="capital_reason" placeholder="请输入理由" autocomplete="off" class="layui-input" type="text"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="add_capital">添加</button></div></div></form>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    // 循环得到规则
+                    admin.req({
+                        url: "/index.php/webVmanageIndex/",
+                        done: function (res) {
+                            var jsona = res.data;
+                            var Rule = $('#vRule_sellect_id');
+                            Rule.empty();
+                            Rule.append("<option value=''>请输入 / 选择</option>");
+                            for (var i = 0, l = jsona.length; i < l; i++) {
+                                Rule.append("<option value='" + jsona[i].code + "'>" + jsona[i].name + "</option>");
+                            }
+                            form.render(null, "crm-Vticket-Vcapital");
+                        }
+                    });
+
+                    //  监听规则选择某个规则里面的员工
+                    form.on("select(vRule_sellect_id)", function (data) {
+                        //  循环得到员工下拉表信息
+                        admin.req({
+                            url: "/index.php/webVcapitalStaff/",
+                            type: 'post',
+                            data: {code: data.value}, // 规则的code
+                            done: function (res) {
+                                var jsona = res.data;
+                                var listDj = $('#capital_name');
+                                listDj.empty();
+                                listDj.append("<option value=''>请输入 / 选择</option>");
+
+                                for (var i = 0, l = jsona.length; i < l; i++) {
+                                    listDj.append("<option value='" + jsona[i].code + "'>" + jsona[i].name + "</option>");
+                                }
+                                form.render(null, "crm-Vticket-Vcapital");
+                            }
+                        });
+                    })
+
+                    // 执行添加
+                    form.on("submit(add_capital)", function (data) {
+                        var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                        var msg = '金额格式错误';
+                        if (data.field.capital_money != '') {
+                            if (!reg.test(data.field.capital_money)) {
+                                layer.msg(msg, { icon: 2 });
+                                return false;
+                            }
+                        }
+                        admin.req({
+                            url: "/index.php/webVcapitalAddcapital/",
+                            type: "post",
+                            data: {// 给控制器传递数据
+                                vRule_name: data.field.vRule_name, // 规则code            
+                                capital_name: data.field.capital_name, //乐捐人
+                                capital_money: $.trim(data.field.capital_money), //乐捐金额
+                                capital_reason: $.trim(data.field.capital_reason), //乐捐理由
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    vipVcapitalTable();
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            })
+        }
+
+    })
+</script>

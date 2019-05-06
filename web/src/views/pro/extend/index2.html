@@ -1,0 +1,171 @@
+<title>商品标签</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-form-item">
+                        <form class="layui-form layui-form-pane" lay-filter="pro-extend-goods-lable">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">商品标签名</label>
+                                <div class="layui-input-inline">
+                                    <input name="name" id="pro-extend-goods-lable-name" autocomplete="off" class="layui-input"
+                                        type="text">
+                                </div>
+                                <label class="layui-form-label">标签类型</label>
+                                <div class="layui-input-inline">
+                                    <select name="type" id="pro-goods-goodslabel-tag-type" lay-verify="required">
+                                        <option value="文本型">文本型</option>
+                                        <option value="日期型">日期型</option>
+                                        <option value="扩展型">扩展型</option>
+                                    </select>
+                                </div>
+                                <button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="pro-extend-goods-lable-submit">添加字段</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <table id="pro-goods-extend-table-demo" lay-filter="pro-goods-extend-table-demo"></table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    layui.use(["index", "admin", "form", "table", "checkbox", 'dtree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , dtree = layui.dtree
+            , checkbox = layui.checkbox;
+
+
+
+        //表格数据遍历  表格重载
+        var extendList = function () {
+            table.render({
+                elem: '#pro-goods-extend-table-demo', //table 的 id
+                url: '/index.php/webGoodsExtendsIndex/', //数据接口路由
+                where: { access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                page: true, //开启分页
+                loading: true, //开启加载条
+                cols: [[ //表头
+                    { field: 'name', title: '标签名', width: 194, align: 'center', sort: true },
+                    { field: 'type', title: '标签类型', width: 120, align: 'center', sort: true },
+                    { title: '状态', width: 100, align: 'center', toolbar: '#goods_extends_status_bar', },
+                    { field: 'org_name', title: '组织机构', width: 300, align: 'center', sort: true, },
+                ]],
+                width: 720,
+                height: 'full-200', // 高度自适应
+                toolbar: '#pro-goods-extends--toor', // 查询按钮
+                limit: 20,
+                limits: [20, 50, 100, 200, 500]
+            });
+        }
+        extendList(); // 封装成函数
+
+        // 监听修改状态事件
+        form.on("switch(pro_extends_status_table)", function (data) {
+            admin.req({
+                url: "/index.php/webGoodsStatus/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.closeAll();
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1 });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2 });
+                    }
+                }
+            });
+        });
+
+
+        form.render(null, "pro-extend-goods-lable");   //   渲染表单 
+
+        form.on("submit(pro-extend-goods-lable-submit)", function (data) { //   添加商品扩展信息
+            if (data.field.name == '' || data.field.type == '') {
+                layer.msg('请输入商品标签名', { icon: 2 });
+                return false;
+            }
+
+            layer.open({
+                title: '选择组织结构',
+                type: 1,
+                area: ["800px", "480px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<div class="layui-form layui-form-pane"><div class="layui-form-item"><label class="layui-form-label">组织机构</label><div class="layui-input-block"><table id="pro_extend_select_org" lay-filter="pro_extend_select_org"></table></div></div><div class="layui-form-item"><div class="layui-input-block"><div class="layui-btn" id="pro_extend_select_org_sub">提交</div></div></div></div>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    // 组织结构列表
+                    dtree.render({
+                        elem: "#pro_extend_select_org",
+                        url: "/index.php/webGoodsGoodsOrg/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                        initLevel: 1,
+                        method: 'get',
+                        skin: "theme",
+                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                        // dot: false,
+                        checkbar: true,
+                        checkbarType: "p-casc", // 默认就是all，其他的值为： no-all  p-casc   self  only
+                    });
+
+                    // 点击选择组织结构
+                    $('#pro_extend_select_org_sub').click(function () {
+                        // console.log(dtree.getCheckbarNodesParam('pro_extend_select_org'));return false;
+
+                        var dtreeNodes = dtree.getCheckbarNodesParam('pro_extend_select_org');
+                        var dtreeLength = dtreeNodes.length;
+                        if (dtreeLength < 1) {
+                            layer.msg('请选择组织结构', { icon: 2 });
+                            return false;
+                        }
+                        var dtreeOrgs = '';
+                        for (var i = 0; i < dtreeLength; i++) {
+                            dtreeOrgs += dtreeNodes[i].nodeId + ',';
+                        }
+                        // 传递所有选择的信息
+                        admin.req({
+                            url: '/index.php/webGoodsExtendAdd/',
+                            type: 'post',
+                            data: {
+                                name: data.field.name,  // 标签名
+                                type: data.field.type,   // 标签类型
+                                org: dtreeOrgs
+                            },    // 选择的组织机构
+                            done: function (res) {
+                                if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1 });
+                                    layer.closeAll();
+                                    extendList();
+                                } else {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+                }
+
+            })
+
+            return false;
+        });
+
+    });
+</script>
+
+<!-- 状态 -->
+<script type="text/html" id="goods_extends_status_bar">
+    <input type="checkbox" {{# if (d.status == 1) { }} checked="" {{# } }} name="{{# if (d.status == 1) { }}open{{# } else { }}close{{# } }}" lay-skin="switch" lay-filter="pro_extends_status_table" lay-text="ON|OFF" value="{{d.id}}"><div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch"><em>{{# if (d.status == 1) { }}ON{{# } else { }}OFF{{# } }}</em><i></i></div>
+</script>

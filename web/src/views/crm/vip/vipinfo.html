@@ -1,0 +1,2617 @@
+<title>
+    专属档案</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 宫格 */
+    .site-doc-icon {
+        margin-bottom: 50px;
+        font-size: 0;
+    }
+
+    .site-doc-icon li {
+        display: inline-block;
+        vertical-align: middle;
+        width: 80px;
+        line-height: 23px;
+        padding: 10px 0;
+        margin-right: -1px;
+        margin-bottom: -1px;
+        border: 1px solid #e2e2e2;
+        font-size: 14px;
+        text-align: center;
+        color: #666;
+        transition: all .3s;
+        -webkit-transition: all .3s;
+    }
+
+    .site-doc-icon li .layui-icon {
+        display: inline-block;
+        font-size: 36px;
+    }
+
+    .site-doc-icon li .fontclass {
+        display: none;
+    }
+
+    .site-doc-icon li .name {
+        color: #c2c2c2;
+    }
+
+    .site-doc-icon li:hover {
+        background-color: #f2f2f2;
+        color: #000;
+    }
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <ul class="site-doc-icon" style="margin-bottom: 20px;">
+                <li id="commodity_sale">
+                    <i class="layui-icon">&#xe65e;</i>
+                    <div class="name">商品销售</div>
+                </li>
+                <li id="compliment_away">
+                    <i class="layui-icon">&#xe600;</i>
+                    <div class="name">赠送积分</div>
+                </li>
+                <li id="deduct">
+                    <i class="layui-icon">&#xe658;</i>
+                    <div class="name">积分扣除</div>
+                </li>
+                <li id="recharge">
+                    <i class="layui-icon">&#xe60c;</i>
+                    <div class="name">会员充值</div>
+                </li>
+                <li id="withholding_fee">
+                    <i class="layui-icon">&#xe636;</i>
+                    <div class="name">储值扣费</div>
+                </li>
+                <li id="return_plan_list">
+                    <i class="layui-icon">&#xe705;</i>
+                    <div class="name">返单计划</div>
+                </li>
+                <li id="hundred_interaction">
+                    <i class="layui-icon">&#xe62e;</i>
+                    <div class="name">100天跟进</div>
+                </li>
+                <li id="hundred_interaction_list">
+                    <i class="layui-icon">&#xe643;</i>
+                    <div class="name">365跟进</div>
+                </li>
+                <li id="vipinfo_field">
+                    <i class="layui-icon">&#xe857;</i>
+                    <div class="name">专场跟进</div>
+                </li>
+                <li id="exchange_gift">
+                    <i class="layui-icon">&#xe66c;</i>
+                    <div class="name">礼品兑换</div>
+                </li>
+                <li id="service_members_list">
+                    <i class="layui-icon">&#xe770;</i>
+                    <div class="name">会员服务</div>
+                </li>
+            </ul>
+            <div class="layui-btn-group">
+                <div class="layui-btn layui-btn-warm layui-btn-lg" id="crm_vip_vipinfo_read_card">读卡</div>
+            </div>
+            <div class="layui-btn-group">
+                <div class="layui-btn" id="crm-vip-vipinfo-selling_water">销售流水</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-integral_flow">积分流水</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-stored_value_water">储值流水</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-stored_cut_meat">割肉流水</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-rfm">RFM</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-return_plan">返单计划</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-hundred_interaction">100天跟进</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-thdays_interaction">365跟进</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-field_interaction">专场跟进</div>
+                <div class="layui-btn" id="crm-vip-vipinfo-buy_goods">购买商品</div>
+            </div>
+            <hr />
+            <div class="layui-collapse" lay-filter="crm-vip-collapse">
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">会员信息</h2>
+                    <div class="layui-colla-content layui-show">
+                        <form class="layui-form" lay-filter="crm-vip-vipinfo_info_form">
+                            <div class="layui-form-item" style="margin-left: 30%;">
+                                <img id="vipinfo_img" class="layui-circle" style="width: 256px;">
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">会员卡号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="card_number" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">会员姓名</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="name" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">民族</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="nation" disabled autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">会员性别</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="sex" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">身份证号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="identity" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">会员生日</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="birthday" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <div class="layui-form-mid" name="calendar" id="vipinfo-card-calendar"></div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">会员等级</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="mg" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">入会方式</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="initiation" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">介绍人</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="introducer" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">手机号码</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="phone" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">固定电话</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="telephone" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">提成人</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="adult" disabled autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">形象顾问</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="consultant" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">支付方式</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="payment_method" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+
+                                <label class="layui-form-label">所属门店</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="store" disabled autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">登记店面</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="register_storere" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">总储值</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="total_value" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+
+                                <label class="layui-form-label">剩余储值</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="residual_value" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">已用储值</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="stored_value" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">总积分</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="total_integral" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+
+                                <label class="layui-form-label">剩余总积分</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="residual_integral" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">已用积分</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="already_used_integral" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">剩余抵现积分</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="offset_integral" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                                <label class="layui-form-label">剩余礼品积分</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="gift_integral" disabled autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">微信</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="weixin" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">QQ</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="qq" disabled autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label">所属地区</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="area" disabled autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">详细地址</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="address" disabled autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">备注信息</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="remarks" disabled autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">会员扩展</h2>
+                    <div class="layui-colla-content">
+                        <div id="vipinfo_extend_kz"></div>
+                    </div>
+                </div>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">家属信息</h2>
+                    <div class="layui-colla-content">
+                        <table id="vipinfo_family_members" lay-filter="vipinfo-family_members-table"></table>
+                    </div>
+                </div>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">服务记录</h2>
+                    <div class="layui-colla-content">
+                        <table id="vipinfo_service_record" lay-filter="vipinfo-service_record-table"></table>
+                    </div>
+                </div>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">互动记录</h2>
+                    <div class="layui-colla-content">
+                        <table id="vipinfo_interaction_toatl" lay-filter="vipinfo-interaction-total-table"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="vipinfo_Demo_fdplan">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="vipinfo_del">删除</a>
+</script>
+
+<script type="text/html" id="vipinfo_Demo_perator">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="vipinfo_detail">查看</a>
+</script>
+
+<script type="text/html" id="vipinfo_family_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加家属信息</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add_days">添加纪念日</button>
+    </div>
+</script>
+
+<script type="text/html" id="vipinfo_showImg">
+    <div><img src="{{d.photo}}"></div>
+</script>
+
+<script>
+    layui.use(['admin', 'element', 'table', 'form', 'laydate', 'checkbox'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , checkbox = layui.checkbox
+            , laydate = layui.laydate
+            , router = layui.router();
+        //渲染面板
+        element.render(null, "crm-vip-collapse");
+        //定义一个方法传输卡号
+        var Readcardfun = function (card_number) {
+            admin.req({
+                url: "/index.php/webVipinfoCardSel/",
+                type: "post",
+                data: {
+                    number: card_number
+                },
+                done: function (res) {
+                    if (res.data != "error") {
+                        layer.msg(res.msg, { icon: 1, title: '提示', time: 200 }, function () {
+                            layer.closeAll();
+                        });
+                        //渲染表单
+                        form.render(null, 'crm-vip-vipinfo_info_form');
+
+                        //会员信息赋值
+                        form.val('crm-vip-vipinfo_info_form', {
+                            card_number: res.data.code,//会员卡号
+                            name: res.data.username,//会员姓名
+                            nation: res.data.nation,//民族
+                            sex: res.data.sex,//会员性别
+                            identity: res.data.identity,//身份证号
+                            birthday: res.data.birthday_g,//会员生日
+                            mg: res.data.vlname,//会员等级
+                            initiation: res.data.initiation,//入会方式
+                            introducer: res.data.vvname,//介绍人
+                            phone: res.data.phone,//手机号码
+                            telephone: res.data.telephone,//固定电话
+                            adult: res.data.vtyname,//提成人
+                            consultant: res.data.vxyname,//形象顾问
+                            payment_method: res.data.payment_method,//支付方式
+                            store: res.data.vsmname,//所属门店
+                            register_storere: res.data.vsrname,//登记门店
+                            total_value: res.data.total_value_g,//总储值
+                            residual_value: res.data.residual_value_g,//剩余储值
+                            stored_value: res.data.stored_value_g,//已用储值
+                            total_integral: res.data.total_integral,//总积分
+                            residual_integral: res.data.residual_integral,//剩余总积分
+                            already_used_integral: res.data.already_used_integral,//已用积分
+                            offset_integral: res.data.offset_integral,//抵现积分
+                            gift_integral: res.data.gift_integral,//礼品积分
+                            qq: res.data.qq,//QQ
+                            weixin: res.data.weixin,//微信
+                            area: res.data.area,//所属地区
+                            address: res.data.address,//详细地址
+                            remarks: res.data.remarks//备注
+                        });
+
+                        //图片赋值
+                        if (res.data.img !== "") {
+                            $("#vipinfo_img").attr("src", res.data.img);
+                        } else {
+                            //$("#vipinfo_img").attr("src", 默认图片);
+                        }
+
+                        //会员扩展信息
+                        vipinfo_extend(res.data.code);
+
+                        //家属信息
+                        var familymembers = function () {
+                            table.render({ //
+                                elem: '#vipinfo_family_members'
+                                , height: 330
+                                , url: '/index.php/webVipinfoFamilySel/' //数据接口 
+                                , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                , toolbar: "#vipinfo_family_toolbar"
+                                , cols: [[ //表头  
+                                    { field: 'relation', title: '关系', width: 310, sort: true }
+                                    , { field: 'birthday_g', title: '生日', width: 310, sort: true }
+                                    , { field: 'phone', title: '手机号', width: 310, sort: true }
+                                    , { field: 'synopsis', title: '简介', width: 572, sort: true }
+                                    , { fixed: 'right', title: '操作', width: 100, align: 'center', toolbar: '#vipinfo_Demo_fdplan' }
+                                ]]
+                            });
+                        }
+                        familymembers();
+                        // 表头事件监听
+                        table.on('toolbar(vipinfo-family_members-table)', function (obj) {
+                            switch (obj.event) {
+                                case 'add':
+                                    layer.open({
+                                        title: "添加家属信息"
+                                        , type: 1
+                                        , shade: 0.3
+                                        , shadeClose: false
+                                        , anim: 1
+                                        , offset: 'auto'
+                                        , area: ["640px", "460px"]
+                                        , skin: "layui-layer-admin layui-anim"
+                                        , content: '<form class="layui-form layui-form-pane" id="vipinfo_family_members_form_news" lay-filter="vipinfo_family_members_form"><div class="layui-form-item"><label class="layui-form-label">关系:</label><div class="layui-input-block"><input type="text" name="relationship" id="relationship_id" lay-verify="required" placeholder="请输入关系" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">生日:</label><div class="layui-input-block"><input type="text" name="birthday" lay-verify="date" id="birthday_test" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">手机号:</label><div class="layui-input-block"><input type="tel" name="cellphone" placeholder="请输入手机号" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">简介:</label><div class="layui-input-block"><textarea placeholder="请输入简介" class="layui-textarea" name="synopsis"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip-vipinfo-family_members-Demo-submit">确定添加</button></div></form>'
+                                        , success: function (layero, index) {
+                                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                            layero.append(elemClose);
+                                            elemClose.on('click', function () {
+                                                layer.close(index);
+                                            });
+                                            $("#relationship_id").focus();
+                                            //日期时间选择器
+                                            laydate.render({
+                                                elem: '#birthday_test'
+                                            });
+                                            form.render(null, 'vipinfo_family_members_form');
+
+                                            form.on('submit(vip-vipinfo-family_members-Demo-submit)', function (data) {
+                                                var loadindex = layer.load(1, { time: 10 * 1000 });
+                                                //手机号验证
+                                                var reg = /^1(?:3\d|4[4-9]|5[0-35-9]|6[67]|7[013-8]|8\d|9\d)\d{8}$/;
+                                                var msg = '输入的手机号格式错误';
+                                                if (data.field.cellphone != '') {
+                                                    if (!reg.test(data.field.cellphone)) {   // js正则验证  输入的手机号
+                                                        layer.msg(msg, { icon: 2, time: 800 }, function () {
+                                                            layer.close(loadindex);
+                                                        });
+                                                        return false;
+                                                    }
+                                                }
+                                                $('#vipinfo_family_members_form_news').html("");
+                                                admin.req({
+                                                    url: "/index.php/webVipinfoFamilyAdd/",
+                                                    type: "post",
+                                                    data: {
+                                                        card_number: res.data.code,
+                                                        name: res.data.username,
+                                                        relationship: $.trim(data.field.relationship),
+                                                        birthday: data.field.birthday,
+                                                        cellphone: data.field.cellphone,
+                                                        synopsis: data.field.synopsis
+                                                    },
+                                                    done: function (family) {
+                                                        layer.close(loadindex);
+                                                        if (family.msg == 'error') {
+                                                            layer.msg(family.data, { icon: 2, title: '警告' });
+                                                        } else if (family.msg == 'yes') {
+                                                            layer.msg(family.data, { icon: 1, title: '提示' });
+                                                            familymembers();
+                                                            layer.close(index);
+                                                        } else if (family.msg == 'no') {
+                                                            layer.msg(family.data, { icon: 2, title: '提示' });
+                                                        }
+                                                    }
+                                                });
+                                                return false;
+                                            });
+                                        }
+                                    });
+                                    break;
+                                case 'add_days':
+                                    layer.open({
+                                        title: "添加纪念日"
+                                        , type: 1
+                                        , shade: 0.3
+                                        , shadeClose: false
+                                        , anim: 1
+                                        , offset: 'auto'
+                                        , area: ["640px", "460px"]
+                                        , skin: "layui-layer-admin layui-anim"
+                                        , content: '<form class="layui-form layui-form-pane" id="vipinfo_family_members_form_days" lay-filter="vipinfo_family_members_form_days"><div class="layui-form-item"><label class="layui-form-label">纪念日:</label><div class="layui-input-block"><select name="relationship" lay-verify="required" lay-filter="vipinfo_family_members_follow"><option value="">请选择日子</option><option value="0">结婚纪念日</option><option value="1">周年纪念日</option></select></div></div><div class="layui-form-item"><label class="layui-form-label">日期:</label><div class="layui-input-block"><input type="text" name="birthday" lay-verify="date" id="birthday_test_days" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">手机号:</label><div class="layui-input-block"><input type="text" name="cellphone" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">简介:</label><div class="layui-input-block"><textarea placeholder="请输入简介" class="layui-textarea" name="synopsis"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="family_members_Demo_days">确定添加</button></div></form>'
+                                        , success: function (layero, index) {
+                                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                            layero.append(elemClose);
+                                            elemClose.on('click', function () {
+                                                layer.close(index);
+                                            });
+                                            //日期时间选择器
+                                            laydate.render({
+                                                elem: '#birthday_test_days'
+                                            });
+                                            form.render(null, 'vipinfo_family_members_form_days');
+                                            //读卡给会员信息赋值
+                                            form.val('vipinfo_family_members_form_days', {
+                                                cellphone: res.data.phone
+                                            });
+                                            form.on('submit(family_members_Demo_days)', function (data) {
+                                                var loadindex = layer.load(1, { time: 10 * 1000 });
+                                                $('#vipinfo_family_members_form_days').html("");
+                                                admin.req({
+                                                    url: "/index.php/webVipinfoFamilyAdd/",
+                                                    type: "post",
+                                                    data: {
+                                                        card_number: res.data.code,
+                                                        name: res.data.username,
+                                                        relationship: data.field.relationship,
+                                                        birthday: data.field.birthday,
+                                                        cellphone: data.field.cellphone,
+                                                        synopsis: data.field.synopsis
+                                                    },
+                                                    done: function (family) {
+                                                        layer.close(loadindex);
+                                                        if (family.msg == 'error') {
+                                                            layer.msg(family.data, { icon: 2, title: '警告' });
+                                                        } else if (family.msg == 'yes') {
+                                                            layer.msg(family.data, { icon: 1, title: '提示' });
+                                                            familymembers();
+                                                            layer.close(index);
+                                                        } else if (family.msg == 'no') {
+                                                            layer.msg(family.data, { icon: 2, title: '提示' });
+                                                        }
+                                                    }
+                                                });
+                                                return false;
+                                            });
+                                        }
+                                    });
+                                    break;
+                            };
+                        });
+                        //删除一条数据
+                        table.on('tool(vipinfo-family_members-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                            var data = obj.data; //获得当前行数据
+                            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                            if (layEvent === 'vipinfo_del') { //删除
+                                layer.confirm('确认删除该条数据？', function (index) {
+                                    admin.req({
+                                        url: "/index.php/webVipinfoFamilyDel/",
+                                        type: "post",
+                                        data: {
+                                            id: obj.data.id
+                                        },
+                                        done: function (res) {
+                                            if (res.msg == 'error') {
+                                                layer.msg(res.data, { icon: 2, title: '警告' });
+                                            } else if (res.msg == 'yes') {
+                                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                                familymembers();
+                                                layer.close(index);
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                });
+                            }
+                        });
+
+                        //会员服务记录
+                        table.render({
+                            elem: '#vipinfo_service_record'
+                            , height: 330
+                            , url: '/index.php/webVipinfoServiceSelAll/' //数据接口 
+                            , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                            , toolbar: true
+                            , cols: [[ //表头  
+                                { field: 'code', title: '单号', sort: true, width: 200 }
+                                , { field: 'vhname', title: '会员名称', sort: true, width: 130 }
+                                , { field: 'vlname', title: '会员级别', sort: true, width: 130 }
+                                , { field: 'service_name', title: '服务名称', sort: true, width: 130 }
+                                , { field: 'vfsecond', title: '总服务次数', sort: true, width: 140 }
+                                , { field: 'service_number', title: '服务次数', sort: true, width: 130 }
+                                , { field: 'vfquantity', title: '单次数量', sort: true, width: 130 }
+                                , { field: 'company', title: '单位', sort: true, width: 130 }
+                                , { field: 'limited_time', title: '限定时间', sort: true, width: 160 }
+                                , { field: 'days', title: '为期(天)', sort: true, width: 130 }
+                                , { field: 'time_g', title: '服务时间', sort: true, width: 170 }
+                            ]]
+                        });
+
+                        //会员互动记录
+                        var totalrender = function () {
+                            table.render({
+                                elem: '#vipinfo_interaction_toatl'
+                                , height: 330
+                                , url: '/index.php/webVipinfoInteractiveRecord/' //数据接口 
+                                , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                , toolbar: true
+                                , cols: [[ //表头  
+                                    { field: 'code', title: '单号', sort: true, width: 200 }
+                                    , { field: 'remark', title: '名称', width: 155, sort: true }
+                                    , { field: 'name', title: '互动名称', width: 155, sort: true }
+                                    , { field: 'vip_code', title: '卡号', width: 155, sort: true }
+                                    , { field: 'vhname', title: '返单顾客', width: 155, sort: true }
+                                    , { field: 'vlname', title: '会员级别', width: 155, sort: true }
+                                    , { field: 'vyname', title: '执行人', width: 155, sort: true }
+                                    , { field: 'vyyname', title: '监督人', width: 155, sort: true }
+                                    , { field: 'time_g', title: '创建时间', sort: true, width: 212 }
+                                    , { fixed: 'right', title: '内容', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                ]]
+                            });
+                        }
+                        totalrender();
+                        //监听会员互动记录表格
+                        table.on('tool(vipinfo-interaction-total-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                            var data = obj.data; //获得当前行数据
+                            var layEvent = obj.event;
+                            //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                            if (layEvent === 'vipinfo_detail') {//查看
+                                layer.open({
+                                    title: '查看详情'
+                                    , type: 1
+                                    , area: ["1200px", "450px"] // 弹出层的大小
+                                    , skin: "layui-layer-admin layui-anim"
+                                    , content: '<table id="vipinfo_interactive_total_table_bill"></table>'
+                                    //关闭弹出层
+                                    , success: function (layero, index) {
+                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                        layero.append(elemClose);
+                                        elemClose.on('click', function () {
+                                            layer.close(index);
+                                        });
+                                    }
+                                });
+
+                                if (data.remark == "365天跟进") {
+                                    //查看表格
+                                    table.render({
+                                        elem: '#vipinfo_interactive_total_table_bill'
+                                        , height: 300
+                                        , cellMinWidth: 200
+                                        , url: "/index.php/webVipinfoInteractiveDill/"
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, bill: data.code }
+                                        , cols: [[ //表头
+                                            { field: 'name', title: '名称' }
+                                            , { field: 'time_g', title: '时间节点' }
+                                            , { field: 'purpose', title: '互动目的' }
+                                            , { field: 'function', title: '运用方式' }
+                                            , { field: 'speech', title: '执行话术' }
+                                        ]]
+                                    });
+                                } else {
+                                    //查看表格
+                                    table.render({
+                                        elem: '#vipinfo_interactive_total_table_bill'
+                                        , height: 300
+                                        , cellMinWidth: 200
+                                        , url: "/index.php/webVipinfoInteractiveDill/"
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, bill: data.code }
+                                        , cols: [[ //表头
+                                            { field: 'time_g', title: '时间节点' }
+                                            , { field: 'purpose', title: '互动目的' }
+                                            , { field: 'function', title: '运用方式' }
+                                            , { field: 'speech', title: '执行话术' }
+                                        ]]
+                                    });
+                                }
+                                
+                            }
+                        });
+
+                        //商品销售
+                        $("#commodity_sale").click(function () {
+                            layer.msg('对接系统请在ERP中实现该功能！');
+                            return false;
+                        });
+
+                        //赠送积分
+                        $("#compliment_away").click(function () {
+                            layer.msg('对接系统请在ERP中实现该功能！');
+                            return false;
+                        });
+
+                        //扣除积分
+                        $("#deduct").click(function () {
+                            layer.msg('对接系统请在ERP中实现该功能！');
+                            return false;
+                        });
+
+                        //会员充值
+                        $("#recharge").click(function () {
+                            layer.msg('对接系统请在ERP中实现该功能！');
+                            return false;
+                        });
+
+                        //储值扣费
+                        $("#withholding_fee").click(function () {
+                            layer.msg('对接系统请在ERP中实现该功能！');
+                            return false;
+                        });
+
+                        //图标返单计划
+                        $('#return_plan_list').click(function () {
+                            //弹出返单计划
+                            layer.open({
+                                title: "返单计划"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "600px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<button class="layui-btn layui-btn-sm" id="crm-vip-vipinfo-newslist">新建返单</button><form class="layui-form" id="vip_vipinfo_form_listnews" lay-filter="crm-vip-vipinfo-list"><table class="layui-hide" id="vipinfo-list-table" lay-filter="crm-vip-vipinfotable"></table><div class="layui-form-item"><label class="layui-form-label">卡号:</label><div class="layui-input-inline"><input type="text" name="card" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">手机号:</label><div class="layui-input-inline"><input type="text" name="phone" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">返单顾客:</label><div class="layui-input-inline"><input type="text" name="member" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员级别:</label><div class="layui-input-inline"><input type="text" name="level" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">返单名称:</label><div class="layui-input-inline"><input type="text" name="listplan_name" lay-verify="required" placeholder="请输入返单名称" autocomplete="off" class="layui-input"></div><label class="layui-form-label">监督人:</label><div class="layui-input-inline"><select name="custodian" lay-filter="" lay-search lay-verify="required" id="vipinfo_plan_custodian_staff"></select></div></div><div class="layui-form-item"><label class="layui-form-label">执行人:</label><div class="layui-input-inline"><select name="executor" lay-filter="" lay-search lay-verify="required" id="vipinfo_plan_executor_staff"></select></div><label class="layui-form-label">执行时间:</label><div class="layui-input-inline"><input type="text" name="service_time" id="vipnfoten_date" lay-verify="required" placeholder="年-月-日 时:分:秒" autocomplete="off" class="layui-input"></div><label class="layui-form-label"></label><div class="layui-input-inline" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vipinfo_listDemoAdd" style="width: 190px;">确认添加</button></div></div></form>'
+                                , success: function (layero, newslist) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoCacheClean/",
+                                            type: "post",
+                                            done: function (res) {
+                                                layer.close(newslist);
+                                            }
+                                        });
+                                        // layui.index.render();
+                                        // Readcardfun(card_number);
+                                    });
+                                    //日期
+                                    laydate.render({
+                                        elem: '#vipnfoten_date'
+                                        , type: 'datetime'
+                                    });
+                                    //监督人
+                                    stafffun('#vipinfo_plan_custodian_staff', 'crm-vip-vipinfo-list');
+                                    //执行人
+                                    stafffun('#vipinfo_plan_executor_staff', 'crm-vip-vipinfo-list');
+                                    //渲染
+                                    form.render(null, "crm-vip-vipinfo-list");
+                                    //读卡给会员信息赋值
+                                    form.val('crm-vip-vipinfo-list', {
+                                        card: res.data.code,
+                                        member: res.data.username,
+                                        level: res.data.vlname,
+                                        phone: res.data.phone
+                                    });
+                                    //执行实例
+                                    form.on('submit(vipinfo_listDemoAdd)', function (data) {
+                                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                                        admin.req({
+                                            url: "/index.php/webVipinfoOrderAdd/",
+                                            type: "post",
+                                            data: {
+                                                level: res.data.level_code,
+                                                card: data.field.card,
+                                                listplan_name: $.trim(data.field.listplan_name),
+                                                executor: data.field.executor,
+                                                custodian: data.field.custodian,
+                                                service_time: data.field.service_time
+                                            },
+                                            done: function (res) {
+                                                layer.close(loadindex);
+                                                if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                                } else if (res.msg == 'yes') {
+                                                    $('#vip_vipinfo_form_listnews').html("");
+                                                    layer.msg(res.data, { icon: 1, title: '提示', time: 400 }, function () {
+                                                        layer.closeAll();
+                                                        layui.index.render();
+                                                        Readcardfun(card_number);
+                                                    });
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                }
+                            });
+                            //新建返单
+                            $('#crm-vip-vipinfo-newslist').click(function () {
+                                //弹出新建返单
+                                layer.open({
+                                    title: "新建返单"
+                                    , type: 1
+                                    , shade: 0.3
+                                    , shadeClose: false
+                                    , anim: 1
+                                    , offset: 'auto'
+                                    , area: ["800px", "600px"]
+                                    , skin: "layui-layer-admin layui-anim"
+                                    , content: '<form class="layui-form layui-form-pane" id="vip_vipinfo_newlist" lay-filter="crm-vip-vipinfo-listtwo"><div class="layui-form-item"><label class="layui-form-label">产品条码:</label><div class="layui-input-inline"><select name="production_number" lay-verify="required" lay-search lay-filter="vipinfo_listtwo_production_number_val" id="vip_vipinfo_listtwo_production_number"></select></div><label class="layui-form-label">颜色:</label><div class="layui-input-inline"><input type="text" name="color" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">尺码:</label><div class="layui-input-inline"><input type="text" name="size" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">吊牌价:</label><div class="layui-input-inline"><input type="text" name="brand" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员价:</label><div class="layui-input-inline"><input type="text" name="vip_price" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">图片:</label><div class="layui-input-inline" id="vipinfo_production_img"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客需求:</label><div class="layui-input-block"><textarea class="layui-textarea" name="customer_demand" lay-verify="required" placeholder="请输入需求"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">核心买点EBAF:</label><div class="layui-input-block"><textarea class="layui-textarea" name="buy_some" lay-verify="required" placeholder="请输入买点"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">TOP:</label><div class="layui-input-block"><textarea class="layui-textarea" name="top" lay-verify="required" placeholder="请输入TOP"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客可能会问的问题:</label><div class="layui-input-block"><textarea class="layui-textarea" name="question" lay-verify="required" placeholder="请输入问题"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">问题回应话术:</label><div class="layui-input-block"><textarea class="layui-textarea" name="answer" lay-verify="required" placeholder="请输入话术"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" id="vipinfolisttwoDemo" lay-submit="" lay-filter="vipinfo-listDemoAddtwo">确认添加</button> <button type="reset" class="layui-btn layui-btn-primary layui-btn-radius">确认重置</button></div></form>'
+                                    , success: function (layero, listtwo) {
+                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                        layero.append(elemClose);
+                                        elemClose.on('click', function () {
+                                            layer.close(listtwo);
+                                        });
+                                        //产品条码复选框
+                                        barcode("#vip_vipinfo_listtwo_production_number", "crm-vip-vipinfo-listtwo");
+                                        //赋值
+                                        form.on('select(vipinfo_listtwo_production_number_val)', function (data) {
+                                            admin.req({
+                                                url: "/index.php/webVipinfoOrderProduct/",
+                                                type: 'post',
+                                                data: {
+                                                    production_number: data.value,
+                                                    level: res.data.level_code
+                                                },
+                                                done: function (production) {
+                                                    if (production.code == 0) {
+                                                        layer.msg(production.msg, { icon: 1, title: '提示' });
+                                                        form.val('crm-vip-vipinfo-listtwo', {
+                                                            color: production.data.color,
+                                                            size: production.data.size,
+                                                            brand: production.data.price,
+                                                            vip_price: production.data.vip_price
+                                                        });
+                                                        var imgurl = production.data.img;
+                                                        var imgs = $("#vipinfo_production_img");
+                                                        if (imgurl !== "") {
+                                                            imgs.html("<img src='" + imgurl + "' name='photo' width='190' height='38' id='vipinfo_img_button'>");
+                                                            $('#vipinfo_img_button').click(function () {
+                                                                layer.open({
+                                                                    title: '图片详情'
+                                                                    , type: 1
+                                                                    , area: ["440px", "390px"] // 弹出层的大小
+                                                                    , skin: "layui-layer-admin layui-anim"
+                                                                    , content: '<div id="vipinfo_look_img"></div>'
+                                                                    //关闭弹出层
+                                                                    , success: function (layero, index) {
+                                                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                                        layero.append(elemClose);
+                                                                        elemClose.on('click', function () {
+                                                                            layer.close(index);
+                                                                        });
+                                                                        var imgs = $("#vipinfo_look_img");
+                                                                        imgs.html("<img src='" + imgurl + "' width='400' height='300'>");
+                                                                    }
+                                                                });
+                                                            });
+                                                        } else {
+                                                            layer.msg('暂无图片!');
+                                                        }
+                                                    } else {
+                                                        layer.msg(production.msg, { icon: 2, title: '提示' });
+                                                    }
+                                                }
+                                            })
+                                        })
+                                        //渲染
+                                        form.render(null, "crm-vip-vipinfo-listtwo");
+                                        //执行实例
+                                        form.on('submit(vipinfo-listDemoAddtwo)', function (data) {
+                                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                                            $('#vip_vipinfo_newlist').html("");
+                                            admin.req({
+                                                url: "/index.php/webVipinfoOrderCacheAdd/",
+                                                type: "post",
+                                                data: {
+                                                    production_number: data.field.production_number,
+                                                    customer_demand: data.field.customer_demand,
+                                                    buy_some: data.field.buy_some,
+                                                    top: data.field.top,
+                                                    question: data.field.question,
+                                                    answer: data.field.answer,
+                                                    level: res.data.level_code
+                                                },
+                                                done: function (res) {
+                                                    layer.close(loadindex);
+                                                    if (res.msg == 'error') {
+                                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                                    } else if (res.msg == 'yes') {
+                                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                                        returnfunten("/index.php/webVipinfoOrderCacheSel/");
+                                                        layer.close(listtwo);
+                                                    } else if (res.msg == 'no') {
+                                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                                    }
+                                                }
+                                            });
+                                            return false;
+                                        });
+                                    }
+                                });
+                            });
+                            //返单表
+                            var returnfunten = function (u) {
+                                table.render({
+                                    elem: '#vipinfo-list-table'
+                                    , url: u//数据接口
+                                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                    , height: 300
+                                    , cols: [[ //表头
+                                        { field: 'goods_code', title: '产品编号', width: 200, sort: true }
+                                        , { field: 'color', title: '颜色', width: 100, sort: true }
+                                        , { field: 'size', title: '尺码', width: 100, sort: true }
+                                        , { field: 'brand', title: '品牌价', width: 100, sort: true }
+                                        , { field: 'vip_price', title: '会员价', width: 100, sort: true }
+                                        , { field: 'customer_demand', title: '顾客需求', width: 200, sort: true }
+                                        , { field: 'buy_some', title: '核心买点EBAF', width: 200, sort: true }
+                                        , { field: 'top', title: 'TOP', width: 150, sort: true }
+                                        , { field: 'question', title: '顾客可能会问的问题', width: 200, sort: true }
+                                        , { field: 'answer', title: '问题回应话术', width: 200, sort: true }
+                                        , { fixed: 'right', title: '操作', width: 100, align: 'center', toolbar: '#vipinfo_Demo_fdplan' }
+                                    ]]
+                                });
+                            }
+                            returnfunten("/index.php/webVipinfoOrderCacheSel/");
+                            //table监听
+                            table.on('tool(crm-vip-vipinfotable)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                var data = obj.data; //获得当前行数据
+                                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                if (layEvent === 'vipinfo_del') { //删除
+                                    layer.confirm('确认删除该条数据？', function (index) {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoOrderCacheDel/",
+                                            type: "post",
+                                            data: {
+                                                id: obj.data.delete_id
+                                            },
+                                            done: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg(res.msg, { icon: 1, title: '提示' });
+                                                    returnfunten("/index.php/webVipinfoOrderCacheSel/");
+                                                    layer.close(index);
+                                                } else {
+                                                    layer.msg(res.msg, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+
+                        });
+
+                        //图标100天跟进
+                        $("#hundred_interaction").click(function () {
+                            //弹出100天跟进
+                            layer.open({
+                                title: "100天跟进"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "600px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<form class="layui-form" lay-filter="vipinfo_hundred_interaction_search"><div class="layui-input-inline"><select name="hundred_name" lay-filter="" lay-search id="vipinfo_hundred_interactiontwo_Reload"></select></div><button class="layui-btn" id="vipinfo_hundred_interactiontwo_lookup" lay-submit="" lay-filter="vipinfo_hundred_interaction_search_Demo">选择</button></form><table class="layui-hide" id="vipinfo_hundred_interaction_table" lay-filter="vipinfo_hundred_interaction_table"></table><form class="layui-form" lay-filter="vipinfo_hundred_interaction_form"><div class="layui-form-item"><label class="layui-form-label">卡号:</label><div class="layui-input-inline"><input type="text" name="card" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">手机号:</label><div class="layui-input-inline"><input type="text" name="phone" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">互动顾客:</label><div class="layui-input-inline"><input type="text" name="member" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员级别:</label><div class="layui-input-inline"><input type="text" name="level" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">购物时间:</label><div class="layui-input-inline"><input type="text" name="date" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">互动名称:</label><div class="layui-input-inline"><input type="text" name="name" id="hundred_interaction_form_name" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">监督人:</label><div class="layui-input-inline"><select name="custodian" lay-verify="required" lay-search id="vipinfo_hundred_custodian_staffs"></select></div><label class="layui-form-label">执行人:</label><div class="layui-input-inline"><select name="executor" lay-verify="required" lay-search id="vipinfo_hundred_executor_staffs"></select></div><label class="layui-form-label"></label><div class="layui-input-inline" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vipinfo_hundred_interaction_Demo" style="width:190px">确认添加</button></div></div></form>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoCacheClean/",
+                                            type: "post",
+                                            done: function (res) {
+                                                layer.close(index);
+                                            }
+                                        });
+                                        // layui.index.render();
+                                        // Readcardfun(card_number);
+                                    });
+                                    //渲染表单
+                                    form.render(null, 'vipinfo_hundred_interaction_form');
+                                    form.render(null, 'vipinfo_hundred_interaction_search');
+                                    //监督人下拉
+                                    stafffun('#vipinfo_hundred_custodian_staffs', "vipinfo_hundred_interaction_form");
+                                    //执行人下拉
+                                    stafffun('#vipinfo_hundred_executor_staffs', "vipinfo_hundred_interaction_form");
+                                    //搜索名称下拉
+                                    iareturnnamefun('#vipinfo_hundred_interactiontwo_Reload', "vipinfo_hundred_interaction_search");
+                                    //读卡给会员信息赋值
+                                    form.val('vipinfo_hundred_interaction_form', {
+                                        card: res.data.code,
+                                        member: res.data.username,
+                                        level: res.data.vlname,
+                                        phone: res.data.phone,
+                                        date: res.data.ftime_g
+                                    });
+                                    //选择互动
+                                    form.on('submit(vipinfo_hundred_interaction_search_Demo)', function (data) {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoHundredFootSearch/",
+                                            type: "post",
+                                            data: {
+                                                id: data.field.hundred_name
+                                            },
+                                            done: function (res) {
+                                                if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                                } else if (res.msg == 'yes') {
+                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                    $('#hundred_interaction_form_name').empty();
+                                                    form.val("vipinfo_hundred_interaction_form", {
+                                                        name: $("#vipinfo_hundred_interactiontwo_Reload").find("option:selected").text()
+
+                                                    });
+                                                    interactiontwofun('/index.php/webVipinfoHundredFootCache/');
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                    interactiontwofun('/index.php/webVipinfoHundredFootCache/');
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                    
+                                    //执行保存
+                                    form.on('submit(vipinfo_hundred_interaction_Demo)', function (data) {
+                                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                                        admin.req({
+                                            url: "/index.php/webVipinfoHundredFootAdd/",
+                                            type: "post",
+                                            data: {
+                                                name: data.field.name,
+                                                executor: data.field.executor,
+                                                custodian: data.field.custodian,
+                                                card_number: data.field.card,
+                                                member: data.field.member,
+                                                level: res.data.level_code,
+                                                phone: data.field.phone
+                                            },
+                                            done: function (ress) {
+                                                layer.close(loadindex);
+                                                if (ress.msg == 'error') {
+                                                    layer.msg(ress.data, { icon: 2, title: ress.msg });
+                                                } else if (ress.msg == 'yes') {
+                                                    layer.msg(ress.data, { icon: 1, title: '提示', time: 400 }, function () {
+                                                        layer.closeAll();
+                                                        layui.index.render();
+                                                        Readcardfun(card_number);
+                                                    });
+                                                } else if (ress.msg == 'no') {
+                                                    layer.msg(ress.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                }
+                            });
+
+                            var interactiontwofun = function (u) {
+                                table.render({//100天跟进表
+                                    elem: '#vipinfo_hundred_interaction_table'
+                                    , height: 270
+                                    , url: u//数据接口
+                                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                    , cols: [[ //表头 
+                                        { field: 'time', title: '时间节点(天)', width: 170, sort: true }
+                                        , { field: 'purpose', title: '互动目的', width: 230, sort: true }
+                                        , { field: 'function', title: '运用方式', width: 254, sort: true }
+                                        , { field: 'speech', title: '执行话术', width: 300, sort: true }
+                                    ]]
+                                });
+                            }
+                            interactiontwofun('/index.php/webVipinfoHundredFootCache/');
+
+                        });
+
+                        //图标365跟进
+                        $("#hundred_interaction_list").click(function () {
+                            //弹出365跟进
+                            layer.open({
+                                title: "365跟进"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "600px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<form class="layui-form" lay-filter="vip-vipinfo-hundred-interaction-search"><div class="layui-input-inline"><select name="iahundred_name" lay-search id="vipinfo_hundred_interactivetwo_Reload"></select></div><button class="layui-btn" id="vipinfo_hundred_interactivetwo_lookup" lay-submit="" lay-filter="vipinfo_hundred_interaction_search_Demo">选择</button></form><form class="layui-form" lay-filter="vip-vipinfo-hundred-interaction-form"><table class="layui-hide" id="vipinfo-hundred-interaction-table" lay-filter="crm-vipinfo-hundred-interactiontable"></table><div class="layui-form-item"><label class="layui-form-label">卡号:</label><div class="layui-input-inline"><input type="text" name="card" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">手机号:</label><div class="layui-input-inline"><input type="text" name="phone" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">互动顾客:</label><div class="layui-input-inline"><input type="text" name="member" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员级别:</label><div class="layui-input-inline"><input type="text" name="level" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">购物时间:</label><div class="layui-input-inline"><input type="text" name="date" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">互动名称</label><div class="layui-input-inline"><input type="text" name="name" id="hundred_interaction_two_name" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">监督人</label><div class="layui-input-inline"><select name="custodian" lay-verify="required" lay-search id="vipinfo_hundred_custodian_staff"></select></div><label class="layui-form-label">执行人</label><div class="layui-input-inline"><select name="executor" lay-verify="required" lay-search id="vipinfo_hundred_executor_staff"></select></div><label class="layui-form-label"></label><div class="layui-input-inline" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip-vipinfo-hundred-Demo" style="width:190px">确认添加</button></div></div></form>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoCacheClean/",
+                                            type: "post",
+                                            done: function (res) {
+                                                layer.close(index);
+                                            }
+                                        });
+                                        // layui.index.render();
+                                        // Readcardfun(card_number);
+                                    });
+                                    //渲染表单
+                                    form.render(null, 'vip-vipinfo-hundred-interaction-search');
+                                    form.render(null, 'vip-vipinfo-hundred-interaction-form');
+                                    //监督人下拉
+                                    stafffun('#vipinfo_hundred_custodian_staff', "vip-vipinfo-hundred-interaction-form");
+                                    //执行人下拉
+                                    stafffun('#vipinfo_hundred_executor_staff', "vip-vipinfo-hundred-interaction-form");
+                                    //添加名称下拉
+                                    iahundrednamefun('#vipinfo_hundred_interactivetwo_Reload', "vip-vipinfo-hundred-interaction-search");
+                                    //读卡给会员信息赋值
+                                    form.val('vip-vipinfo-hundred-interaction-form', {
+                                        card: res.data.code,
+                                        member: res.data.username,
+                                        level: res.data.vlname,
+                                        phone: res.data.phone,
+                                        date: res.data.ftime_g
+                                    });
+                                    //执行实例
+                                    form.on('submit(vipinfo_hundred_interaction_search_Demo)', function (data) {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoThreeFootSearch/",
+                                            type: "post",
+                                            data: {
+                                                id: data.field.iahundred_name
+                                            },
+                                            done: function (res) {
+                                                if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                                } else if (res.msg == 'yes') {
+                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                    $('#hundred_interaction_two_name').empty();
+                                                    form.val("vip-vipinfo-hundred-interaction-form", {
+                                                        name: $("#vipinfo_hundred_interactivetwo_Reload").find("option:selected").text()
+
+                                                    });
+                                                    interactionthreefun('/index.php/webVipinfoThreeFootCache/');
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                    interactionthreefun('/index.php/webVipinfoThreeFootCache/');
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                    //执行保存
+                                    form.on('submit(vip-vipinfo-hundred-Demo)', function (data) {
+                                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                                        admin.req({
+                                            url: "/index.php/webVipinfoThreeFootAdd/",
+                                            type: "post",
+                                            data: {
+                                                name: $.trim(data.field.name),
+                                                executor: data.field.executor,
+                                                custodian: data.field.custodian,
+                                                card_number: data.field.card,
+                                                level: res.data.level_code
+                                            },
+                                            done: function (ressx) {
+                                                layer.close(loadindex);
+                                                if (ressx.msg == 'error') {
+                                                    layer.msg(ressx.data, { icon: 2, title: ressx.msg });
+                                                } else if (ressx.msg == 'yes') {
+                                                    layer.msg(ressx.data, { icon: 1, title: '提示', time: 400 }, function () {
+                                                        layer.closeAll();
+                                                        layui.index.render();
+                                                        Readcardfun(card_number);
+                                                    });
+                                                } else if (ressx.msg == 'no') {
+                                                    layer.msg(ressx.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                }
+                            });
+
+                            var interactionthreefun = function (u) {
+                                table.render({//365跟进表
+                                    elem: '#vipinfo-hundred-interaction-table'
+                                    , height: 280
+                                    , url: u//数据接口
+                                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                    , cols: [[ //表头 
+                                        { field: 'name', title: '名称', width: 150, sort: true }
+                                        , { field: 'time_g', title: '时间', width: 150, sort: true }
+                                        , { field: 'purpose', title: '互动目的', width: 230, sort: true }
+                                        , { field: 'function', title: '运用方式', width: 254, sort: true }
+                                        , { field: 'speech', title: '执行话术', width: 300, sort: true }
+                                    ]]
+                                });
+                            }
+                            interactionthreefun('/index.php/webVipinfoThreeFootCache/');
+
+                        });
+
+                        //图标专场跟进
+                        $("#vipinfo_field").click(function () {
+                            //弹出专场跟进
+                            layer.open({
+                                title: "专场跟进"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "600px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<form class="layui-form" lay-filter="vip_vipinfo_field_search"><div class="layui-input-inline"><select name="field_name" lay-filter="" lay-search id="vipinfo_field_Reload"></select></div><button class="layui-btn" lay-submit="" lay-filter="vipinfo_field_search_Demo">选择</button></form><table class="layui-hide" id="vipinfo_field_table" lay-filter="vipinfo_field_tables"></table><form class="layui-form" lay-filter="vipinfo_field_form"><div class="layui-form-item"><label class="layui-form-label">卡号:</label><div class="layui-input-inline"><input type="text" name="card" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">手机号:</label><div class="layui-input-inline"><input type="text" name="phone" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">互动顾客:</label><div class="layui-input-inline"><input type="text" name="member" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员级别:</label><div class="layui-input-inline"><input type="text" name="level" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">购物时间:</label><div class="layui-input-inline"><input type="text" name="date" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">互动名称:</label><div class="layui-input-inline"><input type="text" name="name" id="field_form_name_hd" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">监督人:</label><div class="layui-input-inline"><select name="custodian" lay-verify="required" lay-search id="vipinfo_field_custodian_staff"></select></div><label class="layui-form-label">执行人:</label><div class="layui-input-inline"><select name="executor" lay-verify="required" lay-search id="vipinfo_field_executor_staff"></select></div><label class="layui-form-label"></label><div class="layui-input-inline" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vipinfo_field_Demo" style="width:190px">确认添加</button></div></div></form>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoCacheClean/",
+                                            type: "post",
+                                            done: function (res) {
+                                                layer.close(index);
+                                            }
+                                        });
+                                        // layui.index.render();
+                                        // Readcardfun(card_number);
+                                    });
+                                    //渲染表单
+                                    form.render(null, 'vip_vipinfo_field_search');
+                                    form.render(null, 'vipinfo_field_form');
+                                    //监督人下拉
+                                    stafffun('#vipinfo_field_custodian_staff', "vipinfo_field_form");
+                                    //执行人下拉
+                                    stafffun('#vipinfo_field_executor_staff', "vipinfo_field_form");
+                                    //搜索名称下拉
+                                    fieldnamefun('#vipinfo_field_Reload', "vip_vipinfo_field_search");
+                                    //读卡给会员信息赋值
+                                    form.val('vipinfo_field_form', {
+                                        card: res.data.code,
+                                        member: res.data.username,
+                                        level: res.data.vlname,
+                                        phone: res.data.phone,
+                                        date: res.data.ftime_g
+                                    });
+                                    //执行添加
+                                    form.on('submit(vipinfo_field_search_Demo)', function (data) {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoFieldFootSearch/",
+                                            type: "post",
+                                            data: {
+                                                id: data.field.field_name
+                                            },
+                                            done: function (res) {
+                                                if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                                } else if (res.msg == 'yes') {
+                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                    $('#field_form_name_hd').empty();
+                                                    form.val("vipinfo_field_form", {
+                                                        name: $("#vipinfo_field_Reload").find("option:selected").text()
+
+                                                    });
+                                                    fieldtwofun('/index.php/webVipinfoFieldFootCache/');
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                    fieldtwofun('/index.php/webVipinfoFieldFootCache/');
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                    //执行保存
+                                    form.on('submit(vipinfo_field_Demo)', function (data) {
+                                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                                        admin.req({
+                                            url: "/index.php/webVipinfoFieldFootAdd/",
+                                            type: "post",
+                                            data: {
+                                                name: $.trim(data.field.name),
+                                                executor: data.field.executor,
+                                                custodian: data.field.custodian,
+                                                card_number: data.field.card,
+                                                member: data.field.member,
+                                                level: res.data.level_code,
+                                                phone: data.field.phone
+                                            },
+                                            done: function (ress) {
+                                                layer.close(loadindex);
+                                                if (ress.msg == 'error') {
+                                                    layer.msg(ress.data, { icon: 2, title: ress.msg });
+                                                } else if (ress.msg == 'yes') {
+                                                    layer.msg(ress.data, { icon: 1, title: '提示', time: 400 }, function () {
+                                                        layer.closeAll();
+                                                        layui.index.render();
+                                                        Readcardfun(card_number);
+                                                    });
+                                                } else if (ress.msg == 'no') {
+                                                    layer.msg(ress.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                }
+                            });
+
+                            var fieldtwofun = function (u) {
+                                table.render({//专场跟进表
+                                    elem: '#vipinfo_field_table'
+                                    , height: 270
+                                    , url: u//数据接口
+                                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                    , cols: [[ //表头 
+                                        { field: 'time_g', title: '时间(日期)', width: 170, sort: true }
+                                        , { field: 'purpose', title: '互动目的', width: 230, sort: true }
+                                        , { field: 'function', title: '运用方式', width: 254, sort: true }
+                                        , { field: 'speech', title: '执行话术', width: 300, sort: true }
+                                    ]]
+                                });
+                            }
+                            fieldtwofun('/index.php/webVipinfoFieldFootCache/');
+
+                        });
+
+                        //礼品兑换
+                        $("#exchange_gift").click(function () {
+                            layer.msg('对接系统请在ERP中实现该功能！');
+                            return false;
+                        });
+
+                        //会员服务
+                        $("#service_members_list").click(function () {
+                            //弹出会员服务
+                            layer.open({
+                                title: "会员服务"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "603px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<form class="layui-form" lay-filter="vipinfo_service_members_form_look"><div class="layui-form-item" style="margin-bottom:5px"><div class="layui-input-inline"><select name="service_name" lay-search lay-verify="required" lay-filter="" id="vipinfo_service_members_reload"></select></div><button class="layui-btn" lay-submit="" lay-filter="vipinfo_service_members_buttonlookup">添加</button></div></form><table id="service_members_table" lay-filter="vipinfo_service_table"></table><form class="layui-form" lay-filter="vipinfo_service_members_form"><div style="border:1px solid #1E9FFF"><div class="layui-form-item"><h3 style="text-align:center">会员信息</h3></div><div class="layui-form-item"><label class="layui-form-label">会员卡号:</label><div class="layui-input-inline"><input type="text" name="card" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">姓名:</label><div class="layui-input-inline"><input type="text" name="username" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">会员级别:</label><div class="layui-input-inline"><input type="text" name="mg" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">剩余礼品积分:</label><div class="layui-input-inline"><input type="text" name="gift_integral" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">剩余抵现积分:</label><div class="layui-input-inline"><input type="text" name="offset_integral" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">剩余储值:</label><div class="layui-input-inline"><input type="text" name="residual_value" disabled autocomplete="off" class="layui-input"></div></div></div><div class="layui-form-item" style="margin-top:5px;margin-bottom:0;text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip-vipinfo-service_members-Demo-submit" style="width:500px">确认服务</button></div></form>'
+                                , success: function (layero, service) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoCacheClean/",
+                                            type: "post",
+                                            done: function (res) {
+                                                layer.close(service);
+                                            }
+                                        });
+                                        // layui.index.render();
+                                        // Readcardfun(card_number);
+                                    });
+                                    //搜索名称
+                                    servicefunction('#vipinfo_service_members_reload', 'vipinfo_service_members_form_look', res.data.level_code);
+                                    //渲染表单
+                                    form.render(null, 'vipinfo_service_members_form_look');
+                                    form.render(null, 'vipinfo_service_members_form');
+                                    //读卡给会员信息赋值
+                                    form.val('vipinfo_service_members_form', {
+                                        card: res.data.code,
+                                        username: res.data.username,
+                                        mg: res.data.vlname,
+                                        offset_integral: res.data.offset_integral,
+                                        gift_integral: res.data.gift_integral,
+                                        residual_value: res.data.residual_value_g
+                                    });
+
+                                    //执行实例 添加
+                                    form.on('submit(vip-vipinfo-service_members-Demo-submit)', function (data) {
+                                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                                        admin.req({
+                                            url: "/index.php/webVipinfoServiceAdd/",
+                                            type: "post",
+                                            data: {
+                                                id: res.data.id,
+                                                mg: res.data.level_code,
+                                                card: data.field.card
+                                            },
+                                            done: function (servicelp) {
+                                                layer.close(loadindex);
+                                                if (servicelp.msg == 'error') {
+                                                    layer.msg(servicelp.data, { icon: 2, title: '警告' });
+                                                } else if (servicelp.msg == 'yes') {
+                                                    layer.msg(servicelp.data, { icon: 1, title: '提示', time: 400 }, function () {
+                                                        layer.closeAll();
+                                                        layui.index.render();
+                                                        Readcardfun(card_number);
+                                                    });
+                                                } else if (servicelp.msg == 'no') {
+                                                    layer.msg(servicelp.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                }
+                            });
+                            //执行实例 添加
+                            form.on('submit(vipinfo_service_members_buttonlookup)', function (data) {
+                                admin.req({
+                                    url: "/index.php/webVipinfoServiceCacheAdd/",
+                                    type: "post",
+                                    data: {
+                                        id: data.field.service_name,
+                                        card: res.data.code
+                                    },
+                                    done: function (res) {
+                                        if (res.msg == 'error') {
+                                            layer.msg(res.data, { icon: 2, title: '警告' });
+                                        } else if (res.msg == 'yes') {
+                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                            servicefun('/index.php/webVipinfoServiceCacheSel/');
+                                        } else if (res.msg == 'no') {
+                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                        }
+                                    }
+                                });
+                                return false;
+                            });
+                            //列表
+                            var servicefun = function (u) {
+                                table.render({
+                                    elem: '#service_members_table'
+                                    , height: 240
+                                    , url: u //数据接口
+                                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                    , cols: [[ //表头 
+                                        { field: 'vgname', title: '会员级别', sort: true, width: 110 }
+                                        , { field: 'servicename', title: '服务名称', sort: true, width: 110 }
+                                        , { field: 'service_second', title: '剩余服务次数', sort: true, width: 120 }
+                                        , { field: 'service_number', title: '服务次数', sort: true, width: 110, edit: 'text' }
+                                        , { field: 'single_quantity_number', title: '可服务数量', sort: true, width: 130 }
+                                        , { field: 'single_quantity', title: '单次数量', sort: true, width: 110 }
+                                        , { field: 'company', title: '单位', sort: true, width: 100 }
+                                        , { field: 'limited_time', title: '限定时间(天)', sort: true, width: 140 }
+                                        , { field: 'days', title: '限定(天)', sort: true, width: 110 }
+                                        , { fixed: 'right', title: '操作', width: 100, align: 'center', toolbar: '#vipinfo_Demo_fdplan' }
+                                    ]]
+                                });
+                            }
+                            servicefun('/index.php/webVipinfoServiceCacheSel/');
+                            //删除行
+                            table.on('tool(vipinfo_service_table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                var data = obj.data; //获得当前行数据
+                                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                                if (layEvent === 'vipinfo_del') { //删除
+                                    layer.confirm('确认删除该条数据？', function (servicetable) {
+                                        admin.req({
+                                            url: "/index.php/webVipinfoServiceCacheDel/",
+                                            type: "post",
+                                            data: {
+                                                id: obj.data.delete_id
+                                            },
+                                            done: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg(res.msg, { icon: 1, title: '提示' });
+                                                    servicefun('/index.php/webVipinfoServiceCacheSel/');
+                                                } else {
+                                                    layer.msg(res.msg, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+
+                            //监听单元格编辑
+                            table.on('edit(vipinfo_service_table)', function (obj) {
+                                var tj = function (url) {
+                                    admin.req({
+                                        url: url,
+                                        type: 'post',
+                                        data: {
+                                            id: obj.data.id,
+                                            val: obj.value
+                                        },
+                                        done: function (res) {
+                                            servicefun('/index.php/webVipinfoServiceCacheSel/');
+                                        }
+                                    })
+                                }
+                                if (obj.field == 'service_number') {
+                                    // 数量
+                                    tj('/index.php/webVipinfoServiceCacheNum/');
+                                }
+                            });
+
+                        });
+
+                        //销售流水
+                        $("#crm-vip-vipinfo-selling_water").click(function () {
+                            //弹出销售流水
+                            layer.open({
+                                title: "销售流水"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_selling_water" lay-filter="vipinfo-selling_water-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    table.render({ //收银流水
+                                        elem: '#vipinfo_selling_water'
+                                        , url: '/index.php/webVipinfoSalesFlow/' //数据接口
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card: res.data.code }
+                                        , height: 430
+                                        , toolbar: true
+                                        , page: true //开启分页
+                                        , cols: [[ //表头 
+                                            { field: 'code', title: '订单号', width: 170, sort: true, fixed: 'left' },
+                                            { field: 'vip_name', title: '购买人', width: 100, sort: true },
+                                            { field: 'sname', title: '门店名称', width: 120, sort: true },
+                                            { field: 'operate_name', title: '操作人', width: 100, sort: true },
+                                            { field: 'operate_code', title: '操作人工号', width: 130, sort: true },
+                                            { field: 'money', title: '原价合计', width: 120, sort: true },
+                                            { field: 'dis_money', title: '应付金额', width: 120, sort: true },
+                                            { field: 'real_pay', title: '实付金额', width: 120, sort: true },
+                                            { field: 'real_income', title: '实收金额', width: 120, sort: true },
+                                            { field: 'number', title: '购买数量', width: 110, sort: true },
+                                            { field: 'give_integral', title: '获得积分', width: 110, sort: true },
+                                            { field: 'use_integral', title: '使用积分', width: 110, sort: true },
+                                            { field: 'integral_balance', title: '积分抵现', width: 110, sort: true },
+                                            { field: 'storage_balance', title: '储值抵现', width: 110, sort: true },
+                                            { field: 'cash_pay', title: '现金支付', width: 120, sort: true },
+                                            { field: 'wechat_pay', title: '微信支付', width: 120, sort: true },
+                                            { field: 'ali_pay', title: '支付宝支付', width: 120, sort: true },
+                                            { field: 'union_pay', title: '银行卡支付', width: 120, sort: true },
+                                            { field: 'not_small_change', title: '抹零', width: 100, sort: true },
+                                            { field: 'give_change', title: '找零', width: 100, sort: true },
+                                            { field: 'pay_return_money', title: '消费返利金额', width: 140, sort: true },
+                                            { field: 'time_g', title: '购买时间', width: 180, sort: true },
+                                            { field: 'status', title: '订单状态', width: 120, sort: true },
+                                            { fixed: 'right', title: '操作', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                        ]]
+                                    });
+                                    //监听表格
+                                    // 监听行工具栏事件
+                                    table.on('tool(vipinfo-selling_water-table)', function (obj) {
+                                        switch (obj.event) {
+                                            case 'vipinfo_detail':
+                                                layer.open({
+                                                    title: '订单明细',
+                                                    type: 1,
+                                                    shade: 0.3,
+                                                    shadeClose: false,
+                                                    anim: 1,
+                                                    area: ["1000px", "550px"],
+                                                    skin: "layui-layer-admin layui-anim",
+                                                    content: '<table class="layui-hide" id="vip-vipinfo-detail" lay-filter="vip-vipinfo-detail"></table>',
+                                                    success: function (layero, index) {
+                                                        // 右上角叉号
+                                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                        layero.append(elemClose);
+                                                        elemClose.on('click', function () {
+                                                            layer.close(index);
+                                                        });
+
+                                                        var orderInfo = function () {
+                                                            table.render({
+                                                                elem: '#vip-vipinfo-detail', //table 的 id
+                                                                height: 430,
+                                                                page: true, //开启分页
+                                                                url: '/index.php/webVipinfoSalesFlowInfo/', //数据接口路由
+                                                                where: { bill: obj.data.code, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                                                                cols: [[ //表头
+                                                                    { field: 'goods_code', title: '商品条码', width: 200, align: 'center', sort: true, fixed: 'left' },
+                                                                    { field: 'gname', title: '商品名称', width: 180, align: 'center', sort: true },
+                                                                    { field: 'price', title: '原单价', width: 100, align: 'center', sort: true },
+                                                                    { field: 'discount', title: '享受折扣', width: 100, align: 'center', sort: true },
+                                                                    { field: 'dis_price', title: '折扣价', width: 100, align: 'center', sort: true },
+                                                                    { field: 'number', title: '购买数量', width: 100, align: 'center', sort: true },
+                                                                    { field: 'money', title: '原价小计', width: 120, align: 'center', sort: true },
+                                                                    { field: 'dis_money', title: '折后小计', width: 120, align: 'center', sort: true },
+                                                                    { field: 'give_integral', title: '获得积分', width: 100, align: 'center', sort: true },
+                                                                    { field: 'pro_code', title: '促销员工号', width: 150, align: 'center', sort: true },
+                                                                    { field: 'pro_name', title: '促销员', width: 150, align: 'center', sort: true },
+                                                                    { field: 'mname', title: '门店', width: 120, align: 'center', sort: true },
+                                                                    { field: 'use_integral', title: '使用积分', width: 120, align: 'center', sort: true },
+                                                                    { field: 'integral_balance_g', title: '积分抵现金额', width: 120, align: 'center', sort: true },
+                                                                    { field: 'storage_balance_g', title: '储值抵现金额', width: 120, align: 'center', sort: true },
+                                                                    { field: 'pay_return_money', title: '消费返利金额', width: 120, align: 'center', sort: true },
+                                                                    { field: 'status_g', title: '状态', width: 120, align: 'center', sort: true },
+                                                                    { field: 'time_g', title: '下单时间', width: 120, align: 'center', sort: true },
+                                                                    { field: 'r_time_g', title: '退货时间', width: 120, align: 'center', sort: true },
+                                                                    { field: 'integral_rule', title: '获得抵现积分', width: 120, align: 'center', sort: true }
+                                                                ]],
+                                                                toolbar: true
+                                                            });
+                                                        }
+                                                        orderInfo(); // 封装成函数
+                                                    }
+                                                });
+                                                break;
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        //积分流水
+                        $("#crm-vip-vipinfo-integral_flow").click(function () {
+                            //弹出积分流水
+                            layer.open({
+                                title: "积分流水"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_integral_flow" lay-filter="vipinfo-integral_flow-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    table.render({ //积分流水
+                                        elem: '#vipinfo_integral_flow'
+                                        , height: 430
+                                        , url: '/index.php/webVipinfoIntegralSel/'
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code } //数据接口
+                                        , toolbar: true
+                                        , page: true
+                                        , cols: [[ //表头 
+                                            // { field: 'documents', title: '单据', width: 200, sort: true }
+                                            // , 
+                                            { field: 'code', title: '会员卡号', width: 110, sort: true }
+                                            , { field: 'username', title: '会员名称', width: 110, sort: true }
+                                            , { field: 'integral', title: '积分', width: 110, sort: true }
+                                            , { field: 'road', title: '途径', width: 150, sort: true }
+                                            // , { field: 'remarks', title: '备注', width: 150, sort: true }
+                                            // , { field: 'vqname', title: '操作员', width: 110, sort: true }
+                                            , { field: 'vpname', title: '操作店面', width: 110, sort: true }
+                                            , { field: 'time_g', title: '积分时间', width: 170, sort: true }
+                                        ]]
+                                    });
+                                }
+                            });
+                        });
+
+                        //储值流水
+                        $("#crm-vip-vipinfo-stored_value_water").click(function () {
+                            //弹出储值流水
+                            layer.open({
+                                title: "储值流水"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_stored_value_water" lay-filter="vipinfo-stored_value_water-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    table.render({ //储值流水
+                                        elem: '#vipinfo_stored_value_water'
+                                        , height: 430
+                                        , url: '/index.php/webVipinfoStoredSel/' //数据接口
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code } //数据接口
+                                        , toolbar: true
+                                        , cols: [[ //表头 
+                                            // { field: 'documents', title: '单据', width: 200, sort: true }
+                                            // ,
+                                            { field: 'code', title: '会员卡号', width: 110, sort: true }
+                                            , { field: 'username', title: '会员名称', width: 110, sort: true }
+                                            , { field: 'money_g', title: '金额', width: 110, sort: true }
+                                            // , { field: 'stored_value_g', title: '储值金额', width: 110, sort: true }
+                                            , { field: 'road', title: '途径', width: 130, sort: true }
+                                            // , { field: 'actual_receipt_g', title: '实收金额', width: 120, sort: true }
+                                            // , { field: 'give_amount_g', title: '充值赠送金额', width: 150, sort: true }
+                                            // , { field: 'give_integral', title: '赠送积分', width: 110, sort: true }
+                                            // , { field: 'vqname', title: '操作员', width: 110, sort: true }
+                                            , { field: 'vpname', title: '操作门店', width: 120, sort: true }
+                                            , { field: 'time_g', title: '操作时间', width: 170, sort: true }
+                                            // , { field: 'remarks', title: '备注', width: 150, sort: true }
+                                        ]]
+                                        , page: true
+                                    });
+                                }
+                            });
+                        });
+
+                        //割肉流水
+                        $("#crm-vip-vipinfo-stored_cut_meat").click(function () {
+                            //弹出割肉流水
+                            layer.open({
+                                title: "割肉流水"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_stored_cut_meat" lay-filter="vipinfo-stored_cut_meat-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    table.render({ //储值流水
+                                        elem: '#vipinfo_stored_cut_meat'
+                                        , height: 430
+                                        , url: '/index.php/webVipinfoStoredCutMeat/' //数据接口
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code } //数据接口
+                                        , toolbar: true
+                                        , cols: [[ //表头 
+                                            // { field: 'documents', title: '单据', width: 200, sort: true }
+                                            // , { field: 'usercard', title: '会员卡号', width: 110, sort: true }
+                                            // , { field: 'username', title: '会员名称', width: 110, sort: true }
+                                            // , { field: 'stored_value_g', title: '储值金额', width: 110, sort: true }
+                                            // , { field: 'road', title: '途径', width: 130, sort: true }
+                                            // , { field: 'actual_receipt_g', title: '实收金额', width: 120, sort: true }
+                                            // , { field: 'give_amount_g', title: '充值赠送金额', width: 150, sort: true }
+                                            // , { field: 'give_integral', title: '赠送积分', width: 110, sort: true }
+                                            // , { field: 'vqname', title: '操作员', width: 110, sort: true }
+                                            // , { field: 'vpname', title: '操作门店', width: 120, sort: true }
+                                            // , { field: 'operate_time_g', title: '操作时间', width: 170, sort: true }
+                                            // , { field: 'remarks', title: '备注', width: 150, sort: true }
+                                            { field: 'code', title: '会员卡号', width: 110, sort: true }
+                                            , { field: 'username', title: '会员名称', width: 110, sort: true }
+                                            , { field: 'money_g', title: '金额', width: 110, sort: true }
+                                            , { field: 'road', title: '途径', width: 130, sort: true }
+                                            , { field: 'vpname', title: '操作门店', width: 120, sort: true }
+                                            , { field: 'time_g', title: '操作时间', width: 170, sort: true }
+                                        ]]
+                                        , page: true
+                                    });
+                                }
+                            });
+                        });
+
+                        //RFM
+                        $("#crm-vip-vipinfo-rfm").click(function () {
+                            //弹出
+                            layer.open({
+                                title: "RFM"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1000px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_active" lay-filter="vipinfo-active-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    table.render({ //收银流水
+                                        elem: '#vipinfo_active'
+                                        , height: 430
+                                        , cellMinWidth: 120
+                                        , url: '/index.php/webVipinfoRFMSel/' //数据接口
+                                        , toolbar: true
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                        , cols: [[ //表头 
+                                            { field: 'r_type', title: 'R(类型)', sort: true }
+                                            , { field: 'r_score', title: 'R(得分)', sort: true }
+                                            , { field: 'f_type', title: 'F(类型)', sort: true }
+                                            , { field: 'f_score', title: 'F(得分)', sort: true }
+                                            , { field: 'f_frequency', title: 'F(次数)', sort: true }
+                                            , { field: 'm_type', title: 'M(类型)', sort: true }
+                                            , { field: 'm_score', title: 'M(得分)', sort: true }
+                                            , { field: 'm_money', title: 'M(金额)', sort: true }
+                                            , { field: 'i_type', title: 'I(类型)', sort: true }
+                                            , { field: 'i_score', title: 'I(得分)', sort: true }
+                                            , { field: 'i_introduction', title: 'I(转介绍)', sort: true }
+                                            , { field: 'n_type', title: 'N(类型)', sort: true }
+                                            , { field: 'n_score', title: 'N(得分)', sort: true }
+                                            , { field: 'n_number', title: 'N(件数)', sort: true }
+                                            , { field: 'p_type', title: 'P(类型)', sort: true }
+                                            , { field: 'p_score', title: 'P(得分)', sort: true }
+                                            , { field: 'p_univalent', title: 'P(客单件)', sort: true }
+                                            , { field: 'a_type', title: 'A(类型)', sort: true }
+                                            , { field: 'a_score', title: 'A(得分)', sort: true }
+                                            , { field: 'a_univalent', title: 'A(件单价)', sort: true }
+                                            , { field: 'j_type', title: 'J(类型)', sort: true }
+                                            , { field: 'j_score', title: 'J(得分)', sort: true }
+                                            , { field: 'j_related_rate', title: 'J(连带率)', sort: true }
+                                            , { field: 'c_type', title: 'C(类型)', sort: true }
+                                            , { field: 'c_score', title: 'C(得分)', sort: true }
+                                            , { field: 'c_consumption', title: 'C(年消费)', sort: true }
+                                        ]]
+                                    });
+                                }
+                            });
+                        });
+
+                        //返单计划
+                        $("#crm-vip-vipinfo-return_plan").click(function () {
+                            //弹出返单计划
+                            layer.open({
+                                title: "返单计划"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1300px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_return_plan" lay-filter="vipinfo-return_plan-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    // var demoten = function () {
+                                    table.render({ //返单计划
+                                        elem: '#vipinfo_return_plan'
+                                        , height: 430
+                                        , url: '/index.php/webVipinfoOrderSel/' //数据接口
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                        , toolbar: true
+                                        , cols: [[ //表头  
+                                            { field: 'code', title: '单号', sort: true, width: 180, fixed: 'left' }
+                                            , { field: 'name', title: '返单名称', sort: true, width: 110, fixed: 'left' }
+                                            , { field: 'vip_code', title: '卡号', sort: true, width: 110 }
+                                            , { field: 'vhname', title: '返单顾客', sort: true, width: 110 }
+                                            , { field: 'vhphone', title: '手机号', sort: true, width: 120 }
+                                            , { field: 'vlname', title: '会员等级', sort: true, width: 110 }
+                                            , { field: 'vgname', title: '执行人', sort: true, width: 100 }
+                                            , { field: 'vggname', title: '监督人', sort: true, width: 100 }
+                                            , { field: 'time_g', title: '执行时间', sort: true, width: 180 }
+                                            , { field: 'shop_g', title: '是否到店', sort: true, width: 110 }
+                                            , { field: 'consumption_g', title: '是否消费', sort: true, width: 110 }
+                                            , { field: 'status_g', title: '审核状态', sort: true, width: 110 }
+                                            , { fixed: 'right', title: '推荐商品', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                        ]]
+                                        , page: true
+                                    });
+                                    // }
+                                    // demoten();
+
+                                    table.on('tool(vipinfo-return_plan-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                        var data = obj.data; //获得当前行数据
+                                        var layEvent = obj.event;
+
+                                        //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                        if (layEvent === 'vipinfo_detail') {//查看
+
+                                            layer.open({
+                                                title: '查看详情'
+                                                , type: 1
+                                                , area: ["1200px", "550px"] // 弹出层的大小
+                                                , skin: "layui-layer-admin layui-anim"
+                                                , content: '<table id="vipinfo_return_tablebill" lay-filter="return_tablebill_tool"></table>'
+                                                //关闭弹出层
+                                                , success: function (layero, index) {
+                                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                    layero.append(elemClose);
+                                                    elemClose.on('click', function () {
+                                                        layer.close(index);
+                                                    });
+                                                    //查看表格
+                                                    table.render({
+                                                        elem: '#vipinfo_return_tablebill'
+                                                        , height: 430
+                                                        , url: "/index.php/webVipinfoOrderDillSel/"//数据接口
+                                                        , page: true
+                                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, bill: obj.data.code }
+                                                        , cols: [[ //表头
+                                                            { field: 'photo', title: '照片', width: 120, templet: '#vipinfo_showImg', event: 'photoImg', sort: true }
+                                                            , { field: 'goods_bar_code', title: '产品条码', width: 180, sort: true }
+                                                            , { field: 'color', title: '颜色', width: 100, sort: true }
+                                                            , { field: 'size', title: '尺码', width: 100, sort: true }
+                                                            , { field: 'brand', title: '品牌价', width: 100, sort: true }
+                                                            , { field: 'vip_price', title: '会员价', width: 100, sort: true }
+                                                            , { field: 'customer_demand', title: '顾客需求', width: 200, sort: true }
+                                                            , { field: 'buy_some', title: '核心买点EBAF', width: 200, sort: true }
+                                                            , { field: 'top', title: 'TOP', width: 150, sort: true }
+                                                            , { field: 'question', title: '顾客可能会问的问题', width: 200, sort: true }
+                                                            , { field: 'answer', title: '问题回应话术', width: 200, sort: true }
+                                                            , { fixed: 'right', title: '操作', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+
+                                                        ]]
+                                                    });
+                                                }
+                                            });
+
+                                            table.on('tool(return_tablebill_tool)', function (returnbill) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                                                var data = returnbill.data; //获得当前行数据
+                                                var layEvent = returnbill.event;
+
+                                                if (layEvent === 'vipinfo_detail') { //查看详情，查看小返单计划
+
+                                                    layer.open({
+                                                        title: '查看详情'
+                                                        , type: 1
+                                                        , area: ["750px", "550px"] // 弹出层的大小
+                                                        , skin: "layui-layer-admin layui-anim"
+                                                        , content: '<form class="layui-form" lay-filter="vip_returnorder_return_form_look"><div class="layui-form-item"><label class="layui-form-label">产品编号:</label><div class="layui-input-inline"><input type="text" name="production_number" autocomplete="off" disabled class="layui-input"></div><label class="layui-form-label">颜色:</label><div class="layui-input-inline"><input type="text" name="color" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">尺码:</label><div class="layui-input-inline"><input type="text" name="size" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">吊牌价:</label><div class="layui-input-inline"><input type="text" name="brand" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员价:</label><div class="layui-input-inline"><input type="text" name="vip_price" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">图片:</label><div class="layui-input-inline" id="vipinfo_returnbill_img"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客需求</label><div class="layui-input-block"><textarea class="layui-textarea" name="customer_demand" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">核心买点EBAF</label><div class="layui-input-block"><textarea class="layui-textarea" name="buy_some" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">TOP</label><div class="layui-input-block"><textarea class="layui-textarea" name="top" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客可能会问的问题</label><div class="layui-input-block"><textarea class="layui-textarea" name="question" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">问题回应话术</label><div class="layui-input-block"><textarea class="layui-textarea" name="answer" disabled></textarea></div></div></form>'
+                                                        //关闭弹出层
+                                                        , success: function (layero, index) {
+                                                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                            layero.append(elemClose);
+                                                            elemClose.on('click', function () {
+                                                                layer.close(index);
+                                                            });
+                                                            var imgurl = data.photo;
+                                                            var img = $("#vipinfo_returnbill_img");
+                                                            if (imgurl !== "") {
+                                                                img.html("<img src='" + imgurl + "' name='photo' width='190' height='100'>");
+                                                            } else {
+
+                                                            }
+                                                            // 表单初始赋值
+                                                            form.val("vip_returnorder_return_form_look", {
+                                                                production_number: data.goods_bar_code,
+                                                                color: data.color,
+                                                                size: data.size,
+                                                                brand: data.brand,
+                                                                vip_price: data.vip_price,
+                                                                customer_demand: data.customer_demand,
+                                                                buy_some: data.buy_some,
+                                                                top: data.top,
+                                                                question: data.question,
+                                                                answer: data.answer
+                                                            });
+                                                        }
+                                                    });
+
+                                                } else if (layEvent === 'photoImg') {
+
+                                                    if (returnbill.data.photo !== "") {
+                                                        layer.open({
+                                                            title: '图片详情'
+                                                            , type: 1
+                                                            , area: ["440px", "390px"] // 弹出层的大小
+                                                            , skin: "layui-layer-admin layui-anim"
+                                                            , content: '<div id="vipinfo_returnbillphoto_img"></div>'
+                                                            //关闭弹出层
+                                                            , success: function (layero, index) {
+                                                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                                layero.append(elemClose);
+                                                                elemClose.on('click', function () {
+                                                                    layer.close(index);
+                                                                });
+                                                                var imgurl = returnbill.data.photo;
+                                                                var imgs = $("#vipinfo_returnbillphoto_img");
+                                                                if (imgurl !== "") {
+                                                                    imgs.html("<img src='" + imgurl + "' name='photo' width='400' height='300'>");
+                                                                } else {
+
+                                                                }
+                                                            }
+                                                        });
+                                                    } else {
+                                                        layer.msg('暂无图片!');
+                                                    }
+
+                                                }
+                                            });
+                                        }
+
+                                    });
+                                }
+                            });
+                        });
+
+                        //返单互动
+                        $("#crm-vip-vipinfo-interaction").click(function () {
+                            //弹出返单互动
+                            layer.open({
+                                title: "返单互动"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1300px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_interaction" lay-filter="vipinfo-interaction-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    //返单互动表
+                                    // var demoeleven = function () {
+                                    table.render({ //返单互动
+                                        elem: '#vipinfo_interaction'
+                                        , height: 430
+                                        , url: '/index.php/webVipinfoia/' //数据接口 
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                        , toolbar: true
+                                        , cols: [[ //表头  
+                                            { field: 'code', title: '单号', sort: true, width: 180, fixed: 'left' }
+                                            , { field: 'name', title: '互动名称', sort: true, width: 110, fixed: 'left' }
+                                            , { field: 'vip_code', title: '卡号', sort: true, width: 110 }
+                                            , { field: 'vhname', title: '返单顾客', sort: true, width: 110 }
+                                            , { field: 'vhphone', title: '手机号', sort: true, width: 120 }
+                                            , { field: 'vlname', title: '会员等级', sort: true, width: 110 }
+                                            , { field: 'vgname', title: '执行人', sort: true, width: 100 }
+                                            , { field: 'vggname', title: '监督人', sort: true, width: 100 }
+                                            , { field: 'time_g', title: '完成时间', sort: true, width: 180 }
+                                            , { field: 'status_g', title: '互动状态', sort: true, width: 110 }
+                                            , { fixed: 'right', title: '内容', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                        ]]
+                                        , page: true
+                                    });
+                                    // }
+                                    // demoeleven();
+
+                                    //监听表格
+                                    table.on('tool(vipinfo-interaction-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                        var data = obj.data; //获得当前行数据
+                                        var layEvent = obj.event;
+                                        //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                        if (layEvent === 'vipinfo_detail') {//查看
+                                            layer.open({
+                                                title: '查看详情'
+                                                , type: 1
+                                                , area: ["1200px", "550px"] // 弹出层的大小
+                                                , skin: "layui-layer-admin layui-anim"
+                                                , content: '<table id="vipinfo_interactive_tablebill"></table>'
+                                                //关闭弹出层
+                                                , success: function (layero, index) {
+                                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                    layero.append(elemClose);
+                                                    elemClose.on('click', function () {
+                                                        layer.close(index);
+                                                    });
+                                                }
+                                            });
+                                            //查看表格
+                                            table.render({
+                                                elem: '#vipinfo_interactive_tablebill'
+                                                , height: 430
+                                                , cellMinWidth: 200
+                                                , url: "/index.php/webVipinfobillia/"
+                                                , where: { access_token: layui.data(layui.setter.tableName).access_token, interactive_bill: obj.data.code }
+                                                , page: true
+                                                , cols: [[ //表头
+                                                    { field: 'inter_code', title: '单号' }
+                                                    , { field: 'time_g', title: '时间节点' }
+                                                    , { field: 'purpose', title: '互动目的' }
+                                                    , { field: 'function', title: '运用方式' }
+                                                    , { field: 'speech', title: '执行话术' }
+                                                    , { field: 'status_g', title: '审核状态' }
+                                                ]]
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        //100天跟进
+                        $("#crm-vip-vipinfo-hundred_interaction").click(function () {
+                            //弹出专场跟进
+                            layer.open({
+                                title: "专场跟进"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1300px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_hundred_interaction" lay-filter="vipinfo-hundred_interaction-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    var vipreturnfun = function () {
+                                        table.render({ //专场跟进
+                                            elem: '#vipinfo_hundred_interaction'
+                                            , height: 430
+                                            , url: '/index.php/webVipinfoHundredFootSel/' //数据接口 
+                                            , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                            , toolbar: true
+                                            , cols: [[ //表头  
+                                                { field: 'code', title: '单号', sort: true, width: 180, fixed: 'left' }
+                                                , { field: 'name', title: '互动名称', sort: true, width: 110, fixed: 'left' }
+                                                , { field: 'vip_code', title: '卡号', sort: true, width: 110 }
+                                                , { field: 'vyname', title: '返单顾客', sort: true, width: 110 }
+                                                , { field: 'vyphone', title: '手机号', sort: true, width: 120 }
+                                                , { field: 'vlname', title: '会员等级', sort: true, width: 110 }
+                                                , { field: 'end_time', title: '最后购物时间', sort: true, width: 170 }
+                                                , { field: 'vhname', title: '执行人', sort: true, width: 110 }
+                                                , { field: 'vhhname', title: '监督人', sort: true, width: 110 }
+                                                , { field: 'time_g', title: '创建时间', sort: true, width: 170 }
+                                                , { field: 'status_g', title: '互动状态', sort: true, width: 110 }
+                                                , { fixed: 'right', title: '内容', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                            ]]
+                                            , page: true
+                                        });
+                                    }
+                                    vipreturnfun();
+                                    //监听表格
+                                    table.on('tool(vipinfo-hundred_interaction-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                        var data = obj.data; //获得当前行数据
+                                        var layEvent = obj.event;
+                                        //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                        if (layEvent === 'vipinfo_detail') {//查看
+                                            layer.open({
+                                                title: '查看详情'
+                                                , type: 1
+                                                , area: ["1100px", "550px"] // 弹出层的大小
+                                                , skin: "layui-layer-admin layui-anim"
+                                                , content: '<table id="vipinfo_return_table_footprint_bill"></table>'
+                                                //关闭弹出层
+                                                , success: function (layero, index) {
+                                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                    layero.append(elemClose);
+                                                    elemClose.on('click', function () {
+                                                        layer.close(index);
+                                                    });
+                                                }
+                                            });
+                                            //查看表格
+                                            table.render({
+                                                elem: '#vipinfo_return_table_footprint_bill'
+                                                , height: 430
+                                                , cellMinWidth: 200
+                                                , url: "/index.php/webVipinfoHundredFootDill/"
+                                                , where: { access_token: layui.data(layui.setter.tableName).access_token, footprint_bill: obj.data.code }
+                                                , page: true
+                                                , cols: [[ //表头
+                                                    { field: 'time', title: '时间节点(天)', sort: true }
+                                                    , { field: 'purpose', title: '互动目的', sort: true }
+                                                    , { field: 'function', title: '运用方式', sort: true }
+                                                    , { field: 'speech', title: '执行话术', sort: true }
+                                                    , { field: 'status_g', title: '审核状态', sort: true }
+                                                ]]
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        //365跟进
+                        $("#crm-vip-vipinfo-thdays_interaction").click(function () {
+                            //弹出365跟进
+                            layer.open({
+                                title: "365跟进"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1300px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_thdays_interaction" lay-filter="vipinfo-thdays_interaction-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    var vipthdaysfun = function () {
+                                        table.render({ //365跟进
+                                            elem: '#vipinfo_thdays_interaction'
+                                            , height: 430
+                                            , url: '/index.php/webVipinfoThreeFootSel/' //数据接口 
+                                            , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                            , toolbar: true
+                                            , cols: [[ //表头  
+                                                { field: 'code', title: '单号', sort: true, width: 200, fixed: 'left' }
+                                                , { field: 'name', title: '互动名称', sort: true, width: 110, fixed: 'left' }
+                                                , { field: 'vip_code', title: '卡号', sort: true, width: 110 }
+                                                , { field: 'vyname', title: '返单顾客', sort: true, width: 110 }
+                                                , { field: 'vyphone', title: '手机号', sort: true, width: 120 }
+                                                , { field: 'end_time', title: '最后购物时间', sort: true, width: 170 }
+                                                , { field: 'vlname', title: '会员等级', sort: true, width: 110 }
+                                                , { field: 'vhname', title: '执行人', sort: true, width: 110 }
+                                                , { field: 'vhhname', title: '监督人', sort: true, width: 110 }
+                                                , { field: 'time_g', title: '创建时间', sort: true, width: 170 }
+                                                , { field: 'status_g', title: '互动状态', sort: true, width: 110 }
+                                                , { fixed: 'right', title: '内容', width: 100, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                            ]]
+                                            , page: true
+                                        });
+                                    }
+                                    vipthdaysfun();
+                                    //监听表格
+                                    table.on('tool(vipinfo-thdays_interaction-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                        var data = obj.data; //获得当前行数据
+                                        var layEvent = obj.event;
+                                        //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                        if (layEvent === 'vipinfo_detail') {//查看
+                                            layer.open({
+                                                title: '查看详情'
+                                                , type: 1
+                                                , area: ["1100px", "550px"] // 弹出层的大小
+                                                , skin: "layui-layer-admin layui-anim"
+                                                , content: '<table id="vipinfo_thdays_table_footprint_bill"></table>'
+                                                //关闭弹出层
+                                                , success: function (layero, index) {
+                                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                    layero.append(elemClose);
+                                                    elemClose.on('click', function () {
+                                                        layer.close(index);
+                                                    });
+                                                }
+                                            });
+                                            //查看表格
+                                            table.render({
+                                                elem: '#vipinfo_thdays_table_footprint_bill'
+                                                , height: 430
+                                                , cellMinWidth: 200
+                                                , page: true
+                                                , url: "/index.php/webVipinfoThreeFootDill/"
+                                                , where: { access_token: layui.data(layui.setter.tableName).access_token, footprint_bill: obj.data.code }
+                                                , cols: [[ //表头
+                                                    { field: 'name', title: '名称', sort: true }
+                                                    , { field: 'time_g', title: '时间', sort: true }
+                                                    , { field: 'purpose', title: '互动目的', sort: true }
+                                                    , { field: 'function', title: '运用方式', sort: true }
+                                                    , { field: 'speech', title: '执行话术', sort: true }
+                                                    , { field: 'status_g', title: '审核状态', sort: true }
+                                                ]]
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+
+                        });
+
+                        //专场跟进
+                        $("#crm-vip-vipinfo-field_interaction").click(function () {
+                            //弹出专场跟进
+                            layer.open({
+                                title: "专场跟进"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["1300px", "550px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<table id="vipinfo_field_interaction" lay-filter="vipinfo-field_interaction-table"></table>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    var vipreturnfun = function () {
+                                        table.render({ //专场跟进
+                                            elem: '#vipinfo_field_interaction'
+                                            , height: 430
+                                            , url: '/index.php/webVipinfoFieldFootSel/' //数据接口 
+                                            , where: { access_token: layui.data(layui.setter.tableName).access_token, card_number: res.data.code }
+                                            , toolbar: true
+                                            , cols: [[ //表头  
+                                                { field: 'code', title: '单号', sort: true, width: 180, fixed: 'left' }
+                                                , { field: 'name', title: '互动名称', sort: true, width: 110, fixed: 'left' }
+                                                , { field: 'vip_code', title: '卡号', sort: true, width: 110 }
+                                                , { field: 'vyname', title: '返单顾客', sort: true, width: 110 }
+                                                , { field: 'vyphone', title: '手机号', sort: true, width: 120 }
+                                                , { field: 'vlname', title: '会员等级', sort: true, width: 110 }
+                                                , { field: 'end_time', title: '最后购物时间', sort: true, width: 150 }
+                                                , { field: 'vhname', title: '执行人', sort: true, width: 110 }
+                                                , { field: 'vhhname', title: '监督人', sort: true, width: 110 }
+                                                , { field: 'time_g', title: '创建时间', sort: true, width: 150 }
+                                                , { field: 'status_g', title: '互动状态', sort: true, width: 110 }
+                                                , { fixed: 'right', title: '内容', width: 80, align: 'center', toolbar: '#vipinfo_Demo_perator' }
+                                            ]]
+                                            , page: true
+                                        });
+                                    }
+                                    vipreturnfun();
+                                    //监听表格
+                                    table.on('tool(vipinfo-field_interaction-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                        var data = obj.data; //获得当前行数据
+                                        var layEvent = obj.event;
+                                        //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                        if (layEvent === 'vipinfo_detail') {//查看
+                                            layer.open({
+                                                title: '查看详情'
+                                                , type: 1
+                                                , area: ["1100px", "550px"] // 弹出层的大小
+                                                , skin: "layui-layer-admin layui-anim"
+                                                , content: '<table id="vipinfo_field_table_footprint_bill"></table>'
+                                                //关闭弹出层
+                                                , success: function (layero, index) {
+                                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                    layero.append(elemClose);
+                                                    elemClose.on('click', function () {
+                                                        layer.close(index);
+                                                    });
+                                                }
+                                            });
+                                            //查看表格
+                                            table.render({
+                                                elem: '#vipinfo_field_table_footprint_bill'
+                                                , height: 430
+                                                , cellMinWidth: 200
+                                                , url: "/index.php/webVipinfoFieldFootDill/"
+                                                , where: { access_token: layui.data(layui.setter.tableName).access_token, footprint_bill: obj.data.code }
+                                                , page: true
+                                                , cols: [[ //表头
+                                                    { field: 'time_g', title: '时间(日期)', sort: true }
+                                                    , { field: 'purpose', title: '互动目的', sort: true }
+                                                    , { field: 'function', title: '运用方式', sort: true }
+                                                    , { field: 'speech', title: '执行话术', sort: true }
+                                                    , { field: 'status_g', title: '审核状态', sort: true }
+                                                ]]
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        //购买商品
+                        $("#crm-vip-vipinfo-buy_goods").click(function () {
+
+                            layer.open({
+                                title: '商品明细',
+                                type: 1,
+                                shade: 0.3,
+                                shadeClose: false,
+                                anim: 1,
+                                area: ["1000px", "550px"],
+                                skin: "layui-layer-admin layui-anim",
+                                content: '<table class="layui-hide" id="vip_vipinfo_detail_buy" lay-filter="vip_vipinfo_detail_table"></table>',
+                                success: function (layero, index) {
+                                    // 右上角叉号
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+
+                                    var orderInfo = function () {
+                                        table.render({
+                                            elem: '#vip_vipinfo_detail_buy', //table 的 id
+                                            height: 430,
+                                            page: true, //开启分页
+                                            url: '/index.php/webVipinfoGoodInfo/', //数据接口路由
+                                            where: { card: res.data.code, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                                            cols: [[ //表头
+                                                { field: 'photo', title: '照片', width: 120, templet: '#vipinfo_showImg', event: 'photoImg', sort: true, fixed: 'left' },
+                                                { field: 'goods_code', title: '商品条码', width: 200, align: 'center', sort: true, fixed: 'left' },
+                                                { field: 'gname', title: '商品名称', width: 180, align: 'center', sort: true },
+                                                { field: 'price', title: '原单价', width: 100, align: 'center', sort: true },
+                                                { field: 'discount', title: '享受折扣', width: 100, align: 'center', sort: true },
+                                                { field: 'dis_price', title: '折扣价', width: 100, align: 'center', sort: true },
+                                                { field: 'number', title: '购买数量', width: 100, align: 'center', sort: true },
+                                                { field: 'money', title: '原价小计', width: 120, align: 'center', sort: true },
+                                                { field: 'dis_money', title: '折后小计', width: 120, align: 'center', sort: true },
+                                                { field: 'give_integral', title: '获得积分', width: 100, align: 'center', sort: true },
+                                                { field: 'pro_code', title: '促销员工号', width: 150, align: 'center', sort: true },
+                                                { field: 'pro_name', title: '促销员', width: 150, align: 'center', sort: true },
+                                                { field: 'mname', title: '门店', width: 120, align: 'center', sort: true },
+                                                { field: 'use_integral', title: '使用积分', width: 120, align: 'center', sort: true },
+                                                { field: 'integral_balance_g', title: '积分抵现金额', width: 120, align: 'center', sort: true },
+                                                { field: 'storage_balance_g', title: '储值抵现金额', width: 120, align: 'center', sort: true },
+                                                { field: 'pay_return_money', title: '消费返利金额', width: 120, align: 'center', sort: true },
+                                                { field: 'status_g', title: '状态', width: 120, align: 'center', sort: true },
+                                                { field: 'time_g', title: '下单时间', width: 120, align: 'center', sort: true },
+                                                { field: 'r_time_g', title: '退货时间', width: 120, align: 'center', sort: true },
+                                                { field: 'integral_rule', title: '获得抵现积分', width: 120, align: 'center', sort: true }
+                                            ]],
+                                            toolbar: true
+                                        });
+                                    }
+                                    orderInfo(); // 封装成函数
+                                    table.on('tool(vip_vipinfo_detail_table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                                        var imgurl = obj.data.photo;
+                                        var layEvent = obj.event;
+                                        if (layEvent === 'photoImg') {
+                                            if (imgurl !== "") {
+                                                layer.open({
+                                                    title: '图片详情'
+                                                    , type: 1
+                                                    , area: ["440px", "500px"] // 弹出层的大小
+                                                    , skin: "layui-layer-admin layui-anim"
+                                                    , content: '<div id="vipinfophoto_img"></div>'
+                                                    //关闭弹出层
+                                                    , success: function (layero, index) {
+                                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                        layero.append(elemClose);
+                                                        elemClose.on('click', function () {
+                                                            layer.close(index);
+                                                        });
+
+                                                        $("#vipinfophoto_img").html("<img src='" + imgurl + "' name='photo' width='400' height='400'>");
+                                                    }
+                                                });
+                                            } else {
+                                                layer.msg('暂无图片!');
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+
+                        });
+
+                    } else {
+                        layer.msg(res.msg, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+        }
+
+        //读卡
+        var ReadCard = function () {
+            //清除缓存
+            admin.req({
+                url: '/index.php/webVipinfoCacheClean/',
+                type: 'post',
+                done: function (res) {
+                }
+            });
+            //弹出读卡
+            layer.open({
+                title: "会员读卡"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: true
+                , anim: 1
+                , offset: 'auto'
+                , area: ["400px", "260px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" lay-filter="vipinfo_ReadCard_form" id="vipinfo_ReadCard_form"><br/><div class="layui-form-item"><label class="layui-form-label">卡号/手机号:</label><div class="layui-input-inline"><input type="text" name="number" id="vipinfo_number" autocomplete="off" placeholder="请输入号码" class="layui-input"></div></div><br/><div class="layui-form-item"><div class="layui-input-block"><button class="layui-btn" lay-submit="" lay-filter="vipinfo_card_button">确定</button><button type="reset" class="layui-btn layui-btn-primary">重置</button></div></div></form>'
+                , success: function (layero, readcard) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(readcard);
+                    });
+                    //获取焦点
+                    $("#vipinfo_number").focus();
+                    //渲染表单
+                    form.render(null, 'vipinfo_ReadCard_form');
+                    //监听button
+                    form.on("submit(vipinfo_card_button)", function (data) {
+                        //去除读卡弹出中的html
+                        $("#vipinfo_ReadCard_form").html("");
+                        layer.close(readcard);
+                        Readcardfun(data.field.number);
+                        return false;
+                    });
+                }
+            });
+        }
+        ReadCard();
+
+        //按钮读卡
+        $('#crm_vip_vipinfo_read_card').click(function () {
+            //初始化页面
+            layui.index.render();
+        });
+
+        //扩展信息调用的方法
+        var vipinfo_extend = function (card) {
+            admin.req({
+                url: '/index.php/webVipinfoMemberExtend/'
+                , type: 'post'
+                , data: { card: card }
+                , done: function (r) {
+                    $('#vipinfo_extend_kz').empty();
+                    var rd = r.data, rl = r.data.length, fstr = '';
+                    for (var i = 0; i < rl; i++) {
+                        fstr += '<div class="layui-form-item">' +
+                            '<label class="layui-form-label"> ' + rd[i].key + '</label >' +
+                            '<div class="layui-input-block">' +
+                            '<input type="text" value="' + rd[i].val + '" autocomplete="off" class="layui-input" disabled>' +
+                            '</div>' +
+                            '</div>';
+                    }
+                    $('#vipinfo_extend_kz').html(fstr);
+                }
+            });
+            return false;
+        }
+
+        //员工
+        var stafffun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStaffSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择员工</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //100天跟进
+        var iareturnnamefun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webInhundredSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>查询互动名称添加</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //专场跟进
+        var fieldnamefun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webInfieldSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>查询互动名称添加</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //365名称
+        var iahundrednamefun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webInthdaysSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>查询互动名称添加</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].remark + ':' + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //返单计划中新建小返单产品条码
+        var barcode = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webVipinfoOrderGoods/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择条码</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "' id='vipinfo_listtwo_production_number_val'>" + json[i].bar_code + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //会员服务
+        var servicefunction = function (d, x, r) {
+            admin.req({
+                url: "/index.php/webVipinfoServiceSel/",
+                type: 'post',
+                data: {
+                    rank: r
+                },
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>选择服务名称</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].servicename + "</option>");
+                    }
+                    form.render(null, x);
+                }
+            });
+        }
+
+    });
+</script>

@@ -1,0 +1,693 @@
+<title>精准营销列表</title>
+
+<div class="layui-col-md12">
+    <div class="layui-card">  
+        <div class="layui-card-body">
+            <table class="layui-hide" id="crm-dat-jingzhun-other-table" lay-filter="crm-dat-jingzhun-other-demo"></table>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="dat-jingzhun-other-toolbarDemo">
+    <div class="layui-btn-container">
+        <div class="layui-btn layui-btn-sm" id="crm-dat-jingzhun-other-addscreen">高级筛选</div>
+    </div>
+</script>
+<script type="text/html" id="crm-dat-jingzhun-other-info">
+    <a class="layui-btn layui-btn-xs" lay-event="crm-dat-jingzhun-other-information">信息</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="crm-dat-jingzhun-other-RFM">RFM</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-dat-jingzhun-other-goods">购买商品</a>
+</script>
+<script type="text/html" id="crm-dat-jingzhun-other-screenDemo">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-dat-jingzhun-other-screendel">删除</a>
+</script>
+<script type="text/html" id="crm-jingzhun-other-screenDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="crm-dat-jingzhun-other-Filteredit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-vip-viplist-Filterdel">删除</a>
+</script>
+<script src="/libs/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+<script src="/libs/js/citys.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/html" id="precision_img">
+    <div><img src="{{d.goods_img}}" ></div>
+</script>
+<script>
+    layui.use(['admin', 'element', 'table', 'form', 'upload', 'cascader', 'checkbox', 'laydate'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , upload = layui.upload
+            , laydate = layui.laydate
+            , checkbox = layui.checkbox
+            , cascader = layui.cascader
+            , router = layui.router();
+
+        admin.req({
+            url: "/index.php/webPrecisionExt/"
+            , done: function (res) {
+                var json = res.data;
+                var tabledata_arr = new Array();
+                var cols_arr = new Array();
+                tabledata_arr.push(
+                          { field: 'code', width: 100, title: '会员卡号', align: 'center', sort: true, fixed: 'left' }
+                        , { field: 'username', width: 160, title: '会员姓名', align: 'center', sort: true, fixed: 'left' }
+                        , { field: 'sex', width: 160, title: '性别', align: 'center', sort: true }
+                        , { field: 'vlname', width: 160, title: '会员级别', align: 'center', sort: true }
+                        , { field: 'phone', width: 160, title: '手机号码', align: 'center', sort: true }
+                        , { field: 'telephone', width: 160, title: '固定电话', align: 'center', sort: true }
+                        , { field: 'identity', width: 160, title: '身份证号码', align: 'center', sort: true }
+                        , { field: 'nation', width: 160, title: '民族', align: 'center', sort: true }
+                        , { field: 'birthday', width: 160, title: '会员生日', align: 'center', sort: true }
+                        , { field: 'calendar', width: 160, title: '公历/农历', align: 'center' }
+                        , { field: 'vsname', width: 160, title: '所属门店', align: 'center', sort: true }
+                        , { field: 'vrname', width: 160, title: '登记门店', align: 'center', sort: true }
+                        , { field: 'vgname', width: 160, title: '形象顾问', align: 'center', sort: true }
+                        , { field: 'activate_name', width: 160, title: '开卡人', align: 'center', sort: true }
+                        , { field: 'introducer_code', width: 160, title: '介绍人卡号', align: 'center', sort: true }
+                        , { field: 'introducer_name', width: 160, title: '介绍人', align: 'center' }
+                        , { field: 'adult_code', width: 160, title: '提成人', align: 'center', sort: true }
+                        , { field: 'acs', width: 160, title: '入会费', align: 'center', sort: true }
+                        , { field: 'initiation', width: 160, title: '入会方式', align: 'center' }
+                        , { field: 'qq', width: 160, title: 'QQ', align: 'center', sort: true }
+                        , { field: 'weixin', width: 160, title: '微信', align: 'center', sort: true }
+                        , { field: 'area', width: 160, title: '所属地区', align: 'center' }
+                        , { field: 'address', width: 160, title: '详细地址', align: 'center', sort: true }
+                        , { field: 'payment_method', width: 160, title: '支付方式', align: 'center' }
+                        , { field: 'consumption_times', width: 160, title: '消费次数', align: 'center', sort: true }
+                        , { field: 'consumption_number', width: 160, title: '消费件数', align: 'center', sort: true }
+                        , { field: 'exchange_number', width: 160, title: '兑换次数', align: 'center' }
+                        , { field: 'total_consumption', width: 160, title: '总消费额', align: 'center', sort: true }
+                        , { field: 'first_time', width: 160, title: '首次购物时间', align: 'center', sort: true }
+                        , { field: 'final_purchases', width: 160, title: '最后购物时间', align: 'center' }
+                        , { field: 'days', width: 160, title: '消费天数', align: 'center' }
+                        , { field: 'years', width: 160, title: '消费年数', align: 'center' }
+                        , { field: 'r_days', width: 160, title: '未消费天数', align: 'center' }
+                        , { field: 'residual_integral', width: 160, title: '剩余总积分', align: 'center' }
+                        , { field: 'already_used_integral', width: 160, title: '已用积分', align: 'center', sort: true }
+                        , { field: 'offset_integral', width: 160, title: '剩余抵现积分', align: 'center', sort: true }
+                        , { field: 'gift_integral', width: 160, title: '剩余礼品积分', align: 'center' }
+                        , { field: 'total_integral', width: 160, title: '总积分', align: 'center', sort: true }
+                        , { field: 'stored_value', width: 160, title: '已用储值', align: 'center', sort: true }
+                        , { field: 'residual_value', width: 160, title: '剩余储值', align: 'center' }
+                        , { field: 'total_value', width: 160, title: '总储值', align: 'center', sort: true }
+                        , { field: 'total_frozen_value', width: 160, title: '总冻结储值', align: 'center', sort: true });
+                for (var i = 0, l = json.length; i < l; i++) {
+                    tabledata_arr.push({ field: json[i], width: 140, align: 'center', title: json[i], sort: true });
+                }
+                tabledata_arr.push({ title: '操作', width: 200, align: 'center', fixed: 'right', toolbar: '#crm-dat-jingzhun-other-info' });
+                cols_arr.push(tabledata_arr);
+
+                var tablePrecosion = function (where = false, sxq = false) { //-------------------------------------------------------table表格
+                    table.render({
+                        elem: "#crm-dat-jingzhun-other-table"
+                        , id: "precision"
+                        , url: '/index.php/webPrecisionList/'
+                        , where: { access_token: layui.data(layui.setter.tableName).access_token, where: where, sxq: sxq }
+                        , loading: true
+                        //, initSort: {field:'card', type:'asc'} //desc
+                        , cols: cols_arr
+                        , height: 'full-150'
+                        , limit: 20
+                        , limits: [20, 50, 100, 200, 500]
+                        , toolbar: '#dat-jingzhun-other-toolbarDemo'
+                        , defaultToolbar: ['filter', 'print', 'exports'] // 开启右侧 筛选列 导出 打印
+                        , page: true
+                    });
+
+                    $("#crm-dat-jingzhun-other-addscreen").click(function () { //-----------------------------------------------------------高级筛选
+                        layer.open({
+                            title: "添加高级筛选信息"
+                            , type: 1
+                            , shade: 0.3
+                            , shadeClose: false
+                            , anim: 1
+                            , offset: 'auto'
+                            , area: ["1000px", "500px"]
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<div class="layui-form-item"><form class="layui-form" action="" lay-filter="dat-jingzhun-other-screen"><div class="layui-input-inline"><select name="other-screen-tit" id="other_screen_tit" lay-filter="" lay-search=""></select></div><div class="layui-input-inline" style="width:100px"><select name="other-screen-symbol" id="other_screen_symbol" lay-filter="" lay-search=""><option value="=">等于</option><option value="<>">不等于</option><option value=">">大于</option><option value=">=">大于等于</option><option value="<">小于</option><option value="<=">小于等于</option><option value="LIKE">包含</option></select></div><div class="layui-input-inline"><input name="other-screen-value" id="other_screen_value" autocomplete="off" class="layui-input" type="tel"></div></form><div class="layui-btn-group"><div class="layui-btn layui-btn-normal" id="crm-dat-other-addcondition">添加条件</div><div class="layui-btn layui-btn-normal" id="crm-dat-other-screen-a">筛选</div><div class="layui-btn layui-btn-normal" id="crm-dat-other-preservation">保存并筛选</div><div class="layui-btn layui-btn-normal" id="crm-dat-other-filter">筛选器</div><!-- <div class="layui-btn layui-btn-normal" id="crm-dat-other-filter-sms">短信</div> --></div></div><!-- 表格 --><div class="layui-form-item"><table class="layui-hide" id="crm-dat-other-screen-t" lay-filter="dat-other-screen-t"></table></div>'
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+
+                                // admin.req({ // ------------------------------------------------------------------------------------清除缓存
+                                //     url: '/index.php/webOtherCacheNull/',
+                                //     type: 'post',
+                                //     done: function (res) {
+                                //     }
+                                // });
+
+                                admin.req({ // ------------------------------------------------------------------------------------下拉选择
+                                    url: '/index.php/webPrecisionOtherning/',
+                                    done: function (res) {
+                                        var json = res.data;
+                                        var listD = $("#other_screen_tit");
+                                        listD.empty();
+                                        listD.append("<option value=''>请输入 / 选择</option>");
+                                        for (var i = 0, l = json.length; i < l; i++) {
+                                            listD.append("<option value='" + json[i].value + "'>" + json[i].name + "</option>");
+                                        }
+                                        form.render(null, 'dat-jingzhun-other-screen'); // 渲染表单
+                                    }
+                                });
+
+                                var initviptable = function () { // ---------------------------------------------------------------高级筛选信息列表
+                                    table.render({
+                                        elem: "#crm-dat-other-screen-t"
+                                        , url: '/index.php/webPrecisionsxList/'
+                                        , page: true
+                                        , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                        , cols: [[
+                                            { field: 'tit', title: '标题' }
+                                            , { field: 'sym', title: '条件' }
+                                            , { field: 'val', title: '值', edit: 'text' }
+                                            , { width: 120, title: "操作", align: "center", toolbar: "#crm-dat-jingzhun-other-screenDemo" }
+                                        ]]
+                                        , height: '350'
+                                    });
+                                }
+                                initviptable();
+
+                                table.on('edit(dat-other-screen-t)', function (obj) { //注：edit是固定事件名，test是table原始容器的属性 lay-filter="对应的值"
+                                    admin.req({
+                                        url: '/index.php/webPrecisionUpdateVlaue/',
+                                        type: 'post',
+                                        data: {
+                                            id: obj.data.id,
+                                            val: obj.value
+                                        },
+                                        done: function (res) {
+                                            initviptable();
+                                        }
+                                    })
+                                });
+
+                                $("#crm-dat-other-addcondition").click(function () { // ------------------------------------------添加条件
+                                    admin.req({
+                                        url: "/index.php/webPrecisionOtherAdd/",
+                                        type: "post",
+                                        data: {// 给控制器传递数据
+                                            tit: $("#other_screen_tit").val(),
+                                            sym: $("#other_screen_symbol").val(),
+                                            val: $("#other_screen_value").val()
+                                        },
+                                        done: function (res) {
+                                            if (res.msg == 'yes') {
+                                                initviptable();
+                                                $("#other_screen_value").val(''); //清空值输入框内容
+                                                $("#other_screen_value").focus(); //值输入框获取焦点
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                                $("#other_screen_value").val('');
+                                                $("#other_screen_value").focus();
+                                            }
+                                        }
+                                    });
+                                });
+
+                                $("#crm-dat-other-screen-a").click(function () { // ----------------------------------------------筛选
+                                    admin.req({ // 判断添加条件是否为空
+                                        url: '/index.php/webPrecisionissCache/',
+                                        type: 'post',
+                                        done: function (res) {
+                                            if (res.msg == 'yes') {
+                                                tablePrecosion(true);
+                                                layer.close(index);
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                });
+
+                                $("#crm-dat-other-preservation").click(function () { // ------------------------------------------保存并筛选
+                                    admin.req({ //先判断添加条件是否为空
+                                        url: '/index.php/webPrecisionissCache/',
+                                        type: 'post',
+                                        done: function (res) {
+                                            if (res.msg == 'yes') { // 不为空进入下一环节
+                                                layer.prompt({ title: '请输入筛选标题', formType: 0 }, function (text, index) {
+                                                    admin.req({
+                                                        url: '/index.php/webPrecisionOtherinfo/',
+                                                        type: "post",
+                                                        data: {
+                                                            text: text
+                                                        },
+                                                        done: function (res) {
+                                                            if (res.msg == 'error') {
+                                                                layer.close(index);
+                                                                layer.msg(res.data, { icon: 2, title: res.msg });
+                                                            } else if (res.msg == 'yes') {
+                                                                tablePrecosion(true); //传递筛选条件
+                                                                layer.closeAll(); //关闭所有窗口
+                                                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                                            } else if (res.msg == 'no') {
+                                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                                            }
+                                                        }
+                                                    });
+                                                });
+                                            } else if (res.msg == 'no') { // 为空弹出提示
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                });
+
+                                $('#crm-dat-other-filter-sms').click(function(){  //----------------------------------------------------------------------短信
+                                    admin.req({ //先判断添加条件是否为空
+                                        url: '/index.php/webPrecisionissCache/',
+                                        type: 'post',
+                                        done: function (res) {
+                                            if (res.msg == 'yes') {
+                                                layer.open({
+                                                    title: "发送短信息"
+                                                    , type: 1
+                                                    , shade: 0.3
+                                                    , shadeClose: false
+                                                    , anim: 1
+                                                    , offset: 'auto'
+                                                    , area: ["650px", "300px"]
+                                                    , skin: "layui-layer-admin layui-anim"
+                                                    , content: '<form class="layui-form" action="" lay-filter="crm-dat-precision-sms"><div class="layui-form-item"><label class="layui-form-label">选择模板</label><div class="layui-input-block"><select name="sms_template" lay-filter="crm-dat-precision-sms-template" lay-verify="required" lay-search id="crm-dat-precision-sms-template"></select></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">短信内容</label><div class="layui-input-block"><textarea name="smscontent" id="smscontent" class="layui-textarea" disabled></textarea></div></div><div style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="sms-submit">发送信息</button></div></form>'
+                                                    , success: function (layero, index) {
+                                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                        layero.append(elemClose);
+                                                        elemClose.on('click', function () {
+                                                            layer.close(index);
+                                                        });
+
+                                                        admin.req({ // 循环得到短信模版下拉框
+                                                            url: '/index.php/webvipsmstemplate/',
+                                                            done: function (res) {
+                                                                var json = res.data;
+                                                                var listD = $("#crm-dat-precision-sms-template");
+                                                                listD.empty();
+                                                                listD.append("<option value=''>请输入 / 选择</option>");
+                                                                for (var i = 0, l = json.length; i < l; i++) {
+                                                                    listD.append("<option value='" + json[i].id + "'>" + json[i].sms_name + "</option>");
+                                                                }
+                                                                form.render(null, "crm-dat-precision-sms");
+                                                            }
+                                                        }); 
+
+                                                        form.on('select(crm-dat-precision-sms-template)', function (data) { // 选择短信模版后，给短信内容赋值
+                                                            admin.req({
+                                                                url: '/index.php/webSmscontent/',
+                                                                type: 'post',
+                                                                data: {
+                                                                    id: data.value
+                                                                },
+                                                                done: function (res) {
+                                                                    $('#smscontent').val(res.data.sms_content);
+                                                                }
+                                                            });
+                                                        });
+
+                                                        form.render(null, 'crm-dat-precision-sms');
+
+                                                        form.on('submit(sms-submit)', function (data) { // 发送短信息
+                                                            layer.confirm('确认发送?', { icon: 3, title: '提示' }, function (index) {
+                                                                admin.req({
+                                                                    url: '/index.php/webPrescisionMessage/',
+                                                                    type: 'post',
+                                                                    data: {sms: data.field.sms_template },
+                                                                    done: function (res) {
+                                                                        if (res.msg == 'error') {
+                                                                            layer.msg(res.data, { icon: 2, title: res.msg });
+                                                                        } else if (res.msg == 'yes') {
+                                                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                                                            layer.closeAll();
+                                                                            tablePrecosion();
+                                                                        } else if (res.msg == 'no') {
+                                                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                                                        }
+                                                                    }
+                                                                })
+                                                            });
+                                                            return false;
+                                                        })
+                                                    }
+                                                });
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                    
+                                });
+
+                                $("#crm-dat-other-filter").click(function () { // ------------------------------------------------筛选器
+                                    layer.open({
+                                        title: "筛选器"
+                                        , type: 1
+                                        , shade: 0.3
+                                        , shadeClose: true
+                                        , anim: 1
+                                        , offset: 'auto'
+                                        , area: ["800px", "500px"]
+                                        , skin: "layui-layer-admin layui-anim"
+                                        , content: '<table id="crm-dat-jingzhun-Filteredits" lay-filter="crm-dat-jingzhun-Filteredits"></table>'
+                                        , success: function (layero, sindex) {
+                                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                            layero.append(elemClose);
+                                            elemClose.on('click', function () {
+                                                layer.close(sindex);
+                                            });
+
+                                            var initvipfiltertable = function () { // ------------------------------------------------筛选器列表
+                                                table.render({
+                                                    elem: "#crm-dat-jingzhun-Filteredits"
+                                                    , url: '/index.php/webPrecisionOtherfilterlist/'
+                                                    , page: true
+                                                    , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                                                    , cols: [[
+                                                        { field: 'filtertitle', title: '筛选标题' }
+                                                        , { fixed: 'right', width: 120, title: '操作', align: 'center', toolbar: '#crm-jingzhun-other-screenDemo' }
+                                                    ]]
+                                                    , height: '350'
+                                                });
+                                            }
+                                            initvipfiltertable();
+
+                                            table.on('tool(crm-dat-jingzhun-Filteredits)', function (obj) { //------------------------监听筛选器工具条 
+                                                var data = obj.data;
+                                                var layEvent = obj.event;
+                                                var tr = obj.tr;
+                                                if (layEvent === 'crm-vip-viplist-Filterdel') { // ------------------------------------筛选器删除
+                                                    layer.confirm('确认删除该条数据？', function (index) {
+                                                        admin.req({
+                                                            url: '/index.php/webPrecisionOfilterlistdel/',
+                                                            type: 'post',
+                                                            data: {
+                                                                id: data.id
+                                                            },
+                                                            done: function (res) {
+                                                                if (res.msg == 'error') {
+                                                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                                                } else if (res.msg == 'yes') {
+                                                                    initvipfiltertable();
+                                                                    layer.close(index);
+                                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                                } else if (res.msg == 'no') {
+                                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                                }
+                                                            }
+                                                        });
+                                                    });
+                                                } else if (layEvent === 'crm-dat-jingzhun-other-Filteredit') { // --------------------------筛选器编辑
+                                                    admin.req({
+                                                        url: '/index.php/webPrecisionOtherassignment/',
+                                                        type: "post",
+                                                        data: {
+                                                            id: obj.data.id
+                                                        }
+                                                    });
+                                                    initviptable();
+                                                    layer.close(sindex);
+                                                }
+                                            });
+
+                                            table.on('rowDouble(crm-dat-jingzhun-Filteredits)', function (obj) { // -------------------监听table双击获取信息
+                                                tablePrecosion(true, obj.data.id);
+                                                layer.closeAll();
+                                            });
+                                        }
+                                    });
+                                });
+                                form.render(null, 'dat-jingzhun-other-screen'); // 渲染表单
+
+                                table.on('tool(dat-other-screen-t)', function (obj) { //--------------------------------------监听筛选信息工具条 
+                                    var data = obj.data;
+                                    var layEvent = obj.event;
+                                    var tr = obj.tr;
+                                    if (layEvent === 'crm-dat-jingzhun-other-screendel') { // ---------------------------------------------高级筛选删除
+                                        layer.confirm('确认删除该条数据？', function (ssindex) {
+                                            admin.req({
+                                                url: '/index.php/webPrecisionGaojidel/',
+                                                type: 'post',
+                                                data: {
+                                                    id: data.id
+                                                },
+                                                done: function (res) {
+                                                    layer.close(ssindex);
+                                                    initviptable();
+                                                }
+                                            });
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    });
+                
+                }
+                tablePrecosion();
+                 
+                var precision_extend = function (id) { // ---------------------------------------------------------------------------------查看信息是显示扩展的方法
+                    admin.req({
+                        url: '/index.php/webPrecisionKZ/'
+                        , data: {
+                            id: id
+                        }, done: function (r) {
+                            $('#viplist_extend_kz').empty();
+                            var rd = r.data, rl = r.data.length, fstr = '';
+                            for (var i = 0; i < rl; i++) {
+                                fstr += '<div class="layui-form-item">' +
+                                    '<label class="layui-form-label"> ' + rd[i].key + '</label >' +
+                                    '<div class="layui-input-block">' +
+                                    '<input type="text" value="' + rd[i].val + '" autocomplete="off" class="layui-input" disabled>' +
+                                    '</div>' +
+                                    '</div>';
+                            }
+                            $('#viplist_extend_kz').html(fstr);
+                        }
+                    });
+                    return false;
+                }
+               
+                table.on('tool(crm-dat-jingzhun-other-demo)', function (obj) { //----------------------------------------------------------监听工具条
+                    if (obj.event === 'crm-dat-jingzhun-other-information') {
+                        layer.open({ // ---------------------------------------------------------------------------------------------------查看信息
+                            title: '查看信息'
+                            , type: 1
+                            , area: ["990px", "600px"] // 弹出层的大小
+                            , shadeClose: true  // 点击弹出框之外的位置关闭弹出框
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<form class="layui-form layui-form-pane" action="" lay-filter="Pre_View"><div class="layui-form-item" style="text-align:center"><img id="pre_img" class="layui-circle" style="width: 450px;"></div><div class="layui-form-item"><label class="layui-form-label">卡号</label><div class="layui-input-inline"><input type="text" name="card" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">姓名</label><div class="layui-input-inline"><input type="text" name="name" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">手机号码</label><div class="layui-input-inline"><input type="text" name="contact" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">性别</label><div class="layui-input-inline"><input type="text" name="sex" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">民族</label><div class="layui-input-inline"><input type="text" name="nation" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">固定电话</label><div class="layui-input-inline"><input type="text" name="telephone" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">身份证号</label><div class="layui-input-inline"><input type="text" name="identity" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">生日</label><div class="layui-input-inline"><input type="text" name="birthday" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">公历/农历</label><div class="layui-input-inline"><input type="text" name="calendar" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">所属门店</label><div class="layui-input-inline"><input type="text" name="store" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">登记店面</label><div class="layui-input-inline"><input type="text" name="register_storere" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">会员等级</label><div class="layui-input-inline"><input type="text" name="mg" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">入会方式</label><div class="layui-input-inline"><input type="text" name="initiation" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">形象顾问</label><div class="layui-input-inline"><input type="text" name="consultant" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">支付方式</label><div class="layui-input-inline"><input type="text" name="payment_method" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">微信</label><div class="layui-input-inline"><input type="text" name="weixin" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">提成人</label><div class="layui-input-inline"><input type="text" name="adult" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">售卡金额</label><div class="layui-input-inline"><input type="text" name="acs" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">QQ</label><div class="layui-input-inline"><input type="text" name="qq" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">所属地区</label><div class="layui-input-inline"><input type="text" name="area" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">详细地址</label><div class="layui-input-inline"><input type="text" name="address" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">开卡人</label><div class="layui-input-inline"><input type="text" name="activate_bank" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">介绍人</label><div class="layui-input-inline"><input type="text" name="introducer" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">介绍人卡号</label><div class="layui-input-inline"><input type="text" name="introducer_id" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">剩余总积分</label><div class="layui-input-inline"><input type="text" name="residual_integral" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">已用积分</label><div class="layui-input-inline"><input type="text" name="already_used_integral" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">剩抵现积分</label><div class="layui-input-inline"><input type="text" name="offset_integral" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">剩礼品积分</label><div class="layui-input-inline"><input type="text" name="gift_integral" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">总积分</label><div class="layui-input-inline"><input type="text" name="total_integral" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">已用储值</label><div class="layui-input-inline"><input type="text" name="stored_value" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">剩余储值</label><div class="layui-input-inline"><input type="text" name="residual_value" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">总储值</label><div class="layui-input-inline"><input type="text" name="total_value" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">总冻结储值</label><div class="layui-input-inline"><input type="text" name="total_frozen_value" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">消费次数</label><div class="layui-input-inline"><input type="text" name="consumption_times" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">消费件数</label><div class="layui-input-inline"><input type="text" name="consumption_number" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">总消费额</label><div class="layui-input-inline"><input type="text" name="total_consumption" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">末消费天数</label><div class="layui-input-inline"><input type="text" name="r_days" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">消费天数</label><div class="layui-input-inline"><input type="text" name="days" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">消费年数</label><div class="layui-input-inline"><input type="text" name="years" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">首购时间</label><div class="layui-input-inline"><input type="text" name="first_time" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">最后购时间</label><div class="layui-input-inline"><input type="text" name="final_purchases" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"></div><div class="layui-form-item"><label class="layui-form-label">备注</label><div class="layui-input-block"><input type="text" name="remarks" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-collapse" lay-filter="viplist_kz"><div class="layui-colla-item"><h2 class="layui-colla-title">扩展信息</h2><div id="viplist_extend_kz"></div></div></div></form>'                              
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                form.render(null, 'Pre_View');
+                                // 表单初始赋值
+                                form.val("Pre_View", {
+                                    card: obj.data.code,
+                                    name: obj.data.username,
+                                    sex: obj.data.sex,
+                                    identity: obj.data.identity,
+                                    contact: obj.data.phone,
+                                    birthday: obj.data.birthday,
+                                    telephone: obj.data.telephone,
+                                    store: obj.data.vsname,
+                                    register_storere: obj.data.vrname,
+                                    nation: obj.data.nation,
+                                    calendar: obj.data.calendar,
+                                    initiation: obj.data.initiation,
+                                    mg: obj.data.vlname,
+                                    brand: obj.data.brand,
+                                    consultant: obj.data.vgname,
+                                    qq: obj.data.qq,
+                                    weixin: obj.data.weixin,
+                                    gradel: obj.data.gradel,
+                                    adviser: obj.data.adviser,
+                                    area: obj.data.area,
+                                    address: obj.data.address,
+                                    activate_bank: obj.data.activate_name,
+                                    introducer: obj.data.introducer_name,
+                                    introducer_id: obj.data.introducer_code,
+                                    adult: obj.data.adult_name,
+                                    validity_term: obj.data.validity_term,
+                                    acs: obj.data.acs,
+                                    payment_method: obj.data.payment_method,
+                                    residual_integral: obj.data.residual_integral,
+                                    already_used_integral: obj.data.already_used_integral,
+                                    offset_integral: obj.data.offset_integral,
+                                    gift_integral: obj.data.gift_integral,
+                                    total_integral: obj.data.total_integral,
+                                    stored_value: obj.data.stored_value,
+                                    residual_value: obj.data.residual_value,
+                                    total_value: obj.data.total_value,
+                                    total_frozen_value: obj.data.total_frozen_value,
+                                    consumption_times: obj.data.consumption_times,
+                                    consumption_number: obj.data.consumption_number,
+                                    total_consumption: obj.data.total_consumption,
+                                    expiry_time: obj.data.expiry_time,
+                                    first_time: obj.data.first_time,
+                                    final_purchases: obj.data.final_purchases,
+                                    days: obj.data.days,
+                                    r_days: obj.data.r_days,
+                                    years: obj.data.years,
+                                    exchange_times: obj.data.exchange_times,
+                                    introduction: obj.data.introduction,
+                                    remarks: obj.data.remarks
+                                });
+                                $("#pre_img").attr("src", obj.data.img);
+                                //会员扩展信息
+                                precision_extend(obj.data.code);
+
+                            }
+                        });
+                    } else if (obj.event === 'crm-dat-jingzhun-other-goods') {
+                        layer.open({ // ---------------------------------------------------------------------------------------------------查看购买商品
+                            title: '查看购买商品'
+                            , type: 1
+                            , area: ["990px", "500px"] // 弹出层的大小
+                            , shadeClose: true  // 点击弹出框之外的位置关闭弹出框
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<table class="layui-hide" id="crm-dat-jingzhun-other-rfms" lay-filter="crm-dat-jingzhun-other-rfms"></table>'                              
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                admin.req({
+                                    url: '/index.php/webPrecisionpext/', //数据接口路由
+                                    done: function (res) {
+                                        var json = res.data;
+                                        var tabledata_arr = new Array();
+                                        var cols_arr = new Array();
+                                        tabledata_arr.push({  field: 'info_code', width: 160, title: '订单号' }
+                                        , { field: 'goods_img', width: 160, title: '商品图片' , templet: '#precision_img', event: 'goodsImg', sort: true }
+                                        , { field: 'goods_barcode', width: 160, title: '商品条码' , sort: true}
+                                        , { field: 'goods_name', width: 160, title: '商品名称' }
+                                        , { field: 'goods_frenum', width: 160, title: '货号' , sort: true}
+                                        // , { field: 'goods_name', width: 160, title: '商品名' , sort: true}
+                                        // , { field: 'goods_barcode', width: 160, title: '条码', sort: true }
+                                        , { field: 'type_name', width: 160, title: '分类名'}
+                                        , { field: 'goods_color', width: 160, title: '颜色'}
+                                        , { field: 'goods_size', width: 160, title: '尺码', sort: true }
+                                        , { field: 'info_price', width: 160, title: '商品的单价' , sort: true}
+                                        , { field: 'info_disprice', width: 160, title: '折扣价' , sort: true}
+                                        , { field: 'info_discount', width: 160, title: '折扣力度' , sort: true}
+                                        , { field: 'info_dismoney', width: 160, title: '折扣价合计', sort: true }
+                                        , { field: 'info_number', width: 160, title: '购买的数量', sort: true }
+                                        , { field: 'info_giveintegral', width: 160, title: '获得积分', sort: true }
+                                        , { field: 'info_staffname', width: 160, title: '促销员', sort: true });
+                                        
+                                        for (var i = 0, l = json.length; i < l; i++) {
+                                            tabledata_arr.push({ field: json[i], width: 140, title: json[i], sort: true });
+                                        }
+
+                                        cols_arr.push(tabledata_arr);
+                                        
+                                        table.render({
+                                            elem: '#crm-dat-jingzhun-other-rfms', //table 的 id
+                                            url: '/index.php/webPrecisionpgoods/', //数据接口路由
+                                            where: {access_token: layui.data(layui.setter.tableName).access_token ,cards:obj.data.code},    //搜索时的 where 条件    search是 下标对应controller的 input(search)   where对应(按照位置对应)位置是  data.field,search
+                                            page: true, //开启分页
+                                            limit: 10,  
+                                            limits: [10, 20, 30, 40, 50],
+                                            loading: true, //开启加载条
+                                            text: {none: '暂无数据'},
+                                            cols: cols_arr,
+                                            toolbar: true,
+                                            defaultToolbar: ['filter', 'print', 'exports'], // 开启右侧 筛选列 导出 打印
+                                            height: 390, //高度自适应
+                                        });
+                                    }
+
+                                });
+                                table.on('tool(crm-dat-jingzhun-other-rfms)', function (img) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                                    var data = img.data; //获得当前行数据
+                                    var layEvent = img.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                                    if (layEvent === 'goodsImg') {
+                                        layer.open({
+                                            title: '图片详情'
+                                            , type: 1
+                                            , shadeClose: true
+                                            , area: ["480px", "490px"] // 弹出层的大小
+                                            , skin: "layui-layer-admin layui-anim"
+                                            , content: '<div id="goodsphoto_img"></div>'
+                                            //关闭弹出层
+                                            , success: function (layero, index) {
+                                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                                layero.append(elemClose);
+                                                elemClose.on('click', function () {
+                                                    layer.close(index);
+                                                });
+                                                var url = img.data.goods_img;
+                                                var imgs = $("#goodsphoto_img");
+                                                imgs.html("<img src='" + url + "' alt='无图片' name='goods_img' width='450' height='400'>");
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else if (obj.event === 'crm-dat-jingzhun-other-RFM') {
+                        layer.open({ // ---------------------------------------------------------------------------------------------------查看RFM
+                            title: '查看RFM'
+                            , type: 1
+                            , area: ["990px", "600px"] // 弹出层的大小
+                            , shadeClose: true  // 点击弹出框之外的位置关闭弹出框
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<form class="layui-form layui-form-pane" action="" lay-filter="rfm_View"><div class="layui-form-item"><label class="layui-form-label">R(末消费)</label><div class="layui-input-inline"><input type="text" name="r_days" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">R(类型)</label><div class="layui-input-inline"><input type="text" name="r_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">R(得分)</label><div class="layui-input-inline"><input type="text" name="r_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">F(次数)</label><div class="layui-input-inline"><input type="text" name="f_frequency" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">F(类型)</label><div class="layui-input-inline"><input type="text" name="f_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">F(得分)</label><div class="layui-input-inline"><input type="text" name="f_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">M(金额)</label><div class="layui-input-inline"><input type="text" name="m_money" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">M(类型)</label><div class="layui-input-inline"><input type="text" name="m_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">M(得分)</label><div class="layui-input-inline"><input type="text" name="m_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">RFMI(总分)</label><div class="layui-input-block"><input type="text" name="rfmi_total_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">I(转介绍)</label><div class="layui-input-inline"><input type="text" name="i_introduction" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">I(类型)</label><div class="layui-input-inline"><input type="text" name="i_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">I(得分)</label><div class="layui-input-inline"><input type="text" name="i_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">N(件数)</label><div class="layui-input-inline"><input type="text" name="n_number" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">N(类型)</label><div class="layui-input-inline"><input type="text" name="n_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">N(得分)</label><div class="layui-input-inline"><input type="text" name="n_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">P(客单件)</label><div class="layui-input-inline"><input type="text" name="p_univalent" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">P(类型)</label><div class="layui-input-inline"><input type="text" name="p_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">P(得分)</label><div class="layui-input-inline"><input type="text" name="p_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">A(件单价)</label><div class="layui-input-inline"><input type="text" name="a_univalent" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">A(类型)</label><div class="layui-input-inline"><input type="text" name="a_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">A(得分)</label><div class="layui-input-inline"><input type="text" name="a_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">J(连带率)</label><div class="layui-input-inline"><input type="text" name="j_related_rate" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">J(类型)</label><div class="layui-input-inline"><input type="text" name="j_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">J(得分)</label><div class="layui-input-inline"><input type="text" name="j_score" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">C(年消费)</label><div class="layui-input-inline"><input type="text" name="c_consumption" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">C(类型)</label><div class="layui-input-inline"><input type="text" name="c_type" autocomplete="off" class="layui-input" readonly></div><label class="layui-form-label">C(得分)</label><div class="layui-input-inline"><input type="text" name="c_score" autocomplete="off" class="layui-input" readonly></div></div></form>'                              
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                form.render(null, 'rfm_View');
+                                // 表单初始赋值
+                                admin.req({
+                                    url: '/index.php/webPrecisionrfm/', //数据接口路由
+                                    data:{card: obj.data.code},
+                                    done: function (res) {
+                                        form.val("rfm_View", {
+                                            a_score: res.data.a_score,
+                                            a_type: res.data.a_type,
+                                            a_univalent: res.data.a_univalent,
+                                            c_consumption: res.data.c_consumption,
+                                            c_score: res.data.c_score,
+                                            c_type: res.data.c_type,
+                                            f_frequency: res.data.f_frequency,
+                                            f_score: res.data.f_score,
+                                            f_type: res.data.f_type,
+                                            rfmi_total_score: res.data.rfm,
+                                            i_introduction: res.data.i_introduction,
+                                            i_score: res.data.i_score,
+                                            i_type: res.data.i_type,
+                                            j_related_rate: res.data.j_related_rate,
+                                            j_score: res.data.j_score,
+                                            j_type: res.data.j_type,
+                                            m_money: res.data.m_money,
+                                            m_score: res.data.m_score,
+                                            m_type: res.data.m_type,
+                                            n_number: res.data.n_number,
+                                            n_score: res.data.n_score,
+                                            n_type: res.data.n_type,
+                                            p_score: res.data.p_score,
+                                            p_type: res.data.p_type,
+                                            p_univalent: res.data.p_univalent,
+                                            r_days: obj.data.r_days,
+                                            r_score: res.data.r_score,
+                                            r_type: res.data.r_type
+                                        });
+                                    }
+                                });
+                                
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

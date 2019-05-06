@@ -1,0 +1,451 @@
+<title>会员级别</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <table class="layui-hide" id="crm-vip-viprights-righttable" lay-filter="crm-vip-viprights-righttable"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="crm-vip-viprig-level-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+      <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+      <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script type="text/html" id="crm-vip-barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="crm-vip-viprights-edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-vip-viprights-del">删除</a>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'dtree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , laydate = layui.laydate
+            , form = layui.form
+            , dtree = layui.dtree
+            , router = layui.router();
+
+        //会员级别
+        var right = function (rightUrl) {
+            table.render({
+                elem: '#crm-vip-viprights-righttable'
+                , height: 'full-150'
+                , url: rightUrl
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+                , where: {
+                    access_token: layui.data(layui.setter.tableName).access_token
+                }
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'uid', width: 100, title: '序号', align: 'center', sort: true, fixed: 'left' }
+                    , { field: 'username', width: 160, title: '级别名称', align: 'center', sort: true, fixed: 'left' }
+                    , { field: 'discount', width: 160, title: '级别折扣', align: 'center', sort: true }
+                    , { field: 'money', width: 160, title: '入会费(元)', align: 'center', sort: true }
+                    , { field: 'referee', width: 160, title: '推荐人积分', align: 'center', sort: true }
+                    , { field: 'function', width: 160, title: '推荐功能', align: 'center', sort: true }
+                    // , { field: 'card', width: 160, title: '卡片总数', align: 'center', sort: true }
+                    // , { field: 'weixin', width: 160, title: '微信会员', align: 'center', sort: true }
+                    , { field: 'rights', width: 360, title: '会员权益', align: 'center', sort: true }
+                    , { field: 'remarks', width: 160, title: '备注', align: 'center' }
+                    , { fixed: 'right', width: 160, title: '操作', align: 'center', toolbar: '#crm-vip-barDemo' }
+                ]]
+                , toolbar: '#crm-vip-viprig-level-toolbar'
+            });
+        }
+        right('/index.php/webViprightlist/');
+
+        // 表头事件监听
+        table.on('toolbar(crm-vip-viprights-righttable)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            // console.log(checkStatus.data); return false;
+            switch (obj.event) {
+                case 'add':
+                    crmVipLevAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        crmVipLevDel(ids);
+                    })
+                    break;
+                case 'search':
+                    crmVipLevSea();
+                    break;
+            };
+        });
+
+        // 批量删除
+        var crmVipLevDel = function (ids) {
+            admin.req({
+                url: '/index.php/webViprightdelMany/',
+                type: 'post',
+                data: { ids: ids },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.close(layer.index);
+                        right('/index.php/webViprightlist/');
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //添加信息
+        var crmVipLevAdd = function () {
+            layer.open({
+                title: "添加信息"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["1080px", "500px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">级别序号<span style="color:red">*</span></label><div class="layui-input-inline"><select name="uid" id="uid" lay-verify="required" lay-search></select></div></div><div class="layui-inline"><label class="layui-form-label">级别名称<span style="color:red">*</span></label><div class="layui-input-inline"><input type="text" name="username" placeholder="请输入名称" autocomplete="off" class="layui-input" lay-verify="required"></div></div><div class="layui-inline"><label class="layui-form-label">推荐功能</label><div class="layui-input-inline"><input type="checkbox" name="function" lay-skin="switch" lay-text="开启|关闭"></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">入会费</label><div class="layui-input-inline"><input type="text" name="money" placeholder="请输入金额" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">推荐人积分</label><div class="layui-input-inline"><input type="text" name="referee" placeholder="请输入推荐人积分" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">级别折扣<span style="color:red">*</span></label><div class="layui-input-inline"><input type="text" name="level_discount" placeholder="请输入级别折扣" id="level_discount" autocomplete="off" class="layui-input" lay-verify="required|pointNumber"></div><div class="layui-form-mid layui-word-aux">例如:0.95</div></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-block"><div class="layui-form-mid layui-bg-green" id="level_id" style="width:190px;text-align:center;margin-right:45px">点击选择组织机构</div><div class="layui-input-inline"><input type="text" name="splb_name" id="level_name" required autocomplete="off" disabled class="layui-input" style="width:695px"></div><input type="hidden" name="splb" id="level_splb_id" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员权益</label><div class="layui-input-block"><textarea name="rights" placeholder="请输入权益信息" class="layui-textarea"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">备注</label><div class="layui-input-block"><input type="text" name="remarks" placeholder="请输入备注信息" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-formviprights">确定添加</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    //组织结构
+                    $("#level_id").click(function () {
+                        layer.open({
+                            type: 1,
+                            title: "选择组织机构",
+                            area: ["400px", "80%"],
+                            content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                            btn: ['确认选择'],
+                            success: function (layero, index) {
+                                dtree.render({
+                                    elem: "#dTree",
+                                    url: "/index.php/webViprightdtree/?access_token="+ layui.data(layui.setter.tableName).access_token,
+                                    method: 'get',
+                                    skin: "theme",
+                                    dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                    response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                    // dot: false, //前面的小黑点取消
+                                    checkbar: true,
+                                    checkbarType: "p-casc" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                });
+                                // 绑定节点的双击
+                                dtree.on("nodedblclick('dTree')", function (obj) {
+                                    $("#level_splb_id").val(obj.param.nodeId);
+                                    $("#level_name").val(obj.param.context);
+                                    layer.close(index);
+                                });
+                            },
+                            yes: function (index, layero) {
+                                var flag = true;
+                                var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                if (params.length == 0) {
+                                    layer.msg("请至少选择一个节点", { icon: 2 });
+                                    flag = false;
+                                }
+
+                                var ids = [], names = [];
+                                for (var key in params) {
+                                    var param = params[key];
+                                    ids.push(param.nodeId);
+                                    names.push(param.context);
+                                }
+                                $("#level_splb_id").val(ids.join(","));
+                                $("#level_name").val(names.join(","));
+                                if (flag) {
+                                    layer.close(index);
+                                }
+                            }
+                        });
+                    });
+
+                    $("#level_discount").val('1');
+
+                    form.render(null, 'crm-vip-viprights');
+
+                    var price_reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                    var price_msg = '输入金额格式错误';
+
+                    var pointNumber_reg = /^(1|0(\.\d{1,2})?)$/;
+                    var pointNumber_msg = '折扣必须是小于1大于0的两位以内小数';
+
+                    form.verify({
+                        price: [price_reg, price_msg],
+                        pointNumber: [pointNumber_reg, pointNumber_msg],
+                    });
+
+                    admin.req({
+                        url: '/index.php/webViprightnumber/',
+                        done: function (res) {
+                            var json = res.data;
+                            var listD = $("#uid");
+                            listD.empty();
+                            listD.append("<option value=''>请输入 / 选择</option>");
+                            for (var i = 0, l = json.length; i < l; i++) {
+                                listD.append("<option value='" + json[i].value + "'>" + json[i].name + "</option>");
+                            }
+                            form.render(null, "crm-vip-viprights");
+                        }
+                    });
+
+                    // 表单提交事件
+                    form.on("submit(crm-vip-viprights-formviprights)", function (data) {
+                        if (data.field.validity == '') {
+                            validity = 0;
+                        } else {
+                            validity = data.field.validity;
+                        }
+                        var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                        var msg = '入会费格式错误';
+                        if (data.field.money != '') {
+                            if (!reg.test(data.field.money)) {   // js正则验证  输入的金额
+                                layer.msg(msg, { icon: 2 });
+                                return false;
+                            }
+                        }
+
+                        var splb_msg = '组织机构不能为空!';
+                        if (data.field.splb_name == '') {
+                            layer.msg(splb_msg, { icon: 2 });
+                            return false;
+                        }
+
+                        admin.req({
+                            url: "/index.php/webViprightAdd/",
+                            type: "post",
+                            data: {
+                                uid: data.field.uid, //序号
+                                username: $.trim(data.field.username), //级别名称
+                                discount: $.trim(data.field.level_discount), //级别折扣
+                                money: $.trim(data.field.money), //售卡金额
+                                // validity: $.trim(validity), //有效期
+                                referee: $.trim(data.field.referee), //推荐人积分
+                                function: data.field.function, //推荐功能
+                                rights: $.trim(data.field.rights), //会员权益
+                                remarks: data.field.remarks, //备注     
+                                splb_dtrr_id:  data.field.splb //组织机构code
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2 });
+                                } else if (res.msg == 'yes') {
+                                    layer.close(index);
+                                    right('/index.php/webViprightlist/');
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        };
+
+        //查找信息
+        var crmVipLevSea = function () {
+            layer.prompt({ title: '查找（按照 级别名称）', formType: 0 }, function (text, index) {
+                layer.close(index);
+                right('/index.php/webViprightlist/?lookup=' + text);
+                return false;
+            });
+        };
+
+        //监听工具条
+        table.on('tool(crm-vip-viprights-righttable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'crm-vip-viprights-del') {
+                layer.confirm('确定要删除这条信息么?', function (index) {
+                    admin.req({
+                        url: "/index.php/webViprightleveldel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                right('/index.php/webViprightlist/');
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+            } else if (obj.event === 'crm-vip-viprights-edit') {
+                var formStr = '';
+                if (obj.data.function == '开启') {
+                    formStr += '<form class="layui-form" action="" lay-filter="crm-vip-viprightsvvs"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">级别序号</label><div class="layui-input-inline"><input type="text" name="uid" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-inline"><label class="layui-form-label">级别名称</label><div class="layui-input-inline"><input type="text" name="username" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">推荐功能</label><div class="layui-input-inline"><input type="checkbox" name="function" checked lay-skin="switch" lay-text="开启|关闭"></div></div></div>';
+                } else {
+                    formStr += '<form class="layui-form" action="" lay-filter="crm-vip-viprightsvvs"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">级别序号</label><div class="layui-input-inline"><input type="text" name="uid" autocomplete="off" class="layui-input" readonly></div></div><div class="layui-inline"><label class="layui-form-label">级别名称</label><div class="layui-input-inline"><input type="text" name="username" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">推荐功能</label><div class="layui-input-inline"><input type="checkbox" name="function" value="null" lay-skin="switch" lay-text="开启|关闭"></div></div></div>';
+                }
+                formStr += '<div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">入会费</label><div class="layui-input-inline"><input type="text" name="money" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">推荐人积分</label><div class="layui-input-inline"><input type="text" name="referee" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">级别折扣</label><div class="layui-input-inline"><input type="text" name="level_discount" autocomplete="off" class="layui-input"></div><div class="layui-form-mid layui-word-aux">例如:0.95</div></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-block"><div class="layui-form-mid layui-bg-green" id="level_edit_id" style="width:190px; text-align: center; margin-right: 45px;">点击选择组织机构</div><div class="layui-input-inline"><input type="text" name="splb_name" id="level_edit_name" required autocomplete="off" disabled class="layui-input" style="width: 695px;"></div><input type="hidden" name="splb" id="level_edit_splb_id" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员权益</label><div class="layui-input-block"><textarea name="rights" class="layui-textarea"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">备注:</label><div class="layui-input-block"><input type="text" name="remarks" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="crm-vip-viprights-levelsubmit">确认修改</button></div></div></form>';
+                layer.open({
+                    title: "编辑用户信息",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["1080px", "500px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: formStr,
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+
+                        // form表单渲染
+                        form.render(null, 'crm-vip-viprightsvvs');
+
+                        admin.req({ // 用于查询组织机构并赋值
+                            url: "/index.php/webViprightSplbvalue/",
+                            type: "post",
+                            data: {
+                                code: obj.data.org_code,
+                            },
+                            done: function (res) {
+                                $('#level_edit_name').val(res.data);
+                            }
+                        });
+
+                        // 表单初始赋值
+                        form.val("crm-vip-viprightsvvs", {
+                            uid: obj.data.uid, //序号
+                            level_discount: obj.data.discount, //级别折扣
+                            username: obj.data.username, //级别名称
+                            money: obj.data.money, //售卡金额
+                            validity: obj.data.validity, //有效期
+                            referee: obj.data.referee,  //推荐人积分
+                            rights: obj.data.rights, //会员权益
+                            remarks: obj.data.remarks, //备注
+                            splb: obj.data.org_code
+                        });
+
+                        //组织结构
+                        $("#level_edit_id").click(function () {
+                            layer.open({
+                                type: 1,
+                                title: "选择组织机构",
+                                area: ["400px", "80%"],
+                                content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                                btn: ['确认选择'],
+                                success: function (layero, index) {
+                                    dtree.render({
+                                        elem: "#dTree",
+                                        url: "/index.php/webViprightdtree/?tree=" + obj.data.org_code +"&access_token="+ layui.data(layui.setter.tableName).access_token,
+                                        method: 'get',
+                                        skin: "theme",
+                                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                        // dot: false, //前面的小黑点取消
+                                        checkbar: true,
+                                        checkbarType: "only" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                    });
+                                    // 绑定节点的双击
+                                    dtree.on("nodedblclick('dTree')", function (obj) {
+                                        $("#level_edit_splb_id").val(obj.param.nodeId);
+                                        $("#level_edit_name").val(obj.param.context);
+                                        layer.close(index);
+                                    });
+                                },
+                                yes: function (index, layero) {
+                                    var flag = true;
+                                    var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                    if (params.length == 0) {
+                                        layer.msg("请至少选择一个节点", { icon: 2 });
+                                        flag = false;
+                                    }
+
+                                    var ids = [], names = [];
+                                    for (var key in params) {
+                                        var param = params[key];
+                                        ids.push(param.nodeId);
+                                        names.push(param.context);
+                                    }
+                                    $("#level_edit_splb_id").val(ids.join(","));
+                                    $("#level_edit_name").val(names.join(","));
+                                    if (flag) {
+                                        layer.close(index);
+                                    }
+                                }
+                            });
+                        });
+
+                        // 表单提交事件
+                        form.on("submit(crm-vip-viprights-levelsubmit)", function (data) {
+                            var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                            var msg = '入会费格式错误';
+                            if (data.field.money != '') {
+                                if (!reg.test(data.field.money)) {   // js正则验证  输入的金额
+                                    layer.msg(msg, { icon: 2 });
+                                    return false;
+                                }
+                            }
+                            admin.req({
+                                url: "/index.php/webViprightEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    discount: data.field.level_discount,
+                                    username: $.trim(data.field.username),
+                                    money: $.trim(data.field.money),
+                                    // validity: $.trim(data.field.validity),
+                                    referee: $.trim(data.field.referee),
+                                    function: $.trim(data.field.function),
+                                    rights: $.trim(data.field.rights),
+                                    remarks: $.trim(data.field.remarks),
+                                    org_code: data.field.splb
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        right('/index.php/webViprightlist/');
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

@@ -1,0 +1,43 @@
+<form class="layui-form" id="wpp_mp_menu_add" lay-filter="wpp_mp_menu_add">
+    <div class="layui-form-item">
+        <label class="layui-form-label">菜单名</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" placeholder="请输入标题" class="layui-input">
+        </div>
+    </div>
+    <!-- <div class="layui-form-mid layui-word-aux">辅助文字</div> -->
+    <div class="layui-form-item">
+        <label class="layui-form-label">菜单类型</label>
+        <div class="layui-input-block">
+            <select name="type" lay-filter="wpp_mp_menu_add_type">
+                <option value="">请选择类型(非必选)</option>
+                <option value="0">点击</option>
+                <option value="1">链接</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-lg" layui-submit lay-filter="wpp_mp_menu_add_sub">提交</button>
+        </div>
+    </div>
+</form>
+<script>
+    layui.use(['form', 'table', 'admin'], function () {
+        var form = layui.form;
+        form.render(null, 'wpp_mp_menu_add');
+        form.on('select(wpp_mp_menu_add_type)', function (data) {
+            switch (data.value) {
+                case '0':
+                    console.log(0);
+                    break;
+                case '1':
+                    console.log(1);
+                    break;
+            }
+        })
+        form.on('submit(wpp_mp_menu_add_sub)', function (data) {
+            
+        })
+    })
+</script>

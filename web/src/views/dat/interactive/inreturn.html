@@ -1,0 +1,215 @@
+<title>
+    返单互动报表</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    .downpanel .layui-select-title span {
+    line-height: 38px;
+  }
+
+  .downpanel dl dd:hover {
+    background-color: inherit;
+  }
+
+  .inputS {
+    height: 36px;
+    width: 138px;
+    vertical-align: bottom;
+    border-radius: 2px;
+    border: 1px solid #D2D2D2;
+    padding-left: 10px;
+  }
+
+  .inputB {
+    height: 38px;
+    width: 40px;
+    padding-left: 5px;
+  }
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table id="interactive_inreturn" lay-filter="interactive_inreturn_table"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="interactive_inreturn_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">查找</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['admin', 'element', 'table', 'form', 'laydate', 'dtree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , dtree = layui.dtree
+            , router = layui.router();
+
+        //返单互动报表
+        var inreturn = function (where = '') {
+            table.render({
+                elem: '#interactive_inreturn'
+                , height: 'full-150'
+                , toolbar: '#interactive_inreturn_toolbar'
+                , url: "/index.php/webReturnDat/" //数据接口
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , cols: [[ //表头 
+                    { field: 'org', title: '组织机构/门店/员工', width: 272, sort: true }
+                    , { field: 'member', title: '姓名', width: 272, sort: true }
+                    , { field: 'card_number', title: '卡号', width: 272, sort: true }
+                    , { field: 'phone', title: '电话', width: 272, sort: true }
+                    , { field: 'lname', title: '级别', width: 272, sort: true }
+                    , { field: 'inreturn_number', title: '返单互动单数(次)', width: 273, sort: true }
+                ]]
+                , page: true
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        inreturn();
+
+        // 表头事件监听
+        table.on('toolbar(interactive_inreturn_table)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    inreturnAdd();
+                    break;
+            };
+        });
+
+        //查询
+        var inreturnAdd = function () {
+            
+            layer.open({
+                title: "查询返单互动"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["700px", "420px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form layui-form-pane" lay-filter="interactive_inreturn_form"><div class="layui-form-item"><label class="layui-form-label">所属机构:</label><div class="layui-input-inline" style="width:358px"><input type="text" name="splb_name" id="interactive_inreturn_splb_name" autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="interactive_inreturn_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="interactive_inreturn_list_classtree" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item" style="width:610px"><label class="layui-form-label">门店</label><div class="layui-input-block"><select name="store" lay-filter="interactive_inreturn_store_name" id="interactive_inreturn_store_name"></select></div></div><div class="layui-form-item" style="width:610px"><label class="layui-form-label">员工</label><div class="layui-input-block"><select name="staff" lay-filter="interactive_inreturn_staff_name" id="interactive_inreturn_staff_name"></select></div></div><div class="layui-form-item"><label class="layui-form-label">开始时间</label><div class="layui-input-block"><input type="text" name="first_time" class="layui-input" id="first_time_test" placeholder="yyyy-MM-dd HH:mm:ss"></div></div><div class="layui-form-item"><label class="layui-form-label">结束时间</label><div class="layui-input-block"><input type="text" name="end_time" class="layui-input" id="end_time_test" placeholder="yyyy-MM-dd HH:mm:ss"></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="interactive_inreturn_submit">确认查询</button></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    //组织结构
+                    var organization = function (u, i, n) {
+                        $(u).click(function () {
+                            layer.open({
+                                type: 1,
+                                //type:0 也行
+                                title: "选择所属机构",
+                                area: ["400px", "80%"],
+                                content: '<ul id="openTree1" class="dtree" data-id="0"></ul>',
+                                btn: ['确认选择'],
+                                success: function (layero, index) {
+                                    dtree.render({
+                                        elem: "#openTree1",
+                                        url: "/index.php/webCategoryList/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                                        method: 'get',
+                                        skin: "theme",
+                                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                        // dot: false, //前面的小黑点取消
+                                        checkbar: true,
+                                        checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                    });
+                                },
+                                yes: function (index, layero) {
+                                    var param = dtree.getNowParam("openTree1"); // 获取当前选中节点
+
+                                    $(i).val(param.nodeId);
+                                    $(n).val(param.context);
+                                    var i = param.nodeId;
+                                    layer.close(index);
+                                    //获取所属机构查询门店
+                                    admin.req({
+                                        url: "/index.php/webPlanstore/",
+                                        type: 'post',
+                                        data: {
+                                            org: param.nodeId
+                                        },
+                                        done: function (res) {
+                                            var json = res.data;
+                                            var dw = $("#interactive_inreturn_store_name");
+                                            dw.empty();
+                                            dw.append("<option value=''>请选择门店</option>");
+                                            for (var i = 0, l = json.length; i < l; i++) {
+                                                dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                                            }
+                                            form.render(null, "interactive_inreturn_form");
+                                        }
+                                    });
+
+                                }
+                            });
+
+                        });
+                    }
+                    organization("#interactive_inreturn_list_classtree", "#interactive_inreturn_splb_id", "#interactive_inreturn_splb_name");
+                    // 监听门店如果门店有值  就那门店code  去查询该门店的员工  如果没有门店code  就没有员工
+                    form.on('select(interactive_inreturn_store_name)', function (data) {
+                        //  获得门店id
+                        admin.req({
+                            url: '/index.php/webPlanstaff/',
+                            type: 'post',
+                            data: { store: data.value },
+                            done: function (res) {
+                                var json = res.data;
+                                var dw = $("#interactive_inreturn_staff_name");
+                                dw.empty();
+                                dw.append("<option value=''>请选择员工</option>");
+                                for (var i = 0, l = json.length; i < l; i++) {
+                                    dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                                }
+                                form.render(null, "interactive_inreturn_form");   // 清空后要重新渲染
+                            }
+                        });
+                    });
+                    
+                    //日期时间选择器
+                    laydate.render({
+                        elem: '#first_time_test'
+                        , type: 'datetime'
+                    });
+                    laydate.render({
+                        elem: '#end_time_test'
+                        , type: 'datetime'
+                    });
+                    //渲染
+                    form.render(null, 'interactive_inreturn_form');
+                    //执行实例
+                    form.on('submit(interactive_inreturn_submit)', function (data) {
+                        layer.closeAll();
+                        inreturn(data.field);
+                        return false;
+                    });
+                }
+            });
+        }
+
+    });
+</script>

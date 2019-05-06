@@ -1,0 +1,98 @@
+<title>V票兑换记录</title>
+<div class="layui-fluid">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+                <div class="layui-form-item">
+                    <table class="layui-hide" id="pro_Vticket_Vexchange_demo" lay-filter="pro_Vticket_Vexchange_demo"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--列表头工具栏目-->
+<script type="text/html" id="pro_Vticket_Vexchange_search">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="search">搜索</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'tree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , tree = layui.tree
+            , router = layui.router();
+
+        table.on('toolbar(pro_Vticket_Vexchange_demo)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'search':
+                    exchange_search()
+                    break;
+            }
+        })
+
+        // 查找
+        var exchange_search = function () {
+            layer.open({
+                title: "查找",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["537px", "180px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="vreceive-search"><div class="layui-form-item"><label class="layui-form-label">名字搜索</label><div class="layui-input-inline" style="width:75%"><input name="search" id="stock_search_value" lay-verify="required|title" placeholder="请输入兑换人名字关键字搜索" autocomplete="off" class="layui-input" type="text" style="width:340px"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="pro-stm-Vexchange-search-submit">查找</button></div></div></form>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    // 执行搜索
+                    form.on("submit(pro-stm-Vexchange-search-submit)", function (data) {
+                        exchangeTable(data.field.search);
+                        layer.close(index);
+                        return false;
+
+                    })
+                }
+            })
+        }
+        // 列表
+        var exchangeTable = function (where = '' ) {
+            table.render({
+                elem: '#pro_Vticket_Vexchange_demo',
+                height: 'full-150',
+                url: '/index.php/webVexchangeIndex/',
+                where: {
+                    search: where, access_token: layui.data(layui.setter.tableName).access_token
+                },
+                totalRow: true,
+                page: true, //开启分页
+                limit: 20,
+                limits: [20, 50, 100, 200, 500],
+                cols: [[ //表头              
+                    { field: 'name', title: 'V票兑换人', align: 'center', sort: true, totalRowText: '合计' },
+                    { field: 'number', title: 'V票兑换数量', align: 'center', sort: true, totalRow: true },
+                    { field: 'rate', title: 'V票汇率', align: 'center', sort: true },
+                    { field: 'price', title: 'V票兑换总金额', align: 'center', sort: true, totalRow: true },
+                    { field: 'create_time', title: '兑换时间', align: 'center', sort: true },
+
+                ]],
+                toolbar: '#pro_Vticket_Vexchange_search',
+            });
+
+        }
+        exchangeTable();
+
+    });
+</script>

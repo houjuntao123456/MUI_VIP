@@ -1,0 +1,627 @@
+<title>
+    返单计划营销</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 这段样式只是用于演示 */
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table class="layui-table" id="returnode_return_table" lay-filter="returnode_return_tablelist"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="switch_shop">
+    <input type="checkbox" {{# if (d.go_shop==1 ) { }} checked="" {{# } }} name="{{# if (d.go_shop == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="return_go_shop_table_switch" lay-text="已到店|未到店" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.go_shop == 1) { }}已到店{{# } else { }}未到店{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<script type="text/html" id="switch_CST">
+    <input type="checkbox" {{# if (d.consumption==1 ) { }} checked="" {{# } }} name="{{# if (d.consumption == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="return_consumption_table_switch" lay-text="已消费|未消费" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.consumption == 1) { }}已消费{{# } else { }}未消费{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<script type="text/html" id="switch_status">
+    <input type="checkbox" {{# if (d.status==1 ) { }} checked="" {{# } }} name="{{# if (d.status == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="return_status_table_switch" lay-text="已审核|未审核" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.status == 1) { }}已审核{{# } else { }}未审核{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<script type="text/html" id="returnode_return_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+
+<script type="text/html" id="returnode_return_Demo">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="return_detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="return_edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="return_del">删除</a>
+</script>
+
+<script type="text/html" id="returnode_return_showImg">
+    <div><img src="{{d.photo}}"></div>
+</script>
+
+<script>
+    layui.use(['admin', 'form', 'table', 'laydate'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , form = layui.form
+            , table = layui.table
+            , laydate = layui.laydate
+            , router = layui.router();
+
+        //返单计划列表
+        var vipreturnfun = function (where = '') {
+            table.render({
+                elem: '#returnode_return_table'
+                , height: 'full-150'
+                , url: '/index.php/webReturnProgramSel/' //数据接口
+                , toolbar: '#returnode_return_toolbar'
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'code', title: '单号', width: 200, sort: true, fixed: 'left' }
+                    , { field: 'name', title: '返单名称', width: 110, sort: true, fixed: 'left' }
+                    , { field: 'vzname', title: '组织机构', width: 110, sort: true }
+                    , { field: 'vmname', title: '门店名称', width: 110, sort: true }
+                    , { field: 'vip_code', title: '卡号', width: 110, sort: true }
+                    , { field: 'vhname', title: '返单顾客', sort: true, width: 110 }
+                    , { field: 'vhphone', title: '手机号', width: 120, sort: true }
+                    , { field: 'vlname', title: '会员级别', width: 110, sort: true }
+                    , { field: 'vgname', title: '执行人', width: 100, sort: true }
+                    , { field: 'vggname', title: '监督人', width: 100, sort: true }
+                    , { field: 'time_g', title: '执行时间', width: 180, sort: true }
+                    , { field: 'status', title: '审核状态', templet: '#switch_status', unresize: true, width: 110, sort: true, fixed: 'right' }
+                    , { field: 'consumption', title: '是否消费', templet: '#switch_CST', unresize: true, width: 110, sort: true, fixed: 'right' }
+                    , { field: 'go_shop', title: '是否到店', templet: '#switch_shop', unresize: true, width: 110, sort: true, fixed: 'right' }
+                    , { fixed: 'right', title: '推荐商品', width: 165, align: 'center', toolbar: '#returnode_return_Demo' }
+                ]]
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        vipreturnfun();
+
+        // 表头事件监听
+        table.on('toolbar(returnode_return_tablelist)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'search':
+                    layer.prompt({ title: '按(返单名称, 组织机构, 门店名称, 卡号, 返单顾客, 手机号, 会员级别)查询', formType: 0 }, function (text, index) {
+                        vipreturnfun($.trim(text));
+                        layer.close(index);
+                        return false;
+                    });
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    var bills = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                        bills += checkStatus.data[i].code + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        returnDel(ids, bills);
+                    })
+                    break;
+            };
+        });
+
+        // 批量删除
+        var returnDel = function (ids, bills) {
+            admin.req({
+                url: '/index.php/webReturnProgramDelAll/',
+                type: 'post',
+                data: {
+                    ids: ids,
+                    bill: bills
+                },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //返单计划中新建小返单产品条码
+        var barcode = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webVipinfoOrderGoods/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择条码</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].bar_code + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+        //监听表事件
+        table.on('tool(returnode_return_tablelist)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event;
+
+            if (layEvent === 'return_detail') {//查看
+
+                layer.open({
+                    title: '查看详情'
+                    , type: 1
+                    , area: ["1200px", "480px"] // 弹出层的大小
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<table id="crm_return_tablebill" lay-filter="crm_return_tablebill_tool"></table>'
+                    //关闭弹出层
+                    , success: function (layero, index) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                    }
+                });
+
+                //小返单列表
+                var returnbillfun = function () {
+                    table.render({
+                        elem: '#crm_return_tablebill'
+                        , url: "/index.php/webVipinfoOrderDillSel/"//数据接口
+                        , where: { access_token: layui.data(layui.setter.tableName).access_token, bill: obj.data.code }
+                        , height: 360
+                        , page: true
+                        , cols: [[ //表头
+                            { field: 'photo', title: '照片', width: 120, templet: '#returnode_return_showImg', event: 'photoImg', sort: true }
+                            , { field: 'goods_bar_code', title: '产品条码', width: 180, sort: true }
+                            , { field: 'color', title: '颜色', width: 100, sort: true }
+                            , { field: 'size', title: '尺码', width: 100, sort: true }
+                            , { field: 'brand', title: '品牌价', width: 100, sort: true }
+                            , { field: 'vip_price', title: '会员价', width: 100, sort: true }
+                            , { field: 'customer_demand', title: '顾客需求', width: 200, sort: true }
+                            , { field: 'buy_some', title: '核心买点EBAF', width: 200, sort: true }
+                            , { field: 'top', title: 'TOP', width: 150, sort: true }
+                            , { field: 'question', title: '顾客可能会问的问题', width: 200, sort: true }
+                            , { field: 'answer', title: '问题回应话术', width: 200, sort: true }
+                            , { fixed: 'right', title: '操作', width: 170, align: 'center', toolbar: '#returnode_return_Demo' }
+                        ]]
+                    });
+                }
+                returnbillfun();
+                // 表格事件监听
+                table.on('tool(crm_return_tablebill_tool)', function (returnbill) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                    var data = returnbill.data; //获得当前行数据
+                    var layEvent = returnbill.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                    if (layEvent === 'return_del') { //删除查看小返单计划
+
+                        layer.confirm('确认删除该条数据？', function (index) {
+                            admin.req({
+                                url: "/index.php/webReturnProgramDillDel/",
+                                type: "post",
+                                data: {
+                                    id: returnbill.data.id
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        returnbillfun();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                        });
+
+                    } else if (layEvent === 'return_edit') { //编辑小返单计划
+
+                        layer.open({
+                            title: "编辑小返单计划",
+                            type: 1,
+                            shade: 0.3,
+                            shadeClose: false,
+                            anim: 1,
+                            area: ["700px", "600px"],
+                            skin: "layui-layer-admin layui-anim",
+                            content: '<form class="layui-form layui-form-pane" lay-filter="vip_returnorder_return_form"><div class="layui-form-item"><label class="layui-form-label">产品条码:</label><div class="layui-input-inline"><select name="production_number" lay-verify="required" lay-search lay-filter="vip_returnorder_return_production_number_val" id="vip_returnorder_return_production_number"></select></div><label class="layui-form-label">颜色:</label><div class="layui-input-inline"><input type="text" name="color" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">尺码:</label><div class="layui-input-inline"><input type="text" name="size" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">吊牌价:</label><div class="layui-input-inline"><input type="text" name="brand" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员价:</label><div class="layui-input-inline"><input type="text" name="vip_price" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">图片:</label><div class="layui-input-inline"><input type="text" name="photo" disabled autocomplete="off" class="layui-input"><div id="returnorder_return_form_img_prev"></div></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客需求</label><div class="layui-input-block"><textarea class="layui-textarea" name="customer_demand" lay-verify="required" placeholder="请输入需求"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">核心买点EBAF</label><div class="layui-input-block"><textarea class="layui-textarea" name="buy_some" lay-verify="required" placeholder="请输入买点"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">TOP</label><div class="layui-input-block"><textarea class="layui-textarea" name="top" lay-verify="required" placeholder="请输入TOP"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客可能会问的问题</label><div class="layui-input-block"><textarea class="layui-textarea" name="question" lay-verify="required" placeholder="请输入问题"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">问题回应话术</label><div class="layui-input-block"><textarea class="layui-textarea" name="answer" lay-verify="required" placeholder="请输入话术"></textarea></div></div><input type="hidden" name="productio_numbered" class="layui-input"><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip_returnorder_return_Demoedit">执行修改</button></div></form>',
+                            success: function (layero, index) {
+                                // 右上角叉号
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                //产品条码复选框
+                                barcode("#vip_returnorder_return_production_number", "vip_returnorder_return_form", returnbill.data.goods_code);
+                                //赋值
+                                form.on('select(vip_returnorder_return_production_number_val)', function (data) {
+                                    admin.req({
+                                        url: "/index.php/webVipinfoOrderProduct/",
+                                        type: 'post',
+                                        data: {
+                                            production_number: data.value,
+                                            level: obj.data.level_code
+                                        },
+                                        done: function (production) {
+                                            if (production.code == 0) {
+                                                layer.msg(production.msg, { icon: 1, title: '提示' });
+                                                //图片
+                                                if (production.data.img !== "") {
+                                                    var url = production.data.img;
+                                                    var img = $("#returnorder_return_form_img_prev");
+                                                    img.html("<img src='" + url + "' width='190' height='100'>");
+                                                }
+                                                //赋值
+                                                form.val('vip_returnorder_return_form', {
+                                                    color: production.data.color,
+                                                    size: production.data.size,
+                                                    brand: production.data.price,
+                                                    productio_numbered: production.data.bar_code,
+                                                    vip_price: production.data.vip_price,
+                                                    photo: production.data.img
+                                                });
+                                            } else {
+                                                layer.msg(production.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                });
+                                // form表单渲染
+                                form.render(null, 'vip_returnorder_return_form');
+                                //图片
+                                var imgurl = returnbill.data.photo;
+                                var img = $("#returnorder_return_form_img_prev");
+                                if (imgurl !== "") {
+                                    img.html("<img src='" + imgurl + "' width='190' height='100'>");
+                                } else {
+
+                                }
+                                // 表单赋值
+                                form.val("vip_returnorder_return_form", {
+                                    color: returnbill.data.color,
+                                    size: returnbill.data.size,
+                                    brand: returnbill.data.brand,
+                                    photo: returnbill.data.photo,
+                                    vip_price: returnbill.data.vip_price,
+                                    productio_numbered: returnbill.data.goods_bar_code,
+                                    customer_demand: returnbill.data.customer_demand,
+                                    buy_some: returnbill.data.buy_some,
+                                    top: returnbill.data.top,
+                                    question: returnbill.data.question,
+                                    answer: returnbill.data.answer
+                                });
+                                // 表单提交事件
+                                form.on("submit(vip_returnorder_return_Demoedit)", function (data) {
+                                    var loadindex = layer.load(1, { time: 10 * 1000 });
+                                    admin.req({
+                                        url: "/index.php/webReturnProgramDillEdit/",
+                                        type: "post",
+                                        data: {
+                                            id: returnbill.data.id,
+                                            production_id: data.field.production_number,
+                                            production_number: data.field.productio_numbered,
+                                            color: data.field.color,
+                                            size: data.field.size,
+                                            brand: data.field.brand,
+                                            photo: data.field.photo,
+                                            vip_price: data.field.vip_price,
+                                            customer_demand: data.field.customer_demand,
+                                            buy_some: data.field.buy_some,
+                                            top: data.field.top,
+                                            question: data.field.question,
+                                            answer: data.field.answer
+                                        },
+                                        done: function (res) {
+                                            layer.close(loadindex);
+                                            if (res.msg == 'error') {
+                                                layer.msg(res.data, { icon: 2, title: res.msg });
+                                            } else if (res.msg == 'yes') {
+                                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                                returnbillfun();
+                                                layer.close(index);
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2, title: '提示' });
+                                            }
+                                        }
+                                    });
+                                    return false;
+                                });
+                            }
+                        });
+
+                    } else if (layEvent === 'return_detail') { //查看详情，查看小返单计划
+
+                        layer.open({
+                            title: '查看详情'
+                            , type: 1
+                            , area: ["750px", "550px"] // 弹出层的大小
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<form class="layui-form" lay-filter="vip_returnorder_return_form_look"><div class="layui-form-item"><label class="layui-form-label">产品编号:</label><div class="layui-input-inline"><input type="text" name="production_number" autocomplete="off" disabled class="layui-input"></div><label class="layui-form-label">颜色:</label><div class="layui-input-inline"><input type="text" name="color" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">尺码:</label><div class="layui-input-inline"><input type="text" name="size" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">吊牌价:</label><div class="layui-input-inline"><input type="text" name="brand" disabled autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">会员价:</label><div class="layui-input-inline"><input type="text" name="vip_price" disabled autocomplete="off" class="layui-input"></div><label class="layui-form-label">图片:</label><div class="layui-input-inline" id="returnbill_img"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客需求</label><div class="layui-input-block"><textarea class="layui-textarea" name="customer_demand" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">核心买点EBAF</label><div class="layui-input-block"><textarea class="layui-textarea" name="buy_some" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">TOP</label><div class="layui-input-block"><textarea class="layui-textarea" name="top" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">顾客可能会问的问题</label><div class="layui-input-block"><textarea class="layui-textarea" name="question" disabled></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">问题回应话术</label><div class="layui-input-block"><textarea class="layui-textarea" name="answer" disabled></textarea></div></div></form>'
+                            //关闭弹出层
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+                                var imgurl = data.photo;
+                                var img = $("#returnbill_img");
+                                if (imgurl !== "") {
+                                    img.html("<img src='" + imgurl + "' name='photo' width='190' height='100'>");
+                                } else {
+                                    layer.msg('暂无图片!');
+                                }
+                                // 表单初始赋值
+                                form.val("vip_returnorder_return_form_look", {
+                                    production_number: data.goods_bar_code,
+                                    color: data.color,
+                                    size: data.size,
+                                    brand: data.brand,
+                                    vip_price: data.vip_price,
+                                    customer_demand: data.customer_demand,
+                                    buy_some: data.buy_some,
+                                    top: data.top,
+                                    question: data.question,
+                                    answer: data.answer
+                                });
+                            }
+                        });
+
+                    } else if (layEvent === 'photoImg') {
+                        var imgurl = returnbill.data.photo;
+                        if (imgurl !== "") {
+                            layer.open({
+                                title: '图片详情'
+                                , type: 1
+                                , area: ["440px", "390px"] // 弹出层的大小
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<div id="returnbillphoto_img"></div>'
+                                //关闭弹出层
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    $("#returnbillphoto_img").html("<img src='" + imgurl + "' name='photo' width='400' height='300'>");
+                                }
+                            });
+                        } else {
+                            layer.msg('暂无图片!');
+                        }
+
+                    }
+                });
+
+            } else if (layEvent === 'return_del') { //删除大返单
+
+                layer.confirm('确认删除该条数据？', function (index) {
+                    admin.req({
+                        url: "/index.php/webReturnProgramDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id,
+                            bill: obj.data.code
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                vipreturnfun();
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+
+            } else if (layEvent === 'return_edit') { //编辑大返单
+
+                layer.open({
+                    title: "编辑返单计划营销",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["500px", "460px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form layui-form-pane" lay-filter="vip-return-form-edit"><h3>仅编辑(互动名称,执行人,监督人,执行时间)</h3><br><div class="layui-form-item"><label class="layui-form-label">单号:</label><div class="layui-input-inline"><input type="text" name="bill" disabled autocomplete="off" class="layui-input"></div><div class="layui-form-mid" style="color:red">*单号不可修改</div></div><div class="layui-form-item"><label class="layui-form-label">互动名称:</label><div class="layui-input-block"><input type="text" name="listplan_name" id="returnprogram_listplan_name_id" lay-verify="required" placeholder="请输入返单名称" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">监督人:</label><div class="layui-input-block"><select name="custodian" lay-filter="" lay-search lay-verify="required" id="vip_return_custodian_staff"></select></div></div><div class="layui-form-item"><label class="layui-form-label">执行人:</label><div class="layui-input-block"><select name="executor" lay-filter="" lay-search lay-verify="required" id="vip_return_executor_staff"></select></div></div><div class="layui-form-item"><label class="layui-form-label">执行时间:</label><div class="layui-input-block"><input type="text" name="service_time" id="vip_returnorder_return_date" lay-verify="required" placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="vip_return_DemoEdit">执行修改</button></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        //获取焦点
+                        $("#returnprogram_listplan_name_id").focus();
+                        //监督人
+                        stafffun('#vip_return_custodian_staff', "vip-return-form-edit", data.custodian_code);
+                        //执行人
+                        stafffun('#vip_return_executor_staff', "vip-return-form-edit", data.executor_code);
+                        //日期
+                        laydate.render({
+                            elem: '#vip_returnorder_return_date'
+                            , value: obj.data.time_g
+                            , isInitValue: true
+                            , type: 'datetime'
+                        });
+                        //渲染
+                        form.render(null, "vip-return-form-edit");
+                        // 表单初始赋值
+                        form.val("vip-return-form-edit", {
+                            bill: obj.data.code,
+                            listplan_name: obj.data.name
+                        });
+                        // 表单提交事件
+                        form.on("submit(vip_return_DemoEdit)", function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            admin.req({
+                                url: "/index.php/webReturnProgramEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    listplan_name: $.trim(data.field.listplan_name),
+                                    custodian: data.field.custodian,
+                                    executor: data.field.executor,
+                                    service_time: data.field.service_time
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        vipreturnfun();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+
+                    }
+                });
+
+            }
+
+        });
+
+        //到店
+        form.on("switch(return_go_shop_table_switch)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webReturnProgramReplaceGS/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        vipreturnfun();
+                    }
+                }
+            });
+        });
+
+        //消费
+        form.on("switch(return_consumption_table_switch)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webReturnProgramReplaceC/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        vipreturnfun();
+                    }
+                }
+            });
+        });
+
+        //状态
+        form.on("switch(return_status_table_switch)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webReturnProgramReplace/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        vipreturnfun();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        vipreturnfun();
+                    }
+                }
+            });
+        });
+
+        //员工
+        var stafffun = function (d, x, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStaffSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择员工</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, x);
+                }
+            });
+        }
+
+    });
+</script>

@@ -1,0 +1,12 @@
+.hide{
+    display:none;
+}
+.add{
+	cursor: pointer;
+}
+.edit{
+	cursor: pointer;
+}
+.del{
+	cursor: pointer;
+}

@@ -1,0 +1,555 @@
+<title>生日折扣</title>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <table class="layui-hide" id="crm-vip-birthday" lay-filter="crm-vip-birthday"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="crm-viprig-birthday-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+      <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+      <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script type="text/html" id="crm-vip-birthday-barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="crm-vip-viprights-edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-vip-viprights-del">删除</a>
+</script>
+<script type="text/html" id="del_company_barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="del_company">删除</a>
+</script>
+<!-- 选择优惠项目商品头工具栏按钮 -->
+<script type="text/html" id="crm-vip-viprig-birthday-type-goods-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'checkbox', 'tree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , checkbox = layui.checkbox
+            , tree = layui.tree
+            , router = layui.router();
+
+        var birthday = function (Url) {
+            table.render({
+                elem: '#crm-vip-birthday'
+                , height: 'full-150'
+                , url: Url
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+                , where: {
+                    access_token: layui.data(layui.setter.tableName).access_token
+                }
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'vgname', title: '会员级别', align: 'center', sort: true }
+                    , { field: 'vpname', title: '所属门店', align: 'center', sort: true }
+                    , { field: 'discount', title: '折扣', align: 'center', sort: true }
+                    // , { field: 'integral_multiple', title: '积分倍数', align: 'center', sort: true }
+                    , { field: 'exclusive_days', title: '限定时间(天)', width: 350, align: 'center', sort: true }
+                    , { fixed: 'right', title: '操作', width: 160, align: 'center', toolbar: '#crm-vip-birthday-barDemo' }
+                ]]
+                , toolbar: '#crm-viprig-birthday-toolbar'
+            });
+        }
+        birthday('/index.php/webBirthList/');
+
+        // 表头事件监听
+        table.on('toolbar(crm-vip-birthday)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    crmVipBirthdayAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        crmVipBirthdayDel(ids);
+                    })
+                    break;
+                case 'search':
+                    crmVipBirthdaySea();
+                    break;
+            };
+        });
+
+        // 批量删除
+        var crmVipBirthdayDel = function (ids) {
+            admin.req({
+                url: '/index.php/webBirthDelMany/',
+                type: 'post',
+                data: { ids: ids },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        birthday('/index.php/webBirthList/');
+                        layer.close(index);
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //查找信息
+        var crmVipBirthdaySea = function () {
+            layer.prompt({ title: '查找（按照 会员级别 / 所属门店）', formType: 0 }, function (text, index) {
+                layer.close(index);
+                birthday('/index.php/webBirthList/?lookup=' + text);
+                return false;
+            });
+        };
+
+
+
+        //循环得到会员等级下拉框信息
+        var initList = function (u, d, value) {
+            admin.req({
+                url: u,
+                done: function (res) {
+                    var json = res.data;
+                    var listD = $(d);
+                    listD.empty();
+                    listD.append("<option value=''>请输入 / 选择</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        listD.append("<option value='" + json[i].code + "'>" + json[i].username + "</option>");
+                    }
+                    $(d).val(value);
+                    form.render(null, "crm-vip-viprights-birthday");
+                    form.render(null, "crm-vip-viprights-birthday-edit");
+                }
+            });
+        }
+
+        //添加信息
+        var crmVipBirthdayAdd = function () {
+            layer.open({
+                title: "添加信息"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["800px", "380px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-birthday"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">会员级别</label><div class="layui-input-inline"><select name="levelname" id="birthday_level" lay-verify="required" lay-search></select></div></div><div class="layui-inline"><label class="layui-form-label">所属店面</label><div class="layui-input-inline"><div class="layui-btn layui-btn-normal" id="birthday_store">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;添&nbsp;&nbsp;加&nbsp;&nbsp;门&nbsp;&nbsp;店&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">消费项目</label><div class="layui-input-inline"><div class="layui-unselect layui-form-select downpanel"><div class="layui-select-title" id="crm_viprig_birthday_select_add"><span class="layui-input layui-unselect" style="line-height:35px">商品类别</span> <input type="hidden" name="splb"> <i class="layui-edge"></i></div><dl class="layui-layer-admin layui-anim"><dd><ul id="crm-vip-viprig-birthday-classtree-add"></ul></dd></dl></div></div></div><div class="layui-inline"><label class="layui-form-label">折扣</label><div class="layui-input-inline"><input type="text" name="birthday_discounts" autocomplete="off" placeholder="请输入折扣" class="layui-input"></div><div class="layui-form-mid layui-word-aux">例如:0.95</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">生日前</label><div class="layui-input-inline" style="width:100px"><input type="text" name="time_start" autocomplete="off" placeholder="多少" class="layui-input"></div><label class="layui-form-mid">天 后</label><div class="layui-input-inline" style="width:100px"><input type="text" name="time_end" autocomplete="off" placeholder="多少" class="layui-input"></div><label class="layui-form-mid">天</label></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-birthdaySub">确定添加</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    admin.req({ // ---------------------------------------------------------------------------------------------清除缓存
+                        url: '/index.php/webBirthBirsetCacheNull/',
+                        type: 'post',
+                        done: function (res) {
+                        }
+                    });
+
+                    $("#birthday_store").click(function () { // ----------------------------------------------------------------------添加所属门店信息
+                        layer.open({
+                            title: "添加所属店面"
+                            , type: 1
+                            , shade: 0.3
+                            , shadeClose: false
+                            , anim: 1
+                            , offset: 'auto'
+                            , area: ["465px", "300px"]
+                            , skin: "layui-layer-admin layui-anim"
+                            , content: '<div class="layui-form-item"><form class="layui-form layui-form-pane" action="" lay-filter="crm-viprig-birthday-ssmd"><label class="layui-form-label">所属店面：</label><div class="layui-input-inline"><select name="ssmd_birthday_name" id="ssmd_birthday_name" lay-search lay-filter="aihao lay-search" lay-verify="required" lay-search></select></div><label class="layui-form-mid"></label><div class="layui-input-inline" style="width:50px"><button class="layui-btn" lay-submit="" lay-filter="crm_viprig_birthday_add_normal">添加</button></div></form></div><div class="layui-form-item"><ul id="crm-viprig-birthday-add-ul"></ul></div>'
+                            , success: function (layero, index) {
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(index);
+                                });
+
+                                admin.req({ // ---------------------------------------------------------------------------------------------循环得到所属门店下拉表信息
+                                    url: "/index.php/websetDisstore/",
+                                    done: function (res) {
+                                        var jsona = res.data;
+                                        var listDj = $('#ssmd_birthday_name');
+                                        listDj.empty();
+                                        listDj.append("<option value=''>请输入 / 选择</option>");
+                                        for (var i = 0, l = jsona.length; i < l; i++) {
+                                            listDj.append("<option value='" + jsona[i].code + "' id='birthday-fuxiao-add-" + jsona[i].code + "'>" + jsona[i].name + "</option>");
+                                        }
+                                        form.render(null, "crm-viprig-birthday-ssmd");
+                                    }
+                                });
+
+                                form.on("submit(crm_viprig_birthday_add_normal)", function (date) { // -------------------------------------监听执行添加
+                                    admin.req({
+                                        url: "/index.php/webBirthgetcacheAdd/",
+                                        type: "post",
+                                        data: {// 给控制器传递数据
+                                            ssmd_birthday_name: date.field.ssmd_birthday_name, //所属门店
+                                            name: $('#birthday-fuxiao-add-' + date.field.ssmd_birthday_name).text()
+                                        }, done: function (res) {
+                                            if (res.msg == 'error') {
+                                                layer.msg(res.data, { icon: 2 });
+                                            } else if (res.msg == 'yes') {
+                                                birthdayinfo();
+                                            } else if (res.msg == 'no') {
+                                                layer.msg(res.data, { icon: 2 });
+                                            }
+                                        }
+                                    });
+                                    return false;
+                                });
+                                form.render(null, "crm-viprig-birthday-ssmd");
+
+                                var birthdayinfo = function () {
+                                    admin.req({
+                                        url: "/index.php/webBirthGetBirthdaycache/"
+                                        , done: function (res) {
+                                            $("#crm-viprig-birthday-add-ul").empty();
+                                            checkbox({
+                                                elem: "#crm-viprig-birthday-add-ul"
+                                                , nodes: res.data
+                                                , del: function (node) {
+                                                    admin.req({ // 删除扩展信息
+                                                        url: "/index.php/webBirthGetcacheDel/"
+                                                        , data: {
+                                                            id: node.id
+                                                        }, done: function (res) {
+                                                            if (res.msg == 'yes') {
+                                                                birthdayinfo();
+                                                            } else {
+                                                                layer.msg(res.msg, { icon: 2 });
+                                                            }
+                                                        }
+                                                    });
+                                                    return true;
+                                                }
+                                            });
+                                            form.render(null, "crm-viprig-birthday-ssmd");
+                                        }
+                                    });
+                                };
+                                birthdayinfo();
+                            }
+                        });
+                    });
+
+                    form.render(null, 'crm-vip-viprights-birthday');
+
+                    //下拉框信息
+                    initList("/index.php/webDroplevel/", "#birthday_level");
+
+                    //获取所属类别列表
+                    initcategoryTree("#crm-vip-viprig-birthday-classtree-add");
+
+                    // 表单提交事件
+                    form.on("submit(crm-vip-viprights-birthdaySub)", function (data) {
+                        var reg = /^(1|0(\.\d{1,2})?)$/;
+                        if (!reg.test(data.field.birthday_discounts)) {
+                            layer.msg('专属折扣必须是0-1之间的两位小数', { icon: 2, title: '提示' });
+                            return false;
+                        }
+                        var vreg = /^[0-9]*$/;
+                        if (!vreg.test(data.field.birthday_multiple)) {
+                            layer.msg('积分倍数只能是数字类型', { icon: 2, title: '提示' });
+                        }
+                        admin.req({
+                            url: "/index.php/webBirthAdd/",
+                            type: "post",
+                            data: {
+                                levelname: data.field.levelname, //会员级别
+                                birthday_discounts: $.trim(data.field.birthday_discounts), //专属折扣
+                                // birthday_multiple: $.trim(data.field.birthday_multiple), //积分倍数
+                                time_start: data.field.time_start, //时间 开始
+                                time_end: data.field.time_end, //时间 结束
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.close(index);
+                                    birthday('/index.php/webBirthList/');
+                                    layer.msg(res.data, { icon: 1 });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        };
+
+        //监听工具条
+        table.on('tool(crm-vip-birthday)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'crm-vip-viprights-del') {
+                layer.confirm('确定要删除这条信息么?', function (index) {
+                    admin.req({
+                        url: "/index.php/webBirthBirthdaydel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                birthday('/index.php/webBirthList/');
+                                layer.close(index);
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+            } else if (obj.event === 'crm-vip-viprights-edit') {
+                layer.open({
+                    title: "编辑信息",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["800px", "380px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-birthday-edit"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">会员级别</label><div class="layui-input-inline"><select name="levelname_edit" id="birthday_level_edit" lay-verify="required" lay-search></select></div></div><div class="layui-inline"><label class="layui-form-label">所属门店</label><div class="layui-input-inline"><select name="storename_edit" id="birthday_store_edit" lay-verify="required" lay-search></select></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">消费项目</label><div class="layui-input-inline"><div class="layui-unselect layui-form-select downpanel"><div class="layui-select-title" id="crm_viprig_birthday_select_edit"><span class="layui-input layui-unselect" style="line-height:35px">商品类别</span> <input type="hidden" name="splb"> <i class="layui-edge"></i></div><dl class="layui-layer-admin layui-anim"><dd><ul id="crm-vip-viprig-birthday-classtree-edit"></ul></dd></dl></div></div></div><div class="layui-inline"><label class="layui-form-label">折扣</label><div class="layui-input-inline"><input type="text" name="birthday_discounts_edit" autocomplete="off" placeholder="请输入折扣" class="layui-input"></div><div class="layui-form-mid layui-word-aux">例如:0.95</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">生日前</label><div class="layui-input-inline" style="width:100px"><input type="text" name="time_start_edit" autocomplete="off" placeholder="多少" class="layui-input"></div><label class="layui-form-mid">天 后</label><div class="layui-input-inline" style="width:100px"><input type="text" name="time_end_edit" autocomplete="off" placeholder="多少" class="layui-input"></div><label class="layui-form-mid">天</label></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-birthdaySub-edit">确定修改</button></div></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+
+                        // form表单渲染
+                        form.render(null, 'crm-vip-viprights-birthday-edit');
+
+                        admin.req({ // ---------------------------------------------------------------------------------------------清除缓存
+                            url: '/index.php/webBirthBirsetCacheNull/',
+                            type: 'post',
+                            done: function (res) {
+                            }
+                        });
+
+                        //将初始数据加入缓存
+                        admin.req({
+                            url: '/index.php/webBirthcacheGoods/',
+                            type: 'post',
+                            data: { goods: obj.data.project, type: obj.data.type },
+                            done: function (res) {
+
+                            }
+                        });
+
+                        // 表单初始赋值
+                        form.val("crm-vip-viprights-birthday-edit", {
+                            // birthday_multiple_edit: obj.data.integral_multiple,//积分倍数
+                            birthday_discounts_edit: obj.data.discount,//折扣
+                            time_start_edit: obj.data.prev_days,//前多少天
+                            time_end_edit: obj.data.after_days, //后多少天
+                        });
+
+                        admin.req({ // 所属门店查询并赋值
+                            url: '/index.php/websetDisstore/',
+                            done: function (res) {
+                                var json = res.data;
+                                var listD = $('#birthday_store_edit');
+                                listD.empty();
+                                listD.append("<option value=''>请输入 / 选择</option>");
+                                for (var i = 0, l = json.length; i < l; i++) {
+                                    listD.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                                }
+                                $('#birthday_store_edit').val(data.store_code);
+                                form.render(null, "crm-vip-viprights-birthday-edit");
+                            }
+                        });
+
+                        initList("/index.php/webDroplevel/", "#birthday_level_edit", data.level_code);
+
+                        //获取所属类别列表
+                        initcategoryTree("#crm-vip-viprig-birthday-classtree-edit");
+
+                        // 表单提交事件
+                        form.on("submit(crm-vip-viprights-birthdaySub-edit)", function (data) {
+                            var reg = /^(1|0(\.\d{1,2})?)$/;
+                            if (!reg.test(data.field.birthday_discounts_edit)) {
+                                layer.msg('折扣必须是0-1之间的两位小数', { icon: 2, title: '提示' });
+                                return false;
+                            }
+                            var vreg = /^[0-9]*$/;
+                            if (!vreg.test(data.field.birthday_multiple_edit)) {
+                                layer.msg('积分倍数只能是数字类型', { icon: 2, title: '提示' });
+                            }
+                            admin.req({
+                                url: "/index.php/webBirthEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    levelname: data.field.levelname_edit, //会员级别
+                                    storename: data.field.storename_edit, //所属门店
+                                    birthday_discounts: $.trim(data.field.birthday_discounts_edit), //专属折扣
+                                    birthday_multiple: $.trim(data.field.birthday_multiple_edit), //积分倍数
+                                    time_start: data.field.time_start_edit, //前多少天
+                                    time_end: data.field.time_end_edit, //后多少天
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.close(index);
+                                        birthday('/index.php/webBirthList/');
+                                        layer.msg(res.data, { icon: 1 });
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2 });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+            }
+        });
+
+        //获取所属类别列表
+        var initcategoryTree = function (d) {
+            admin.req({
+                url: "/index.php/webTableTree/"
+                , done: function (res) {//res.data
+                    tree({
+                        elem: d
+                        , nodes: res.data
+                        , click: function (node) {
+                            layer.open({
+                                title: '选择商品（友情提示：每个活动只能选择同类别下的商品，类别不限于哪一级。注意：第二次选择会覆盖第一次选择的商品）',
+                                type: 1,
+                                shade: 0.3,
+                                shadeClose: false,
+                                anim: 1,
+                                offset: 'auto',
+                                area: ['1000px', '500px'],
+                                skin: "layui-layer-admin layui-anim",
+                                content: '<table class="layui-hide" id="crm-vip-viprights-birthday-add-type-goods" lay-filter="crm-vip-viprights-birthday-add-type-goods"></table>',
+                                success: function (listLayero, listIndex) {
+                                    var elem2Close = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    listLayero.append(elem2Close);
+                                    elem2Close.on('click', function () {
+                                        layer.close(listIndex);
+                                    });
+
+                                    // 列表请求
+                                    var type_goods_check_list = function (wh = '') {
+                                        table.render({
+                                            elem: '#crm-vip-viprights-birthday-add-type-goods'
+                                            , height: 390
+                                            , url: '/index.php/webBirthGetGoods/'
+                                            , where: { code: node.code, path: node.path, access_token: layui.data(layui.setter.tableName).access_token, wh: wh }
+                                            , cols: [[ //表头
+                                                { type: 'checkbox', fixed: 'left' },
+                                                { field: 'bar_code', width: 200, title: '条码', align: 'center' },
+                                                { field: 'frenum', minwidth: 120, title: '货号', align: 'center' },
+                                                { field: 'name', minwidth: 120, title: '商品名', align: 'center' },
+                                                { field: 'unit_name', width: 60, title: '单位', align: 'center' },
+                                                { field: 'color', width: 70, title: '颜色', align: 'center' },
+                                                { field: 'size', width: 70, title: '尺码', align: 'center' },
+                                                { field: 'price', width: 100, title: '价格', align: 'center' }
+                                            ]]
+                                            , toolbar: '#crm-vip-viprig-birthday-type-goods-toolbar'
+                                        });
+                                    }
+                                    type_goods_check_list();
+                                    table.on('toolbar(crm-vip-viprights-birthday-add-type-goods)', function (objDisGoods) {
+                                        var checkStatus = table.checkStatus(objDisGoods.config.id);
+                                        var listWhere = objDisGoods.config.where.where;
+                                        switch (objDisGoods.event) {
+                                            case 'add':
+                                                var checkNum = checkStatus.data.length;
+                                                if (checkNum < 1) {
+                                                    layer.msg('请选择至少一款商品', { icon: 2, title: '提示' });
+                                                    return false;
+                                                }
+                                                var goods = '';
+                                                if (checkStatus.isAll == true && typeof (listWhere) == 'undefined') {
+                                                    // 分类的ID
+                                                    goods = node.code;
+                                                    var type = 0;
+                                                } else {
+                                                    for (var i = 0; i < checkNum; i++) {
+                                                        goods += checkStatus.data[i].code + ',';
+                                                    }
+                                                    var type = 1;
+                                                }
+                                                admin.req({
+                                                    url: '/index.php/webBirthBircacheGoods/',
+                                                    type: 'post',
+                                                    data: { goods: goods, type: type },
+                                                    done: function (res) {
+                                                        if (res.msg == 'error') {
+                                                            layer.msg(res.data, { icon: 2 });
+                                                        } else if (res.msg == 'yes') {
+                                                            layer.close(listIndex);
+                                                            layer.msg(res.data, { icon: 1 });
+                                                        } else if (res.msg == 'no') {
+                                                            layer.msg(res.data, { icon: 2 });
+                                                        }
+                                                    }
+                                                });
+                                                return false;
+                                                break;
+                                            case 'sea':
+
+                                                layer.prompt({ title: '可以按(商品名,条码,货号,单位,颜色,尺码,价格)查询', formType: 0 }, function (text, index) {
+                                                    type_goods_check_list(text);
+                                                    layer.close(index);
+                                                    return false;
+                                                });
+                                                break;
+                                        };
+                                    })
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            //--------------------------------------------------------------------编辑的所属类别点击事件
+            $(".downpanel").on("click", ".layui-select-title", function (e) {
+                $(".layui-form-select").not($(this).parents(".layui-form-select")).removeClass("layui-form-selected");
+                $(this).parents(".downpanel").toggleClass("layui-form-selected");
+                layui.stope(e);
+            }).on("click", "dl i", function (e) {
+                layui.stope(e);
+            });
+        };
+
+    });
+</script>

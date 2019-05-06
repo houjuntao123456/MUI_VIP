@@ -1,0 +1,382 @@
+<title>
+    职位管理</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 这段样式只是用于演示 */
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table class="layui-hide" id="staff_sfposition_table" lay-filter="staff_sfposition_tablelist"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="stm_staff_sfposition_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+
+<script type="text/html" id="staff_sfposition_Demo">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="position_detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="position_edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="position_del">删除</a>
+</script>
+
+<script>
+    layui.use(['admin', 'layer', 'form', 'table', 'dtree'], function () {
+        var $ = layui.$
+            , layer = layui.layer
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , dtree = layui.dtree
+            , router = layui.router();
+
+        //所属机构
+        var organization = function (u, i, n) {
+            $(u).click(function () {
+                layer.open({
+                    type: 1,
+                    //type:0 也行
+                    title: "选择所属机构",
+                    area: ["400px", "80%"],
+                    content: '<ul id="openTree1" class="dtree" data-id="0"></ul>',
+                    btn: ['确认选择'],
+                    success: function (layero, index) {
+                        dtree.render({
+                            elem: "#openTree1",
+                            url: "/index.php/webCategoryList/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                            method: 'get',
+                            skin: "theme",
+                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                            // dot: false, //前面的小黑点取消
+                            checkbar: true,
+                            checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                        });
+                        // 绑定节点的双击
+                        dtree.on("nodedblclick('openTree1')", function (obj) {
+                            $(i).val(obj.param.nodeId);
+                            $(n).val(obj.param.context);
+                            layer.close(index);
+                        });
+                    },
+                    yes: function (index, layero) {
+                        var param = dtree.getNowParam("openTree1"); // 获取当前选中节点
+
+                        $(i).val(param.nodeId);
+                        $(n).val(param.context);
+                        layer.close(index);
+                    }
+                });
+            });
+        }
+
+        //添加职位
+        var positionAdd = function () {
+            layer.open({
+                title: "新建职位"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["590px", "510px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form layui-form-pane" lay-filter="sfposition_form_add"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所属机构:</label><div class="layui-input-inline" style="width:270px"><input type="text" name="splb_name" id="splb_name_id" required autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="sfposition_openTree" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>职位序号:</label><div class="layui-input-block"><input type="text" name="sort" id="sfposition_sort_id" lay-verify="number|required" autocomplete="off" placeholder="请输入序号" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>职位名称:</label><div class="layui-input-block"><input type="text" name="name" required lay-verify="name" autocomplete="off" placeholder="请输入名称" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">职位描述:</label><div class="layui-input-block"><textarea placeholder="描述内容不能超过800字" class="layui-textarea" name="bewrite" style="height:150px"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="position_add_Demo">确认添加</button><button type="reset" class="layui-btn layui-btn-primary layui-btn-radius">确认重置</button></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    //自定义验证规则
+                    form.verify({
+                        name: function (value) {
+                            if (value.length < 2) {
+                                return '职位名称至少得2个字符啊';
+                            }
+                        }
+                    });
+
+                    //所属机构
+                    organization("#sfposition_openTree", "#splb_id", "#splb_name_id");
+
+                    //渲染
+                    form.render(null, 'sfposition_form_add');
+                    // 表单提交事件
+                    form.on("submit(position_add_Demo)", function (data) {
+                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                        var bewrited = data.field.bewrite;
+                        var msg = '职业描述不能超过800字！';
+                        var spmsg = '所属机构不能为空!';
+                        if (data.field.splb_name == '') {
+                            layer.msg(spmsg, { icon: 2 });
+                            layer.close(loadindex);
+                            return false;
+                        }
+                        if (bewrited != '') {
+                            if (bewrited.length > 800) {
+                                layer.msg(msg, { icon: 2 });
+                                return false;
+                            }
+                        }
+                        admin.req({
+                            url: "/index.php/webSfpositionAdd/",
+                            type: "post",
+                            data: {
+                                sort: data.field.sort,
+                                splb: data.field.splb,
+                                name: $.trim(data.field.name),
+                                bewrite: data.field.bewrite
+                            },
+                            done: function (res) {
+                                layer.close(loadindex);
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    positiontest();
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        }
+
+        //职位列表
+        var positiontest = function () {
+            table.render({
+                elem: '#staff_sfposition_table'
+                , height: 'full-150'
+                , toolbar: '#stm_staff_sfposition_toolbar'
+                , url: '/index.php/webSfpositionSel/' //数据接口
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , cols: [[ //表头 
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'sort', title: '职位序号', width: 200, sort: true }
+                    , { field: 'vgname', title: '所属机构', width: 204, sort: true }
+                    , { field: 'name', title: '职位名称', width: 280, sort: true }
+                    , { field: 'bewrite', title: '职位描述', width: 300, sort: true }
+                    , { field: 'create_time_g', title: '创建时间', width: 300, sort: true }
+                    , { fixed: 'right', title: '操作', align: 'center', width: 300, toolbar: '#staff_sfposition_Demo' }
+                ]]
+                , page: true
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        positiontest();
+
+        // 表头事件监听
+        table.on('toolbar(staff_sfposition_tablelist)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    positionAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        positionDel(ids);
+                    })
+                    break;
+            };
+        });
+
+        // 批量删除
+        var positionDel = function (ids) {
+            admin.req({
+                url: '/index.php/webSfpositionDelAll/',
+                type: 'post',
+                data: { ids: ids },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        positiontest();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //表格监听事件
+        table.on('tool(staff_sfposition_tablelist)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+            if (layEvent === 'position_del') { //删除
+
+                layer.confirm('确认删除该条数据？', function (index) {
+                    admin.req({
+                        url: "/index.php/webSfpositionDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                positiontest();
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+
+            } else if (layEvent === 'position_edit') { //编辑
+
+                layer.open({
+                    title: "编辑职位",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["590px", "510px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form layui-form-pane" lay-filter="sfposition_edit_form"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所属机构:</label><div class="layui-input-inline" style="width:270px"><input type="text" name="splb_name" id="splb_name_id_edit" required autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="splb_id_edit" class="layui-input"><div class="layui-form-mid layui-bg-green" id="sfposition_openTree_edit" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item"><label class="layui-form-label">职位序号:</label><div class="layui-input-block"><input type="text" name="sort" id="sfposition_sort_ids" lay-verify="number|required" autocomplete="off" placeholder="请输入序号" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">职位名称:</label><div class="layui-input-block"><input type="text" name="name" required lay-verify="name" autocomplete="off" placeholder="请输入名称" class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">职位描述:</label><div class="layui-input-block"><textarea placeholder="描述内容不能超过800字" class="layui-textarea" name="bewrite" style="height:150px"></textarea></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="sfposition_Edit">执行修改</button></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        //获取焦点
+                        $("#sfposition_sort_ids").focus();
+                        //自定义验证规则
+                        form.verify({
+                            name: function (value) {
+                                if (value.length < 2) {
+                                    return '职位名称至少得2个字符啊';
+                                }
+                            }
+                        });
+                        //所属机构
+                        organization("#sfposition_openTree_edit", "#splb_id_edit", "#splb_name_id_edit");
+
+                        // form表单渲染
+                        form.render(null, 'sfposition_edit_form');
+                        // 表单初始赋值
+                        form.val("sfposition_edit_form", {
+                            sort: obj.data.sort,
+                            name: obj.data.name,
+                            bewrite: obj.data.bewrite,
+                            splb_name: obj.data.vgname,
+                            splb: obj.data.org_code
+                        });
+                        // 表单提交事件
+                        form.on("submit(sfposition_Edit)", function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            var bewrited = data.field.bewrite;
+                            var msg = '职业描述不能超过800字！';
+                            var spmsg = '所属机构不能为空!';
+                            if (data.field.splb_name == '') {
+                                layer.msg(spmsg, { icon: 2 });
+                                layer.close(loadindex);
+                                return false;
+                            }
+                            if (bewrited != '') {
+                                if (bewrited.length > 800) {
+                                    layer.msg(msg, { icon: 2 });
+                                    layer.close(loadindex);
+                                    return false;
+                                }
+                            }
+                            admin.req({
+                                url: "/index.php/webSfpositionEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    sort: data.field.sort,
+                                    splb: data.field.splb,
+                                    name: $.trim(data.field.name),
+                                    bewrite: data.field.bewrite
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        positiontest();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+
+            } else if (layEvent === 'position_detail') { //查看详情
+
+                layer.open({
+                    title: '查看详情'
+                    , type: 1
+                    , area: ["600px", "370px"] // 弹出层的大小
+                    , skin: "layui-layer-admin layui-anim"
+                    , content: '<form class="layui-form" lay-filter="sfposition_form_look"><div class="layui-form-item"><label class="layui-form-label">职位序号:</label><div class="layui-input-block"><input type="text" name="sort" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">所属机构:</label><div class="layui-input-block"><input type="text" name="splb" disabled class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">职位名称:</label><div class="layui-input-block"><input type="text" name="name" disabled class="layui-input"></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">职位描述:</label><div class="layui-input-block"><textarea class="layui-textarea" name="bewrite" disabled></textarea></div></div></form>'
+                    //关闭弹出层
+                    , success: function (layero, index) {
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        // form表单渲染
+                        form.render(null, 'position_button_form_look');
+                        // 表单初始赋值
+                        form.val("sfposition_form_look", {
+                            sort: obj.data.sort,
+                            name: obj.data.name,
+                            splb: obj.data.vgname,
+                            bewrite: obj.data.bewrite
+                        });
+                    }
+                });
+
+            }
+        });
+
+    });
+</script>

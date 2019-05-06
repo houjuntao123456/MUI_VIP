@@ -1,0 +1,144 @@
+<title>销售记录</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <!-- 列表遍历 -->
+                    <table id="pro-saleList-table-demo" lay-filter="pro-saleList-table-demo"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="pro-saleList-ope-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">明细</a>
+</script>
+
+<script type="text/html" id="pro-saleList-look-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="search">查询</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['table', 'layedit'], function () {
+
+        var table = layui.table;
+        var $ = layui.jquery;
+        var form = layui.form;
+        var laydate = layui.laydate;
+        var layedit = layui.layedit;
+        var admin = layui.admin;
+
+        //表格数据遍历  表格重载
+        var saleList = function (where = '') {
+            table.render({
+                elem: '#pro-saleList-table-demo', //table 的 id
+                url: '/index.php/webSaleListIndex/', //数据接口路由
+                where: { search: where, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                page: true, //开启分页
+                loading: true, //开启加载条
+                cols: [[ //表头
+                    { field: 'code', title: '销售订单号', width: 180, align: 'center', sort: true },
+                    { field: 'store_name', title: '门店名称', width: 120, align: 'center', sort: true },
+                    { field: 'operate_name', title: '操作人名称', width: 120, align: 'center', sort: true },
+                    { field: 'vip_name', title: '会员名字', width: 120, align: 'center', sort: true },
+                    { field: 'vip_phone', title: '会员手机号', width: 120, align: 'center', sort: true, },
+                    { field: 'number', title: '订单总数量', width: 120, align: 'center', sort: true },
+                    { field: 'money', title: '原价合计金额', width: 150, align: 'center', sort: true },
+                    { field: 'dis_money', title: '折后合计金额', width: 150, align: 'center', sort: true },
+                    { field: 'integral_balance', title: '积分抵现金额', width: 150, align: 'center', sort: true },
+                    { field: 'storage_balance', title: '储值抵现金额', width: 150, align: 'center', sort: true },
+                    { field: 'real_pay', title: '实际支付金额', width: 150, align: 'center', sort: true },
+                    { field: 'real_income', title: '实收入金额', width: 150, align: 'center', sort: true },
+                    { field: 'not_small_change', title: '抹零金额', width: 150, align: 'center', sort: true },
+                    { field: 'give_change', title: '找零金额', width: 150, align: 'center', sort: true },
+                    { field: 'cash_pay', title: '现金支付金额', width: 150, align: 'center', sort: true },
+                    { field: 'wechat_pay', title: '微信支付金额', width: 150, align: 'center', sort: true },
+                    { field: 'ali_pay', title: '支付宝支付金额', width: 150, align: 'center', sort: true },
+                    { field: 'union_pay', title: '银行卡支付金额', width: 150, align: 'center', sort: true },
+                    { field: 'use_integral', title: '使用积分数量', width: 120, align: 'center', sort: true },
+                    { field: 'integral_rule', title: '获得抵现积分', width: 120, align: 'center', sort: true },
+                    { field: 'give_integral', title: '获得积分数量', width: 120, align: 'center', sort: true },
+                    { field: 'pay_return_money', title: '消费返利金额', width: 120, align: 'center', sort: true },
+                    { field: 'create_time', title: '下单时间', width: 200, align: 'center', sort: true },
+                    { title: '操作', width: 100, align: 'center', toolbar: '#pro-saleList-ope-bar', fixed: 'right' }
+                ]],
+                height: 'full-150', // 高度自适应
+                toolbar: '#pro-saleList-look-toor', // 查询按钮
+                limit: 20,
+                limits: [20, 50, 100, 200, 500]
+            });
+        }
+        saleList(); // 封装成函数
+
+
+        // 监听行工具栏事件
+        table.on('tool(pro-saleList-table-demo)', function (obj) {
+            // console.log(obj);return false;
+            switch (obj.event) {
+                case 'detail':
+                    detail(obj.data.code);
+                    break;
+            }
+        });
+
+        // 订单详情
+        var detail = function (code) {
+            layer.open({
+                title: '订单明细',
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["1028px", "650px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<table class="layui-hide" id="pro-com-order-detail" lay-filter="pro-com-order-detail"></table>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    var orderInfo = function () {
+                        table.render({
+                            elem: '#pro-com-order-detail', //table 的 id
+                            url: '/index.php/webSaleListDetail/', //数据接口路由
+                            where: { code: code, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                            cols: [[ //表头
+                                { field: 'bar_code', title: '商品条码', width: 200, align: 'center', sort: true, fixed: 'left' },
+                                { field: 'name', title: '商品名称', width: 180, align: 'center', sort: true },
+                                { field: 'size', title: '尺码', width: 100, align: 'center', sort: true },
+                                { field: 'color', title: '颜色', width: 100, align: 'center', sort: true },
+                                { field: 'price', title: '商品单价', width: 100, align: 'center', sort: true },
+                                { field: 'dis_price', title: '折扣单价', width: 100, align: 'center', sort: true },
+                                { field: 'discount', title: '享受折扣', width: 100, align: 'center', sort: true },
+                                { field: 'dis_money', title: '折后小计', width: 120, align: 'center', sort: true },
+                                { field: 'money', title: '原价小计', width: 120, align: 'center', sort: true },
+                                { field: 'number', title: '购买数量', width: 100, align: 'center', sort: true },
+                                { field: 'storage_balance', title: '储值抵现金额', width: 120, align: 'center', sort: true },
+                                { field: 'integral_balance', title: '积分抵现金额', width: 120, align: 'center', sort: true },
+                                { field: 'use_integral', title: '使用积分', width: 100, align: 'center', sort: true },
+                                { field: 'give_integral', title: '获得积分数量', width: 100, align: 'center', sort: true },
+                                { field: 'pro_name', title: '促销员名字', width: 150, align: 'center', sort: true },
+                                { field: 'pay_return_money', title: '消费返利金额', width: 150, align: 'center', sort: true },
+                                { field: 'status', title: '状态', width: 150, align: 'center', sort: true },
+                                { field: 'create_time', title: '下单时间', width: 150, align: 'center', sort: true },
+                                { field: 'return_time', title: '退货时间', width: 150, align: 'center', sort: true },
+                                // { field: 'integral_rule', title: '获得抵现积分', width: 100, align: 'center', sort: true },
+                            ]],
+                            height: 540, //高度自适应
+                            toolbar: true
+                        });
+                    }
+                    orderInfo(); // 封装成函数
+                }
+            })
+        }
+
+    });
+</script>

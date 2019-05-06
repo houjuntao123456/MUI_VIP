@@ -1,0 +1,164 @@
+<title>回复设置</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body" id="wpp_mp_reply_body">
+
+                    <div class="layui-tab" lay-filter="wpp_mp_reply">
+                        <ul class="layui-tab-title">
+                            <li id="wpp_mp_reply_1" class="layui-this">图文素材管理</li>
+                            <li id="wpp_mp_reply_2">关注回复</li>
+                            <li id="wpp_mp_reply_3">默认回复</li>
+                            <li id="wpp_mp_reply_4">关键字回复</li>
+                        </ul>
+                        <div class="layui-tab-content">
+                            <div class="layui-tab-item layui-show">
+                                <table id="wpp-mp-reply-cdr" lay-filter="wpp-mp-reply-cdr"></table>
+                            </div>
+                            <div class="layui-tab-item layui-form layui-form-pane" layui-filter="wpp_mp_reply_form1">
+                                <div class="layui-form-item" id="wpp_mp_reply_focus_type">
+                                    <label class="layui-form-label">消息类型</label>
+                                    <div class="layui-input-block" style="width:350px;" pane="">
+                                        <input type="radio" name="type" value="1" title="文本消息" id="wpp_mp_reply_focus_type1">
+                                        <input type="radio" name="type" value="2" title="图文消息" id="wpp_mp_reply_focus_type2">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-tab-item">
+                                默认回复
+                            </div>
+                            <div class="layui-tab-item">关键字回复</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="wpp-mp-reply-cdr-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="wpp-mp-reply-cdr-tool">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script>
+    layui.use(['jquery', 'form', 'admin', 'table', 'element', 'layedit', 'upload'], function () {
+        var $ = layui.jquery, form = layui.form, admin = layui.admin, table = layui.table, element = layui.element, layedit = layui.layedit, upload = layui.upload;
+        form.render();
+
+        // 图文素材管理
+        table.render({
+            elem: '#wpp-mp-reply-cdr'
+            , height: 312
+            , url: '/index.php/WechatReplyCdr/' //数据接口
+            , where: { access_token: layui.data(layui.setter.tableName).access_token }
+            , page: true //开启分页
+            , limit: 20
+            , limits: [20, 50, 100, 500]
+            , cols: [[ //表头
+                { field: 'img', title: '封面图', width: 150, sort: true, align: 'center', fixed: 'left' },
+                { field: 'title', title: '标题', minwidth: 150, sort: true, align: 'center' },
+                { field: 'author', title: '作者', align: 'center', width: 100 }, ,
+                { field: 'create_time', title: '添加时间', align: 'center', width: 120 },
+                { field: 'is_show_cover', title: '显示封面', align: 'center', width: 100 },
+                { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#wpp-mp-reply-cdr-bar' }
+            ]]
+            , height: 'full-210'
+            , toolbar: '#wpp-mp-reply-cdr-tool'
+        });
+
+        table.on('toolbar(wpp-mp-reply-cdr)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    cdrAdd();
+                    break;
+            };
+        });
+
+
+        var cdrAdd = function () {
+            layer.open({
+                title: '添加素材'
+                , type: 1
+                , area: ["675px", "480px"] // 弹出层的大小
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form layui-form-pane" action="" lay-filter="wpp-mp-reply-cdr-add"><input type="hidden" id="wpp-mp-reply-cdr-add-cover" name="cover" value=""><div class="layui-form-item"><label class="layui-form-label">标题</label><div class="layui-input-block" style="width:500px"><input type="text" name="title" placeholder="请输入标题" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">作者</label><div class="layui-input-inline"><input type="text" name="author" placeholder="请输入作者" class="layui-input"></div><label class="layui-form-label">封面图片</label><div class="layui-input-inline"><button type="button" class="layui-btn" id="wpp-mp-reply-cdr-add-uploadImg" style="width:190px"><i class="layui-icon">&#xe67c;</i> 上 传</button></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">摘要</label><div class="layui-input-block"><textarea name="digest" class="layui-textarea"></textarea></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">内容</label><div class="layui-input-block"><textarea name="content" class="layui-textarea" id="wpp-mp-reply-cdr-add-layedit" style="display:none"></textarea></div></div><div class="layui-form-item"><div class="layui-input-inline"><button class="layui-btn" lay-submit="" lay-filter="sellerAdd">保存</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    layedit.build('wpp-mp-reply-cdr-add-layedit', { //建立编辑器
+                        height: 500,
+                        uploadImage: {
+                            url: '/index.php/webBaseImgUpload/',
+                            type: 'post',
+                        },
+                        tool: ['strong', 'italic', 'underline', 'del', '|', 'left', 'center', 'right', 'image']
+                    });
+
+                    var uploadInst = upload.render({
+                        elem: '#wpp-mp-reply-cdr-add-uploadImg'
+                        , url: '/index.php/webBaseImgUpload/?model=wpp_mp_reply_cdr' //上传接口 改成微信上传接口
+                        , done: function (res) {
+                            //上传完毕回调
+                            // $('#wpp-mp-reply-cdr-add-cover').val(res.data);
+                            // layer.msg(res.msg);
+                            if (res.msg == 'yes') {
+                                $('#wpp-mp-reply-cdr-add-cover').val(res.data);
+                                layer.msg('上传成功', {icon:1});
+                            } else {
+                                layer.msg('上传失败', {icon:2});
+                            }
+                        }
+                    });
+
+                }
+            })
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        // 关注回复
+        var type1 = $('<div class="layui-form-item layui-form-text"><label class="layui-form-label" style="width:350px;">回复内容</label><div class="layui-input-inline" style="width:350px;"><textarea placeholder="请输入内容" class="layui-textarea" style="height:450px;" id="wpp_mp_reply_focus_word_textarea"></textarea></div></div><div class="layui-form-item"><div class="layui-input-inline"><button class="layui-btn" id="wechat_set_token_reset">提交</button></div></div>');
+        var type2 = $('<div>asdasdasddddddddddddddddddddddddddddddddddddddddd</div>');
+        $('#wpp_mp_reply_focus_type1').next().children().click(function () {
+            type2.remove('');
+            admin.req({
+                url: '/index.php/webWechatReply/',
+                type: 'post',
+                data: { type: 'word', way: 'focus' },
+                done: function (res) {
+                    $('#wpp_mp_reply_focus_type').after(type1);
+                    $('#wpp_mp_reply_focus_word_textarea').text(res.data);
+                }
+            })
+        });
+        $('#wpp_mp_reply_focus_type2').next().children().click(function () {
+            type1.remove('');
+            $('#wpp_mp_reply_focus_type').after(type2);
+        });
+
+        // 默认回复
+
+        // 关键字回复
+
+    });
+</script>

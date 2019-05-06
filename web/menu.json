@@ -1,0 +1,1071 @@
+{
+    "code": 0,
+    "msg": "",
+    "data": [
+        {
+            "title": "HOME  首页",
+            "icon": "layui-icon-home",
+            "jump": "\/"
+        },
+        {
+            "id": 69,
+            "title": "ERP 商品管理",
+            "icon": "layui-icon-component",
+            "name": "pro",
+            "pid": 0,
+            "path": "0,",
+            "list": [
+                {
+                    "id": 78,
+                    "title": "商品标签",
+                    "icon": "",
+                    "name": "extend",
+                    "pid": 75,
+                    "path": "0,69,75,"
+                },
+                {
+                    "id": 82,
+                    "title": "商品列表",
+                    "icon": "",
+                    "name": "list",
+                    "pid": 75,
+                    "path": "0,69,75,"
+                },
+                {
+                    "id": 103,
+                    "title": "销售记录",
+                    "icon": "",
+                    "name": "salelist",
+                    "pid": 75,
+                    "path": "0,69,75,"
+                },
+                {
+                    "id": 104,
+                    "title": "退货记录",
+                    "icon": "",
+                    "name": "refundslist",
+                    "pid": 75,
+                    "path": "0,69,75,"
+                }
+            ]
+        },
+        {
+            "id": 70,
+            "title": "CRM 顾客管理",
+            "icon": "layui-icon-user",
+            "name": "crm",
+            "pid": 0,
+            "path": "0,",
+            "list": [
+                {
+                    "id": 165,
+                    "title": "会员管理",
+                    "icon": "",
+                    "name": "vip",
+                    "pid": 70,
+                    "path": "0,70,",
+                    "list": [
+                        {
+                            "id": 194,
+                            "title": "会员标签",
+                            "icon": "",
+                            "name": "viplabel",
+                            "pid": 165,
+                            "path": "0,70,165,"
+                        },
+                        {
+                            "id": 255,
+                            "title": "专属档案",
+                            "icon": "",
+                            "name": "vipinfo",
+                            "pid": 165,
+                            "path": "0,70,165,"
+                        },
+                        {
+                            "id": 195,
+                            "title": "会员列表",
+                            "icon": "",
+                            "name": "viplist",
+                            "pid": 165,
+                            "path": "0,70,165,"
+                        }
+                    ]
+                },
+                {
+                    "id": 166,
+                    "title": "会员权益",
+                    "icon": "",
+                    "name": "viprig",
+                    "pid": 70,
+                    "path": "0,70,",
+                    "list": [
+                        {
+                            "id": 214,
+                            "title": "会员级别",
+                            "icon": "",
+                            "name": "index",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 215,
+                            "title": "晋升标准",
+                            "icon": "",
+                            "name": "promote",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 216,
+                            "title": "会员服务",
+                            "icon": "",
+                            "name": "service",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 217,
+                            "title": "感动特权",
+                            "icon": "",
+                            "name": "discount",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 218,
+                            "title": "活动折扣",
+                            "icon": "",
+                            "name": "activity",  
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 219,
+                            "title": "生日折扣",
+                            "icon": "",
+                            "name": "birthday",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 219,
+                            "title": "固定金额充值",
+                            "icon": "",
+                            "name": "fixed",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 220,
+                            "title": "区间金额充值",
+                            "icon": "",
+                            "name": "section",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 450,
+                            "title": "割肉充值",
+                            "icon": "",
+                            "name": "cut_meat",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 221,
+                            "title": "消费金额返利",
+                            "icon": "",
+                            "name": "rebate",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 451,
+                            "title": "积分兑换规则",
+                            "icon": "",
+                            "name": "integral",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 511,
+                            "title": "转介绍返积分",
+                            "icon": "",
+                            "name": "introducing_Integral",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        },
+                        {
+                            "id": 512,
+                            "title": "转介绍返利",
+                            "icon": "",
+                            "name": "introducing_rebate",
+                            "pid": 166,
+                            "path": "0,70,166,"
+                        }
+                    ]
+                },
+                
+                {
+                    "id": 167,
+                    "title": "RFM管理",
+                    "icon": "",
+                    "name": "viployalty",
+                    "pid": 70,
+                    "path": "0,70,",
+                    "list": [
+                        {
+                            "id": 307,
+                            "title": "R(未消费天数)",
+                            "icon": "",
+                            "name": "loywhile",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 308,
+                            "title": "F(消费的次数)",
+                            "icon": "",
+                            "name": "loyfrequency",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 309,
+                            "title": "M(消费总金额)",
+                            "icon": "",
+                            "name": "loymoney",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 310,
+                            "title": "I(转介绍人数)",
+                            "icon": "",
+                            "name": "loyreferral",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 311,
+                            "title": "N(消费的件数)",
+                            "icon": "",
+                            "name": "loynumber",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 312,
+                            "title": "P(消费客单价)",
+                            "icon": "",
+                            "name": "loypassenger",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 313,
+                            "title": "A(消费件单价)",
+                            "icon": "",
+                            "name": "loypiece",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 314,
+                            "title": "J(消费连带率)",
+                            "icon": "",
+                            "name": "loyrate",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        },
+                        {
+                            "id": 315,
+                            "title": "C(会员年消费)",
+                            "icon": "",
+                            "name": "loyannual",
+                            "pid": 167,
+                            "path": "0,70,167,"
+                        }
+                    ]
+                },
+                {
+                    "id": 168,
+                    "title": "互动管理",
+                    "icon": "",
+                    "name": "interaction",
+                    "pid": 70,
+                    "path": "0,70,",
+                    "list": [
+                        {
+                            "id": 333,
+                            "title": "100天跟进",
+                            "icon": "",
+                            "name": "inhundred",
+                            "pid": 168,
+                            "path": "0,70,168,"
+                        },
+                        {
+                            "id": 334,
+                            "title": "365天跟进",
+                            "icon": "",
+                            "name": "inthdays",
+                            "pid": 168,
+                            "path": "0,70,168,"
+                        },
+                        {
+                            "id": 335,
+                            "title": "专场跟进",
+                            "icon": "",
+                            "name": "infield",
+                            "pid": 168,
+                            "path": "0,70,168,"
+                        },
+                        {
+                            "title": "卡券管理",
+                            "icon": "",
+                            "name": "incoupon"
+                        }
+                    ]
+                },
+                {
+                    "id": 169,
+                    "title": "其他管理",
+                    "icon": "",
+                    "name": "other",
+                    "pid": 70,
+                    "path": "0,70,",
+                    "list": [
+                        {
+                            "id": 424,
+                            "title": "会员转移记录",
+                            "icon": "",
+                            "name": "transferRecord",
+                            "pid": 169,
+                            "path": "0,70,169,"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 71,
+            "title": "STM 员工管理",
+            "icon": "layui-icon-template-1",
+            "name": "stm",
+            "pid": 0,
+            "path": "0,",
+            "list": [
+                {
+                    "id": 170,
+                    "title": "门店管理",
+                    "icon": "",
+                    "name": "store",
+                    "pid": 71,
+                    "path": "0,71,",
+                    "list": [
+                        {
+                            "id": 465,
+                            "title": "组织机构",
+                            "icon": "",
+                            "name": "organization",
+                            "pid": 170,
+                            "path": "0,71,170,"
+                        },
+                        {
+                            "id": 343,
+                            "title": "门店列表",
+                            "icon": "",
+                            "name": "list",
+                            "pid": 170,
+                            "path": "0,71,170,"
+                        },
+                        {
+                            "id": 466,
+                            "title": "门店调价",
+                            "icon": "",
+                            "name": "storeDiscount",
+                            "pid": 170,
+                            "path": "0,71,170,"
+                        }
+                    ]
+                },
+                {
+                    "id": 171,
+                    "title": "V票管理",
+                    "icon": "",
+                    "name": "Vticket",
+                    "pid": 71,
+                    "path": "0,71,",
+                    "list": [
+                        {
+                            "id": 232,
+                            "title": "V票规则",
+                            "icon": "",
+                            "name": "Vrule",
+                            "pid": 171,
+                            "path": "0,71,171,"
+                        },
+                        {
+                            "id": 233,
+                            "title": "V票资金来源",
+                            "icon": "",
+                            "name": "Vcapital",
+                            "pid": 171,
+                            "path": "0,71,171,"
+                        },
+                        {
+                            "id": 234,
+                            "title": "V票领取记录",
+                            "icon": "",
+                            "name": "Vreceive",
+                            "pid": 171,
+                            "path": "0,71,171,"
+                        },
+                        {
+                            "id": 235,
+                            "title": "V票兑换记录",
+                            "icon": "",
+                            "name": "Vexchange",
+                            "pid": 171,
+                            "path": "0,71,171,"
+                        },
+                        {
+                            "id": 236,
+                            "title": "V票报表",
+                            "icon": "",
+                            "name": "Vtable",
+                            "pid": 171,
+                            "path": "0,71,171,"
+                        }
+                    ]
+                },
+                {
+                    "id": 172,
+                    "title": "员工管理",
+                    "icon": "",
+                    "name": "staff",
+                    "pid": 71,
+                    "path": "0,71,",
+                    "list": [
+                        {
+                            "id": 348,
+                            "title": "职位管理",
+                            "icon": "",
+                            "name": "sfposition",
+                            "pid": 172,
+                            "path": "0,71,172,"
+                        },
+                        {
+                            "id": 237,
+                            "title": "员工列表",
+                            "icon": "",
+                            "name": "sfpersonnel",
+                            "pid": 172,
+                            "path": "0,71,172,"
+                        },
+                        {
+                            "id": 239,
+                            "title": "员工提成记录",
+                            "icon": "",
+                            "name": "commission",
+                            "pid": 172,
+                            "path": "0,71,172,"
+                        }
+                    ]
+                },
+                {
+                    "title": "客服管理",
+                    "name": "cservice",
+                    "list": [
+                        {
+                            "title": "客服列表",
+                            "name": "list" 
+                        },
+                        {
+                            "title": "会话记录",
+                            "name": "conversation" 
+                        },
+                        {
+                            "title": "群发记录",
+                            "name": "manysend" 
+                        },
+                        {
+                            "title": "反馈信息",
+                            "name": "feedback" 
+                        }
+                    ]
+                },
+                {
+                    "id": 173,
+                    "title": "礼品管理",
+                    "icon": "",
+                    "name": "gift",
+                    "pid": 71,
+                    "path": "0,71,"
+                }
+            ]
+        },
+        {
+            "id": 72,
+            "title": "VIP 流程管理",
+            "icon": "layui-icon-diamond",
+            "name": "vip",
+            "pid": 0,
+            "path": "0,",
+            "list": [
+                {
+                    "id": 175,
+                    "title": "VIP返单营销",
+                    "icon": "",
+                    "name": "returnorde",
+                    "pid": 72,
+                    "path": "0,72,",
+                    "list": [
+                        {
+                            "id": 431,
+                            "title": "返单计划",
+                            "icon": "",
+                            "name": "returnprogram",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        },
+                        {
+                            "id": 432,
+                            "title": "100天跟进",
+                            "icon": "",
+                            "name": "comeback",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        },
+                        {
+                            "id": 433,
+                            "title": "365天跟进",
+                            "icon": "",
+                            "name": "rthree",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        },
+                        {
+                            "id": 434,
+                            "title": "专场跟进",
+                            "icon": "",
+                            "name": "rfield",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        },
+                        {
+                            "id": 435,
+                            "title": "今日100天跟进",
+                            "icon": "",
+                            "name": "dayback",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        },
+                        {
+                            "id": 436,
+                            "title": "今日365跟进",
+                            "icon": "",
+                            "name": "dayrthree",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        },
+                        {
+                            "id": 437,
+                            "title": "今日专场跟进",
+                            "icon": "",
+                            "name": "dayrfield",
+                            "pid": 175,
+                            "path": "0,72,175,"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 73,
+            "title": "DAT 数据中心",
+            "icon": "layui-icon-chart-screen",
+            "name": "dat",
+            "pid": 0,
+            "path": "0,",
+            "list": [
+                {
+                    "id": 177,
+                    "title": "精准营销报表",
+                    "icon": "",
+                    "name": "jingzhun",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 223,
+                            "title": "精准营销列表",
+                            "icon": "",
+                            "name": "precision",
+                            "pid": 177,
+                            "path": "0,73,177,"
+                        }
+                    ]
+                },
+                {
+                    "id": 179,
+                    "title": "RFM报表",
+                    "icon": "",
+                    "name": "accurate",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 224,
+                            "title": "R(会员活跃度分析)",
+                            "icon": "",
+                            "name": "liveness",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 225,
+                            "title": "F(消费的次数分析)",
+                            "icon": "",
+                            "name": "turn_round",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 226,
+                            "title": "M(消费总金额分析)",
+                            "icon": "",
+                            "name": "high_value",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 227,
+                            "title": "I(转介绍人数分析)",
+                            "icon": "",
+                            "name": "introduce",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 228,
+                            "title": "N(消费件数分析)",
+                            "icon": "",
+                            "name": "single_piece",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 229,
+                            "title": "P(消费客单价分析)",
+                            "icon": "",
+                            "name": "pgoods",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 230,
+                            "title": "A(消费件单价分析)",
+                            "icon": "",
+                            "name": "unit_price",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 231,
+                            "title": "J(消费连带率分析)",
+                            "icon": "",
+                            "name": "joint_rate",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        },
+                        {
+                            "id": 232,
+                            "title": "C(会员年消费分析)",
+                            "icon": "",
+                            "name": "in_consumption",
+                            "pid": 179,
+                            "path": "0,73,179,"
+                        }
+                    ]
+                },
+                {
+                    "id": 180,
+                    "title": "会员报表",
+                    "icon": "",
+                    "name": "membered",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 492,
+                            "title": "会员开卡统计",
+                            "icon": "",
+                            "name": "opencard_dat",
+                            "pid": 180,
+                            "path": "0,73,180,"
+                        },
+                        {
+                            "id": 493,
+                            "title": "会员服务报表",
+                            "icon": "",
+                            "name": "service_dat",
+                            "pid": 180,
+                            "path": "0,73,180,"
+                        },
+                        {
+                            "id": 494,
+                            "title": "会员转介绍统计",
+                            "icon": "",
+                            "name": "introduction_dat",
+                            "pid": 180,
+                            "path": "0,73,180,"
+                        }
+                    ]
+                },
+                {
+                    "id": 181,
+                    "title": "商品报表",
+                    "icon": "",
+                    "name": "goods",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 495,
+                            "title": "商品销售统计",
+                            "icon": "",
+                            "name": "sale_count",
+                            "pid": 181,
+                            "path": "0,73,181,"
+                        },
+                        {
+                            "id": 496,
+                            "title": "商品销售排行",
+                            "icon": "",
+                            "name": "sale_rankings",
+                            "pid": 181,
+                            "path": "0,73,181,"
+                        },
+                        {
+                            "id": 497,
+                            "title": "商品退货统计",
+                            "icon": "",
+                            "name": "refunds_count",
+                            "pid": 181,
+                            "path": "0,73,181,"
+                        },
+                        {
+                            "id": 519,
+                            "title": "采购统计报表",
+                            "icon": "",
+                            "name": "cg_count",
+                            "pid": 181,
+                            "path": "0,73,181,"
+                        }
+                    ]
+                },
+                {
+                    "id": 182,
+                    "title": "积分报表",
+                    "icon": "",
+                    "name": "integral",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 486,
+                            "title": "积分统计报表",
+                            "icon": "",
+                            "name": "integralsum",
+                            "pid": 182,
+                            "path": "0,73,182,"
+                        },
+                        {
+                            "id": 487,
+                            "title": "积分礼品报表",
+                            "icon": "",
+                            "name": "integralgift",
+                            "pid": 182,
+                            "path": "0,73,182,"
+                        },
+                        {
+                            "id": 488,
+                            "title": "积分抵现报表",
+                            "icon": "",
+                            "name": "integralcash",
+                            "pid": 182,
+                            "path": "0,73,182,"
+                        }
+                    ]
+                },
+                {
+                    "id": 183,
+                    "title": "储值报表",
+                    "icon": "",
+                    "name": "stored_value",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 489,
+                            "title": "会员储值统计",
+                            "icon": "",
+                            "name": "stored_value_sum",
+                            "pid": 183,
+                            "path": "0,73,183,"
+                        },
+                        {
+                            "id": 490,
+                            "title": "储值消费统计",
+                            "icon": "",
+                            "name": "consumption_sum",
+                            "pid": 183,
+                            "path": "0,73,183,"
+                        },
+                        {
+                            "id": 491,
+                            "title": "消费返利统计",
+                            "icon": "",
+                            "name": "rebate_sum",
+                            "pid": 183,
+                            "path": "0,73,183,"
+                        }
+                    ]
+                },
+                {
+                    "id": 184,
+                    "title": "员工报表",
+                    "icon": "",
+                    "name": "royalty",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 499,
+                            "title": "销售提成报表",
+                            "icon": "",
+                            "name": "sales",
+                            "pid": 184,
+                            "path": "0,73,184,"
+                        },
+                        {
+                            "id": 500,
+                            "title": "储值提成报表",
+                            "icon": "",
+                            "name": "stored",
+                            "pid": 184,
+                            "path": "0,73,184,"
+                        },
+                        {
+                            "id": 501,
+                            "title": "开卡提成报表",
+                            "icon": "",
+                            "name": "cardon",
+                            "pid": 184,
+                            "path": "0,73,184,"
+                        },
+                        {
+                            "id": 504,
+                            "title": "总提成报表",
+                            "icon": "",
+                            "name": "royaltyed",
+                            "pid": 184,
+                            "path": "0,73,184,"
+                        }
+                    ]
+                },
+                {
+                    "id": 185,
+                    "title": "互动报表",
+                    "icon": "",
+                    "name": "interactive",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 505,
+                            "title": "返单计划报表",
+                            "icon": "",
+                            "name": "plan",
+                            "pid": 185,
+                            "path": "0,73,185,"
+                        },
+                        {
+                            "id": 506,
+                            "title": "返单互动报表",
+                            "icon": "",
+                            "name": "inreturn",
+                            "pid": 185,
+                            "path": "0,73,185,"
+                        },
+                        {
+                            "id": 507,
+                            "title": "回头互动报表",
+                            "icon": "",
+                            "name": "head",
+                            "pid": 185,
+                            "path": "0,73,185,"
+                        },
+                        {
+                            "id": 508,
+                            "title": "365互动报表",
+                            "icon": "",
+                            "name": "hundred",
+                            "pid": 185,
+                            "path": "0,73,185,"
+                        }
+                    ]
+                },
+                {
+                    "id": 521,
+                    "title": "账单统计报表",
+                    "icon": "",
+                    "name": "statement",
+                    "pid": 73,
+                    "path": "0,73,",
+                    "list": [
+                        {
+                            "id": 522,
+                            "title": "销售统计报表",
+                            "icon": "",
+                            "name": "sale",
+                            "pid": 521,
+                            "path": "0,73,521,"
+                        },
+                        {
+                            "id": 523,
+                            "title": "退货统计报表",
+                            "icon": "",
+                            "name": "refund",
+                            "pid": 521,
+                            "path": "0,73,521,"
+                        },
+                        {
+                            "id": 524,
+                            "title": "开卡统计报表",
+                            "icon": "",
+                            "name": "opencard",
+                            "pid": 521,
+                            "path": "0,73,521,"
+                        },
+                        {
+                            "id": 525,
+                            "title": "充值统计报表",
+                            "icon": "",
+                            "name": "recharge",
+                            "pid": 521,
+                            "path": "0,73,521,"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "WPP 微信管理",
+            "icon": "layui-icon-login-wechat",
+            "name": "wpp",
+            "list": [
+                {
+                    "title": "营销互动",
+                    "name": "interact",
+                    "list": [
+                        {
+                            "title": "大转盘",
+                            "icon": "",
+                            "name": "dial"
+                        },
+                        {
+                            "title": "刮刮乐",
+                            "icon": "",
+                            "name": "scratch"
+                        }
+                    ]
+                },
+                {
+                    "title": "业务消息",
+                    "name": "msg",
+                    "list": [
+                        {
+                            "title": "群发消息",
+                            "icon": "",
+                            "name": "mass"
+                        },
+                        {
+                            "title": "业务推送",
+                            "icon": "",
+                            "name": "push"
+                        }
+                    ]
+                },
+                {
+                    "title": "粉丝管理",
+                    "name": "fans",
+                    "list": [
+                        {
+                            "title": "粉丝标签",
+                            "name": "label"
+                        },
+                        {
+                            "title": "粉丝列表",
+                            "name": "list"
+                        }
+                    ]
+                },
+
+                {
+                    "title": "公众号设置",
+                    "name": "mp",
+                    "list": [
+                        {
+                            "title": "参数设置",
+                            "name": "parameter"
+                        },
+                        {
+                            "title": "回复设置",
+                            "name": "reply"
+                        },
+                        {
+                            "title": "菜单设置",
+                            "name": "menu"
+                        },
+                        {
+                            "title": "消息模板",
+                            "name": "tpl"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 74,
+            "title": "SYS 系统设置",
+            "icon": "layui-icon-set",
+            "name": "sys",
+            "pid": 0,
+            "path": "0,",
+            "list": [
+                {
+                    "id": 187,
+                    "title": "系统设置",
+                    "icon": "",
+                    "name": "set",
+                    "pid": 74,
+                    "path": "0,74,"
+                },
+                {
+                    "id": 189,
+                    "title": "PC端角色管理",
+                    "icon": "",
+                    "name": "role",
+                    "pid": 74,
+                    "path": "0,74,"
+                },
+                {
+                    "title": "手机端角色管理",
+                    "name": "mrole"
+                }
+            ]
+        }
+    ]
+}

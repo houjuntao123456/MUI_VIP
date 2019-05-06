@@ -1,0 +1,419 @@
+<title>
+    C(会员年消费)</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 这段样式只是用于演示 */
+</style>
+
+<div class="layui-fluid" lay-filter="crm-viployalty-loyannual">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table id="crm-viployalty-annual" lay-filter="crm-viployalty-loyannual-table"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 周期，编辑 版 -->
+<script type="text/html" id="crm-viployalty-loyannual-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="search">选择门店</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="day">修改周期</button>
+    </div>
+</script>
+
+<script type="text/html" id="loyannualDemoy">
+    <a class="layui-btn layui-btn-xs" lay-event="loyannual_edit">编辑</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="loyannual_people">会员</a>
+    <!-- <a class="layui-btn layui-btn-xs" lay-event="loyannual_message">短信</a> -->
+</script>
+
+<script>
+    layui.use(['admin', 'form', 'table'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , router = layui.router();
+
+        //门店
+        var shop_frontfun = function (d, f) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStoreSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择门店</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name +
+                            "</option>");
+                    }
+                    form.render(null, f);
+                }
+            });
+        }
+
+        //选择门店
+        var ReadStore = function () {
+            //弹出选择门店
+            layer.open({
+                title: "选择门店"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: true
+                , anim: 1
+                , offset: 'auto'
+                , area: ["480px", "260px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" lay-filter="viployalty_loyannual_form" id="viployalty_loyannual_form"><br><div class="layui-form-item"><label class="layui-form-label">所属门店:</label><div class="layui-input-block"><select name="store_code" lay-search id="viployalty_loyannual_stores"></select></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="viployalty_loyannual_button" style="width: 190px;">查询</button></div></form>'
+                , success: function (layero, readstore) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(readstore);
+                    });
+                    //门店
+                    shop_frontfun("#viployalty_loyannual_stores", "viployalty_loyannual_form");
+                    //渲染表单
+                    form.render(null, 'viployalty_loyannual_form');
+                    //监听button
+                    form.on("submit(viployalty_loyannual_button)", function (data) {
+                        //去除选择门店弹出中的html
+                        $("#viployalty_loyannual_form").html("");
+
+                        layer.close(readstore);
+                        //定义门店code
+                        var store_code = data.field.store_code;
+                        //列表
+                        annual(store_code);
+
+                        // 表头事件监听
+                        table.on('toolbar(crm-viployalty-loyannual-table)', function (obj) {
+                            var checkStatus = table.checkStatus(obj.config.id);
+                            switch (obj.event) {
+                                case 'search':
+                                    //初始化页面
+                                    layui.index.render();
+                                    break;
+                                case 'day':
+                                    loyannualDay(store_code);
+                                    break;
+                            };
+                        });
+                        //周期
+                        var loyannualDay = function () {
+
+                            layer.open({
+                                title: "修改C类型消费周期"
+                                , type: 1
+                                , shade: 0.3
+                                , shadeClose: false
+                                , anim: 1
+                                , offset: 'auto'
+                                , area: ["340px", "150px"]
+                                , skin: "layui-layer-admin layui-anim"
+                                , content: '<form class="layui-form " lay-filter="loyannual_form_day"><div class="layui-form-item"><div class="layui-input-inline"><input type="text" name="c_consumption" id="c_consumption_id" lay-verify="number|required" autocomplete="off" placeholder="请输入消费周期(天数)" class="layui-input"></div><button class="layui-btn layui-btn-radius" lay-submit lay-filter="loyannualDemo_day">执行修改</button></div></form>'
+                                , success: function (layero, index) {
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(index);
+                                    });
+                                    //获取焦点
+                                    $("#c_consumption_id").focus();
+                                    //渲染
+                                    form.render(null, 'loyannual_form_day');
+                                    //表单提交事件
+                                    form.on("submit(loyannualDemo_day)", function (data) {
+                                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                                        admin.req({
+                                            url: "/index.php/webLoyannualDayEdit/",
+                                            type: "post",
+                                            data: {
+                                                c_consumption: data.field.c_consumption,
+                                                store_code: store_code
+                                            },
+                                            done: function (res) {
+                                                layer.close(loadindex);
+                                                if (res.msg == 'error') {
+                                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                                } else if (res.msg == 'yes') {
+                                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                                    layer.close(index);
+                                                    annual(store_code);
+                                                } else if (res.msg == 'no') {
+                                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                                }
+                                            }
+                                        });
+                                        return false;
+                                    });
+                                }
+                            });
+
+                        }
+                        //表格监听事件
+                        table.on('tool(crm-viployalty-loyannual-table)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+                            var data = obj.data; //获得当前行数据
+                            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+                            if (layEvent === 'loyannual_edit') { //编辑
+
+                                layer.open({
+                                    title: "修改C类型"
+                                    , type: 1
+                                    , shade: 0.3
+                                    , shadeClose: false
+                                    , anim: 1
+                                    , offset: 'auto'
+                                    , area: ["630px", "200px"]
+                                    , skin: "layui-layer-admin layui-anim"
+                                    , content: '<form class="layui-form " lay-filter="loyannual-formtwo"><div class="layui-form-item"><label class="layui-form-label">指标区间:</label><div class="layui-input-inline"><input type="text" name="c_intervalone" lay-verify="c_intervalone" autocomplete="off" placeholder="请输入金额" class="layui-input"></div><div class="layui-form-mid">≤ C &lt;</div><div class="layui-input-inline"><input type="text" name="c_intervaltwo" lay-verify="c_intervaltwo" autocomplete="off" placeholder="请输入金额" class="layui-input"></div><div class="layui-form-mid">元</div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="loyannualDemoEdit">执行修改</button></div></form>'
+                                    , success: function (layero, index) {
+                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                        layero.append(elemClose);
+                                        elemClose.on('click', function () {
+                                            layer.close(index);
+                                        });
+                                        //自定义验证规则
+                                        form.verify({
+                                            c_intervalone: [/^([1-9]\d{0,9}|0)([.]?|(\.\d{1,2})?)$/, '金额为是正数,且可以保留两位小数!'],
+                                            c_intervaltwo: [/^([1-9]\d{0,9}|0)([.]?|(\.\d{1,2})?)$/, '金额为是正数,且可以保留两位小数!']
+                                        });
+                                        //渲染表单
+                                        form.render(null, 'loyannual-formtwo');
+                                        // 表单初始赋值
+                                        form.val("loyannual-formtwo", {
+                                            c_intervalone: obj.data.c_intervalone,
+                                            c_intervaltwo: obj.data.c_intervaltwo
+                                        });
+                                        //表单提交事件
+                                        form.on("submit(loyannualDemoEdit)", function (data) {
+                                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                                            admin.req({
+                                                url: "/index.php/webLoyannualEdit/",
+                                                type: "post",
+                                                data: {
+                                                    id: obj.data.id,
+                                                    store_code: obj.data.store_code,
+                                                    c_intervalone: data.field.c_intervalone,
+                                                    c_intervaltwo: data.field.c_intervaltwo
+                                                },
+                                                done: function (res) {
+                                                    layer.close(loadindex);
+                                                    if (res.msg == 'error') {
+                                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                                    } else if (res.msg == 'yes') {
+                                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                                        layer.close(index);
+                                                        annual(store_code);
+                                                    } else if (res.msg == 'no') {
+                                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                                    }
+                                                }
+                                            });
+                                            return false;
+                                        });
+                                    }
+                                });
+
+                            } else if (layEvent === 'loyannual_people') {//会员
+
+                                layer.open({
+                                    title: "会员"
+                                    , type: 1
+                                    , shade: 0.3
+                                    , shadeClose: false
+                                    , anim: 1
+                                    , offset: 'auto'
+                                    , area: ["900px", "520px"]
+                                    , skin: "layui-layer-admin layui-anim"
+                                    , content: '<table id="loyannual_people_number" lay-filter="loyannual_people_number_table"></table>'
+                                    , success: function (layero, index) {
+                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                        layero.append(elemClose);
+                                        elemClose.on('click', function () {
+                                            layer.close(index);
+                                        });
+                                        table.render({ //储值流水
+                                            elem: '#loyannual_people_number'
+                                            , height: 400
+                                            , url: '/index.php/webLoyannualLook/' //数据接口
+                                            , where: { access_token: layui.data(layui.setter.tableName).access_token, id: obj.data.id, store_code: store_code } //数据接口
+                                            , toolbar: '#loyannual_member_message'
+                                            , cols: [[ //表头 
+                                                { field: 'code', width: 100, title: '会员卡号', align: 'center', sort: true, fixed: 'left' }
+                                                , { field: 'username', width: 160, title: '会员姓名', align: 'center', sort: true, fixed: 'left' }
+                                                , { field: 'sex', width: 160, title: '性别', align: 'center', sort: true }
+                                                , { field: 'phone', width: 160, title: '手机号码', align: 'center', sort: true }
+                                                , { field: 'identity', width: 160, title: '身份证号码', align: 'center', sort: true }
+                                                , { field: 'nation', width: 160, title: '民族', align: 'center', sort: true }
+                                                , { field: 'level_code', width: 160, title: '会员级别', align: 'center', sort: true }
+                                                , { field: 'birthday', width: 160, title: '会员生日', align: 'center', sort: true }
+                                                , { field: 'calendar', width: 160, title: '公历/农历', align: 'center' }
+                                                , { field: 'vsname', width: 160, title: '所属门店', align: 'center', sort: true }
+                                                , { field: 'vrname', width: 360, title: '登记门店', align: 'center', sort: true }
+                                                , { field: 'qq', width: 160, title: 'QQ', align: 'center', sort: true }
+                                                , { field: 'weixin', width: 360, title: '微信', align: 'center', sort: true }
+                                                , { field: 'vgname', width: 360, title: '形象顾问', align: 'center', sort: true }
+                                                , { field: 'area', width: 160, title: '所属地区', align: 'center' }
+                                                , { field: 'address', width: 160, title: '详细地址', align: 'center', sort: true }
+                                                , { field: 'activate_code', width: 360, title: '开卡人', align: 'center', sort: true }
+                                                , { field: 'introducer_code', width: 160, title: '介绍人', align: 'center' }
+                                                , { field: 'adult_code', width: 160, title: '提成人', align: 'center', sort: true }
+                                                , { field: 'acs', width: 360, title: '入会费', align: 'center', sort: true }
+                                                , { field: 'payment_method', width: 160, title: '支付方式', align: 'center' }
+                                                , { field: 'consumption_times', width: 160, title: '消费次数', align: 'center', sort: true }
+                                                , { field: 'consumption_number', width: 360, title: '消费件数', align: 'center', sort: true }
+                                                , { field: 'exchange_number', width: 160, title: '兑换次数', align: 'center' }
+                                                , { field: 'total_consumption', width: 160, title: '总消费额', align: 'center', sort: true }
+                                                , { field: 'first_time', width: 360, title: '首次购物时间', align: 'center', sort: true }
+                                                , { field: 'final_purchases', width: 160, title: '最后购物时间', align: 'center' }
+                                                , { field: 'remarks', width: 160, title: '备注', align: 'center', sort: true }
+                                                , { field: 'telephone', width: 360, title: '固定电话', align: 'center', sort: true }
+                                                , { field: 'initiation', width: 160, title: '入会方式', align: 'center' }
+                                                , { field: 'residual_integral', width: 160, title: '剩余总积分', align: 'center' }
+                                                , { field: 'already_used_integral', width: 160, title: '已用积分', align: 'center', sort: true }
+                                                , { field: 'offset_integral', width: 360, title: '剩余抵现积分', align: 'center', sort: true }
+                                                , { field: 'gift_integral', width: 160, title: '剩余礼品积分', align: 'center' }
+                                                , { field: 'total_integral', width: 160, title: '总积分', align: 'center', sort: true }
+                                                , { field: 'stored_value', width: 360, title: '已用储值', align: 'center', sort: true }
+                                                , { field: 'residual_value', width: 160, title: '剩余储值', align: 'center' }
+                                                , { field: 'total_value', width: 160, title: '总储值', align: 'center', sort: true }
+                                                , { field: 'total_frozen_value', width: 360, title: '总冻结储值', align: 'center', sort: true }
+                                            ]]
+                                            , page: true
+                                        });
+                                    }
+                                });
+
+                            } else if (layEvent === 'loyannual_message') {// 短信
+
+                                layer.open({
+                                    title: "发送短信息"
+                                    , type: 1
+                                    , shade: 0.3
+                                    , shadeClose: false
+                                    , anim: 1
+                                    , offset: 'auto'
+                                    , area: ["650px", "300px"]
+                                    , skin: "layui-layer-admin layui-anim"
+                                    , content: '<form class="layui-form" lay-filter="loyannual_people_message"><div class="layui-form-item"><label class="layui-form-label">选择模板</label><div class="layui-input-block"><select name="sms_template" lay-filter="loyannual_people_message_template" lay-verify="required" lay-search id="loyannual_people_message_template"></select></div></div><div class="layui-form-item layui-form-text"><label class="layui-form-label">短信内容</label><div class="layui-input-block"><textarea name="smscontent" id="smscontent" class="layui-textarea" disabled></textarea></div></div><div style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="sms_submit_message">发送信息</button></div></form>'
+                                    , success: function (layero, index) {
+                                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                        layero.append(elemClose);
+                                        elemClose.on('click', function () {
+                                            layer.close(index);
+                                        });
+
+                                        admin.req({ // 循环得到短信模版下拉框
+                                            url: '/index.php/webvipsmstemplate/',
+                                            done: function (res) {
+                                                var json = res.data;
+                                                var listD = $("#loyannual_people_message_template");
+                                                listD.empty();
+                                                listD.append("<option value=''>请输入 / 选择</option>");
+                                                for (var i = 0, l = json.length; i < l; i++) {
+                                                    listD.append("<option value='" + json[i].id + "'>" + json[i].sms_name + "</option>");
+                                                }
+                                                form.render(null, "loyannual_people_message");
+                                            }
+                                        });
+
+                                        form.on('select(loyannual_people_message_template)', function (data) { // 选择短信模版后，给短信内容赋值
+                                            admin.req({
+                                                url: '/index.php/webSmscontent/',
+                                                type: 'post',
+                                                data: {
+                                                    id: data.value
+                                                },
+                                                done: function (res) {
+                                                    $('#smscontent').val(res.data.sms_content);
+                                                }
+                                            });
+                                        });
+
+                                        form.render(null, 'loyannual_people_message');
+                                        form.on('submit(sms_submit_message)', function (data) { // 发送短信息
+                                            layer.confirm('确认发送?', { icon: 3, title: '提示' }, function (index) {
+                                                admin.req({
+                                                    url: '/index.php/webLoyannualSmsSend/',
+                                                    type: 'post',
+                                                    data: { sms: data.field.sms_template },
+                                                    done: function (res) {
+                                                        if (res.msg == 'error') {
+                                                            layer.msg(res.data, { icon: 2, title: res.msg });
+                                                        } else if (res.msg == 'yes') {
+                                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                                            layer.close(index);
+                                                        } else if (res.msg == 'no') {
+                                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                                        }
+                                                    }
+                                                })
+                                                layer.close(index);
+                                            });
+                                            return false;
+                                        });
+                                    }
+                                });
+
+                            }
+                        });
+
+                        return false;
+                    });
+                }
+            });
+
+        }
+        ReadStore();
+
+        //C年消费
+        var annual = function (where = '') {
+            table.render({
+                elem: '#crm-viployalty-annual'
+                , height: 'full-150'
+                , toolbar: '#crm-viployalty-loyannual-toolbar'
+                , url: '/index.php/webLoyannual/' //数据接口
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , cols: [[ //表头 
+                    { field: 'c_type', title: '名称', width: 230, sort: true }
+                    , { field: 'c_consumption', title: '消费周期(天)', width: 230, sort: true }
+                    , { field: 'Index_interval', title: '指标区间(元)', width: 300, sort: true }
+                    , { field: 'c_score', title: '得分', width: 230, sort: true }
+                    , { field: 'numbertime', title: '会员人数', width: 230, sort: true }
+                    , { field: 'c_update_time_g', title: '修改时间', width: 292, sort: true }
+                    , { fixed: 'right', title: '操作', width: 120, align: 'center', toolbar: '#loyannualDemoy' }
+                ]]
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        annual();
+
+        // 表头事件监听
+        table.on('toolbar(crm-viployalty-loyannual-table)', function (obj) {
+            switch (obj.event) {
+                case 'search':
+                    //初始化页面
+                    layui.index.render();
+                    break;
+            };
+        });
+
+    });
+</script>

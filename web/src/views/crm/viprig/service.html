@@ -1,0 +1,424 @@
+<title>会员服务</title>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <table class="layui-hide" id="crm-vip-viprights-service" lay-filter="crm-vip-viprights-service"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="crm-viprig-service-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+      <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+      <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script type="text/html" id="crm-vip-barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="crm-vip-viprights-edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-vip-viprights-del">删除</a>
+</script>
+<script type="text/html" id="del_company_barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="del_company">删除</a>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'laydate', 'dtree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , laydate = layui.laydate
+            , dtree = layui.dtree
+            , router = layui.router();
+
+        //会员服务
+        var service = function (levelUrl) {
+            table.render({
+                elem: '#crm-vip-viprights-service'
+                , height: 'full-150'
+                , url: levelUrl
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+                , where: {
+                    access_token: layui.data(layui.setter.tableName).access_token
+                }
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'vgname', title: '会员级别', width: 250, align: 'center', sort: true }
+                    , { field: 'servicename', title: '服务名称', width: 220, align: 'center', sort: true }
+                    , { field: 'service_second', title: '服务次数', width: 220, align: 'center', sort: true }
+                    , { field: 'single_quantity', title: '单次数量', width: 220, align: 'center', sort: true }
+                    , { field: 'company', title: '单位', width: 150, align: 'center', sort: true }
+                    , { field: 'limited_time', title: '限定时间(天)', width: 350, align: 'center', sort: true }
+                    , { fixed: 'right', width: 160, align: 'center', toolbar: '#crm-vip-barDemo' }
+                ]]
+                , toolbar: '#crm-viprig-service-toolbar'
+            });
+        }
+        service('/index.php/webServicelist/');
+
+        // 表头事件监听
+        table.on('toolbar(crm-vip-viprights-service)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    crmVipServiceAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        crmVipServiceDel(ids);
+                    })
+                    break;
+                case 'search':
+                    crmVipServiceSea();
+                    break;
+            };
+        });
+
+        // 批量删除
+        var crmVipServiceDel = function (ids) {
+            admin.req({
+                url: '/index.php/webServicedelMany/',
+                type: 'post',
+                data: { ids: ids },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.close(index);
+                        service('/index.php/webServicelist/');
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //查找信息
+        var crmVipServiceSea = function () {
+            layer.prompt({ title: '查找（按照 级别名称 / 服务名称）', formType: 0 }, function (text, index) {
+                layer.close(index);
+                service('/index.php/webService/?levellookup=' + text);
+                return false;
+            });
+        };
+
+        //循环得到会员等级下拉框信息
+        var initList = function (u, d, value) {
+            admin.req({
+                url: u,
+                done: function (res) {
+                    var json = res.data;
+                    var listD = $(d);
+                    listD.empty();
+                    listD.append("<option value=''>请输入 / 选择</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        listD.append("<option value='" + json[i].code + "'>" + json[i].username + "</option>");
+                    }
+                    $(d).val(value);
+                    form.render(null, "crm-vip-viprights-service");
+                    form.render(null, "crm-vip-viprights-service1");
+                }
+            });
+        }
+
+        //添加信息
+        var crmVipServiceAdd = function () {
+            layer.open({
+                title: "添加信息"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["700px", "450px"]
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-service"><div class="layui-form-item"><label class="layui-form-label">服务名称<span style="color:red">*</span></label><div class="layui-input-inline"><input type="text" name="servicename" autocomplete="off" lay-verify="required" class="layui-input"></div><label class="layui-form-label">会员级别<span style="color:red">*</span></label><div class="layui-input-inline"><select name="level" id="vip-service-hydj" lay-search lay-verify="required"></select></div></div><div class="layui-form-item"><label class="layui-form-label">服务次数</label><div class="layui-input-inline"><input type="text" name="service_second" autocomplete="off" class="layui-input"></div><label class="layui-form-label">单次数量</label><div class="layui-input-inline"><input type="text" name="single_quantity" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-inline"><div class="layui-form-mid layui-bg-green" id="service_id" style="width:190px;text-align:center;margin-right:57px">点击选择组织机构</div></div><label class="layui-form-label"></label><div class="layui-input-inline"><input type="text" name="splb_name" id="service_name" required autocomplete="off" disabled class="layui-input" style="width:190px"></div><input type="hidden" name="splb" id="service_splb_id" class="layui-input"></div><div class="layui-form-item"><label class="layui-form-label">限定时间从</label><div class="layui-input-inline"><input type="text" name="start_limited_time" id="start_limited_time" placeholder="开始日期" autocomplete="off" class="layui-input"></div><label class="layui-form-label">至&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label><div class="layui-input-inline"><input type="text" name="end_limited_time" id="end_limited_time" placeholder="结束日期" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">单位</label><div class="layui-input-inline"><input type="text" name="company" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-serviceSubmit">确定添加</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    initList("/index.php/webDroplevel/", "#vip-service-hydj");
+
+                    //组织结构
+                    $("#service_id").click(function () {
+                        layer.open({
+                            type: 1,
+                            title: "选择组织机构",
+                            area: ["400px", "80%"],
+                            content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                            btn: ['确认选择'],
+                            success: function (layero, index) {
+                                dtree.render({
+                                    elem: "#dTree",
+                                    url: "/index.php/webViprightdtree/?access_token="+ layui.data(layui.setter.tableName).access_token,
+                                    method: 'get',
+                                    skin: "theme",
+                                    dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                    response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                    // dot: false, //前面的小黑点取消
+                                    checkbar: true,
+                                    checkbarType: "p-casc" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                });
+                                // 绑定节点的双击
+                                dtree.on("nodedblclick('dTree')", function (obj) {
+                                    $("#service_splb_id").val(obj.param.nodeId);
+                                    $("#service_name").val(obj.param.context);
+                                    layer.close(index);
+                                });
+                            },
+                            yes: function (index, layero) {
+                                var flag = true;
+                                var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                if (params.length == 0) {
+                                    layer.msg("请至少选择一个节点", { icon: 2 });
+                                    flag = false;
+                                }
+
+                                var ids = [], names = [];
+                                for (var key in params) {
+                                    var param = params[key];
+                                    ids.push(param.nodeId);
+                                    names.push(param.context);
+                                }
+                                $("#service_splb_id").val(ids.join(","));
+                                $("#service_name").val(names.join(","));
+                                if (flag) {
+                                    layer.close(index);
+                                }
+                            }
+                        });
+                    });
+                    
+                    // 表单提交事件
+                    form.on("submit(crm-vip-viprights-serviceSubmit)", function (data) {
+                        admin.req({
+                            url: "/index.php/webServicedelAdd/",
+                            type: "post",
+                            data: {
+                                level_code: data.field.level, //会员级别
+                                servicename: $.trim(data.field.servicename), //服务名称
+                                service_second: $.trim(data.field.service_second), //服务次数
+                                single_quantity: $.trim(data.field.single_quantity), //单次数量
+                                company: data.field.company, //单位
+                                start_limited_time: data.field.start_limited_time, //限定时间 开始
+                                end_limited_time: data.field.end_limited_time, //限定时间 结束
+                                org_code: data.field.splb
+
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    service('/index.php/webServicelist/');
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                    //日期
+                    laydate.render({
+                        elem: '#start_limited_time'
+                        , type: 'datetime'
+                    });
+                    laydate.render({
+                        elem: '#end_limited_time'
+                        , type: 'datetime'
+                    });
+                    form.render(null, 'crm-vip-viprights');
+                }
+            });
+        };
+
+        //监听工具条
+        table.on('tool(crm-vip-viprights-service)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'crm-vip-viprights-del') {
+                layer.confirm('确定要删除这条信息么?', function (index) {
+                    admin.req({
+                        url: "/index.php/webServicedel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                service('/index.php/webServicelist/');
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+            } else if (obj.event === 'crm-vip-viprights-edit') {
+                layer.open({
+                    title: "编辑信息",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["700px", "450px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-service1"><div class="layui-form-item"><label class="layui-form-label">服务名称<span style="color:red">*</span></label><div class="layui-input-inline"><input type="text" name="servicename" autocomplete="off" lay-verify="required" class="layui-input"></div><label class="layui-form-label">会员级别<span style="color:red">*</span></label><div class="layui-input-inline"><select name="level" id="vip-service-hydj1" lay-search lay-verify="required"></select></div></div><div class="layui-form-item"><label class="layui-form-label">服务次数</label><div class="layui-input-inline"><input type="text" name="service_second" autocomplete="off" class="layui-input"></div><label class="layui-form-label">单次数量</label><div class="layui-input-inline"><input type="text" name="single_quantity" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-inline"><div class="layui-form-mid layui-bg-green" id="service_edit_id" style="width:190px;text-align:center;margin-right:57px">点击选择组织机构</div></div><label class="layui-form-label"></label><div class="layui-input-inline"><input type="text" name="splb_name" id="service_edit_name" required autocomplete="off" disabled class="layui-input" style="width:190px"></div><input type="hidden" name="splb" id="service_edit_splb_id" class="layui-input"></div><div class="layui-form-item"><label class="layui-form-label">限定时间从</label><div class="layui-input-inline"><input type="text" name="start_limited_time_edit" id="start_limited_time_edit" placeholder="开始日期" autocomplete="off" class="layui-input"></div><label class="layui-form-label">至&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label><div class="layui-input-inline"><input type="text" name="end_limited_time_edit" id="end_limited_time_edit" placeholder="结束日期" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">单位</label><div class="layui-input-inline"><input type="text" name="company" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-ServiceDemo">确定修改</button></div></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+
+                        // form表单渲染
+                        form.render(null, 'crm-vip-viprights-service1');
+
+                        admin.req({ // 用于查询组织机构并赋值
+                            url: "/index.php/webViprightSplbvalue/",
+                            type: "post",
+                            data: {
+                                code: obj.data.org_code,
+                            },
+                            done: function (res) {
+                                $('#service_edit_name').val(res.data);
+                            }
+                        });
+                        
+                        // 表单初始赋值
+                        form.val("crm-vip-viprights-service1", {
+                            // level: obj.data.level, //会员等级
+                            servicename: obj.data.servicename, //服务名称
+                            service_second: obj.data.service_second, //服务次数
+                            single_quantity: obj.data.single_quantity, //单次数量
+                            company: obj.data.company, //单位
+                            start_limited_time_edit: obj.data.start_limited_time, //限定时间 开始
+                            end_limited_time_edit: obj.data.end_limited_time, //限定时间 结束
+                        });
+
+                        initList("/index.php/webDroplevel/", "#vip-service-hydj1", data.level_code);
+
+                        //组织结构
+                        $("#service_edit_id").click(function () {
+                            layer.open({
+                                type: 1,
+                                title: "选择组织机构",
+                                area: ["400px", "80%"],
+                                content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                                btn: ['确认选择'],
+                                success: function (layero, index) {
+                                    dtree.render({
+                                        elem: "#dTree",
+                                        url: "/index.php/webViprightdtree/?tree="+obj.data.org_code +"&access_token="+ layui.data(layui.setter.tableName).access_token,
+                                        method: 'get',
+                                        skin: "theme",
+                                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                        // dot: false, //前面的小黑点取消
+                                        checkbar: true,
+                                        checkbarType: "only" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                    });
+                                    // 绑定节点的双击
+                                    dtree.on("nodedblclick('dTree')", function (obj) {
+                                        $("#service_edit_splb_id").val(obj.param.nodeId);
+                                        $("#service_edit_name").val(obj.param.context);
+                                        layer.close(index);
+                                    });
+                                },
+                                yes: function (index, layero) {
+                                    var flag = true;
+                                    var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                    if (params.length == 0) {
+                                        layer.msg("请至少选择一个节点", { icon: 2 });
+                                        flag = false;
+                                    }
+
+                                    var ids = [], names = [];
+                                    for (var key in params) {
+                                        var param = params[key];
+                                        ids.push(param.nodeId);
+                                        names.push(param.context);
+                                    }
+                                    $("#service_edit_splb_id").val(ids.join(","));
+                                    $("#service_edit_name").val(names.join(","));
+                                    if (flag) {
+                                        layer.close(index);
+                                    }
+                                }
+                            });
+                        });
+
+                        // 表单提交事件
+                        form.on("submit(crm-vip-viprights-ServiceDemo)", function (data) {
+                            admin.req({
+                                url: "/index.php/webServicedelEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    level_code: data.field.level, //会员等级
+                                    servicename: $.trim(data.field.servicename), //服务名称
+                                    service_second: $.trim(data.field.service_second), //服务次数
+                                    single_quantity: $.trim(data.field.single_quantity), //单次数量
+                                    company: data.field.company, //单位
+                                    start_limited_time: data.field.start_limited_time_edit, //限定时间
+                                    end_limited_time: data.field.end_limited_time_edit, //限定时间
+                                    org_code: data.field.splb
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        service('/index.php/webServicelist/');
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                        //日期
+                        laydate.render({
+                            elem: '#start_limited_time_edit'
+                            , type: 'datetime'
+                        });
+                        laydate.render({
+                            elem: '#end_limited_time_edit'
+                            , type: 'datetime'
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

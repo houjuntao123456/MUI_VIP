@@ -1,0 +1,128 @@
+<title>商品标签</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-form-item">
+                        <form class="layui-form layui-form-pane" lay-filter="pro-goods-goodslabel-kz">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">商品标签名</label>
+                                <div class="layui-input-inline">
+                                    <input name="name" id="vip-pro-goods-goodslabel-tagtype-name" autocomplete="off" class="layui-input"
+                                        type="text">
+                                </div>
+                                <label class="layui-form-label">标签类型</label>
+                                <div class="layui-input-inline">
+                                    <select name="type" id="vip-pro-goods-goodslabel-tag-type" lay-verify="required">
+                                        <option value="文本型">文本型</option>
+                                        <option value="日期型">日期型</option>
+                                        <option value="扩展型">扩展型</option>
+                                    </select>
+                                </div>
+                                <button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="vip-pro-goodslabel-addinfo-submit">添加字段</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <ul id="vip-pro-goodslavel-edit-box"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(["index", "admin", "form", "table", "checkbox"], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , checkbox = layui.checkbox;
+        form.render(null, "pro-goods-goodslabel-kz");   //渲染表单
+        form.on("submit(vip-pro-goodslabel-addinfo-submit)", function (data) { //---------------------------------------添加商品扩展信息
+            // console.log(data);return false;
+            admin.req({
+                url: "/index.php/webGoodsExtendAddLabel/",//添加扩展名
+                type: 'post',
+                data: {
+                    name: data.field.name,
+                    type: data.field.type
+                }, done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: res.msg });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                    extendsList(1);
+                    $("#vip-pro-goods-goodslabel-tagtype-name").val('');
+                    $("#vip-pro-goods-goodslabel-tagtype-name").focus();
+                }
+            });
+            form.render(null, "pro-goods-goodslabel-kz");
+            return false;
+        });
+
+        // 标签的状态
+        var edit_status = function (id) {
+            admin.req({
+                url: "/index.php/webGoodsEditLabel/",
+                type: 'post',
+                data: {
+                    id: id
+                }, done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: res.msg });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                    extendsList();
+                }
+            });
+            return false;
+        }
+
+
+        function extendsList() { //--------------------------------------------------------------------------------标签列表
+            $("#vip-pro-goodslavel-edit-box").children("li").remove();
+            admin.req({
+                url: "/index.php/webGoodsExtendsIndex/",
+                type: 'post',
+                done: function (res) {
+                    checkbox({
+                        elem: "#vip-pro-goodslavel-edit-box"
+                        , nodes: res.data//默认选择的位置  
+                        , click: function (node) {
+                            edit_status(node.id);
+                        }
+                        , del: function (node) {
+                            admin.req({
+                                url: "/index.php/webGoodsExtendsDelLabel/", //--------------------------------删除标签
+                                type: 'post',
+                                data: {
+                                    id: node.id
+                                }, done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return true;
+                        }
+                    })
+                }
+            });
+        }
+        extendsList();
+    });
+</script>

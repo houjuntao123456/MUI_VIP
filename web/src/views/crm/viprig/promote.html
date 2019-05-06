@@ -1,0 +1,495 @@
+<title>晋升标准</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <table class="layui-hide" id="crm-vip-viprights-promotetest" lay-filter="crm-vip-viprights-promotetest"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="crm-viprig-promote-toolbar">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+      <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="search">查找</button>
+      <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script type="text/html" id="crm-vip-barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="crm-vip-viprights-edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="crm-vip-viprights-del">删除</a>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'dtree'], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , element = layui.element
+            , table = layui.table
+            , form = layui.form
+            , dtree = layui.dtree
+            , router = layui.router();
+
+        //晋升标准
+        var promote = function (p) {
+            table.render({
+                elem: '#crm-vip-viprights-promotetest'
+                , height: 'full-150'
+                , url: p //数据接口
+                , page: true //开启分页
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+                , where: {
+                    access_token: layui.data(layui.setter.tableName).access_token
+                }
+                , cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' }
+                    , { field: 'number', width: 100, title: '编号', align: 'center', sort: true, fixed: 'left' }
+                    , { field: 'vgname', width: 160, title: '级别名称', align: 'center', sort: true, fixed: 'left' }
+                    , { field: 'total_integral', width: 160, title: '累计总积分≧', align: 'center', sort: true }
+                    , { field: 'total_integral_time', width: 160, title: '限定时间(天)', align: 'center', sort: true }
+                    , { field: 'total_amount', width: 160, title: '消费总金额≧', align: 'center', sort: true }
+                    , { field: 'total_amount_time', width: 160, title: '限定时间(天)', align: 'center', sort: true }
+                    , { field: 'introduction', width: 160, title: '转介绍人数', align: 'center', sort: true }
+                    , { field: 'introduction_time', width: 160, title: '限定时间(天)', align: 'center', sort: true }
+                    , { field: 'first_amount', width: 160, title: '首次消费金额≧', align: 'center', sort: true }
+                    , { field: 'single_amount', width: 160, title: '单次消费金额≧', align: 'center', sort: true }
+                    , { field: 'single_recharge', width: 160, title: '单次充值金额≧', align: 'center', sort: true }
+                    , { field: 'state', width: 160, title: '自动晋升', align: 'center' }
+                    // , { field: 'notification', width: 160, title: '短信通知', align: 'center' }
+                    , { fixed: 'right', width: 160, title: '操作', align: 'center', toolbar: '#crm-vip-barDemo' }
+                ]]
+                , toolbar: '#crm-viprig-promote-toolbar'
+            });
+        }
+        promote('/index.php/webPromoteslist/');
+
+        // 表头事件监听
+        table.on('toolbar(crm-vip-viprights-promotetest)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            // console.log(checkStatus.data); return false;
+            switch (obj.event) {
+                case 'add':
+                    crmVipProAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        crmVipProDel(ids);
+                    })
+                    break;
+                case 'search':
+                    crmVipProSea();
+                    break;
+            };
+        });
+
+        // 批量删除
+        var crmVipProDel = function (ids) {
+            admin.req({
+                url: '/index.php/webPromotesdelMany/',
+                type: 'post',
+                data: { ids: ids },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.close(layer.index);
+                        promote('/index.php/webPromoteslist/');
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        //查找信息
+        var crmVipProSea = function () {
+            layer.prompt({ title: '查找（按照 级别名称）', formType: 0 }, function (text, index) {
+                layer.close(index);
+                promote('/index.php/webPromoteslist/?lookup=' + text);
+                //console.log(text);
+                return false;
+            });
+        };
+
+        //循环得到会员等级下拉框信息
+        var initList = function (u, d, value) {
+            admin.req({
+                url: u,
+                done: function (res) {
+                    var json = res.data;
+                    // console.log(res.data);
+                    var listD = $(d);
+                    listD.empty();
+                    listD.append("<option value=''>请输入 / 选择</option>");
+                    for (var i = 1, l = json.length; i < l; i++) {
+                        listD.append("<option value='" + json[i].code + "'>" + json[i].username + "</option>");
+                    }
+                    $(d).val(value);
+                    form.render(null, "crm-vip-viprights-promote");
+                    form.render(null, "crm-vip-viprights-promoteEdit");
+                }
+            });
+        }
+
+        //添加信息
+        var crmVipProAdd = function () {
+            layer.open({
+                title: "添加信息"
+                , type: 1
+                , shade: 0.3
+                , shadeClose: false
+                , anim: 1
+                , offset: 'auto'
+                , area: ["730px", "600px"]  //<div class="layui-inline"><label class="layui-form-label">短信通知</label><div class="layui-input-block"><input type="checkbox" name="notification" lay-skin="switch" lay-text="开启|关闭"></div></div>
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<form class="layui-form" action="" lay-filter="crm-vip-viprights-promote"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">编号</label><div class="layui-input-inline"><input type="text" name="number" lay-verify="required" id="add_number" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">级别名称</label><div class="layui-input-inline"><select name="levelname" id="crm-vip-discount-Pjbmc" lay-verify="required" lay-search></select></div></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-block"><div class="layui-form-mid layui-bg-green" id="promote_id" style="width:190px;text-align:center;margin-right:57px">点击选择组织机构</div><div class="layui-input-inline"><input type="text" name="splb_name" id="promote_name" required autocomplete="off" disabled class="layui-input" style="width:263px"></div><input type="hidden" name="splb" id="promote_splb_id" class="layui-input"></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">累计总积分≧</label><div class="layui-input-inline"><input type="text" name="total_integral" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="total_integral_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">消费总金额≧</label><div class="layui-input-inline"><input type="text" name="total_amount" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="total_amount_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">转介绍人数≧</label><div class="layui-input-inline"><input type="text" name="introduction" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="introduction_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">首次消费金额≧</label><div class="layui-input-inline"><input type="text" name="first_amount" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">单次消费金额≧</label><div class="layui-input-inline"><input type="text" name="single_amount" autocomplete="off" class="layui-input"></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">单次充值金额≧</label><div class="layui-input-inline"><input type="text" name="single_recharge" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">自动升级</label><div class="layui-input-block"><input type="checkbox" name="state" lay-skin="switch" checked lay-text="是|否"></div></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-promoteSub">确认添加</button></div></div></form>'
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    $("#add_number").focus();
+                    initList("/index.php/webDroplevel/", "#crm-vip-discount-Pjbmc");
+                    form.render(null, 'crm-vip-viprights-promote');
+
+                    //组织结构
+                    $("#promote_id").click(function () {
+                        layer.open({
+                            type: 1,
+                            title: "选择组织机构",
+                            area: ["400px", "80%"],
+                            content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                            btn: ['确认选择'],
+                            success: function (layero, index) {
+                                dtree.render({
+                                    elem: "#dTree",
+                                    url: "/index.php/webViprightdtree/?access_token="+ layui.data(layui.setter.tableName).access_token,
+                                    method: 'get',
+                                    skin: "theme",
+                                    dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                    response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                    // dot: false, //前面的小黑点取消
+                                    checkbar: true,
+                                    checkbarType: "p-casc" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                });
+                                // 绑定节点的双击
+                                dtree.on("nodedblclick('dTree')", function (obj) {
+                                    $("#promote_splb_id").val(obj.param.nodeId);
+                                    $("#promote_name").val(obj.param.context);
+                                    layer.close(index);
+                                });
+                            },
+                            yes: function (index, layero) {
+                                var flag = true;
+                                var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                if (params.length == 0) {
+                                    layer.msg("请至少选择一个节点", { icon: 2 });
+                                    flag = false;
+                                }
+
+                                var ids = [], names = [];
+                                for (var key in params) {
+                                    var param = params[key];
+                                    ids.push(param.nodeId);
+                                    names.push(param.context);
+                                }
+                                $("#promote_splb_id").val(ids.join(","));
+                                $("#promote_name").val(names.join(","));
+                                if (flag) {
+                                    layer.close(index);
+                                }
+                            }
+                        });
+                    });
+
+                    // 表单提交事件
+                    form.on("submit(crm-vip-viprights-promoteSub)", function (data) {
+                        var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                        var tmsg = '输入消费总金额格式错误';
+                        var fmsg = '输入首次消费金额格式错误';
+                        var smsg = '输入单次消费金额格式错误';
+                        var ssmsg = '输入单次充值金额格式错误';
+                        if (data.field.total_amount != '') {
+                            if (!reg.test(data.field.total_amount)) {   // js正则验证  消费总金额
+                                layer.msg(tmsg, { icon: 2 });
+                                return false;
+                            }
+                        }
+                        if (data.field.first_amount != '') {
+                            if (!reg.test(data.field.first_amount)) {   // js正则验证  首次消费金额
+                                layer.msg(fmsg, { icon: 2 });
+                                return false;
+                            }
+                        }
+                        if (data.field.single_amount != '') {
+                            if (!reg.test(data.field.single_amount)) {   // js正则验证  单次消费金额
+                                layer.msg(smsg, { icon: 2 });
+                                return false;
+                            }
+                        }
+                        if (data.field.single_recharge != '') {
+                            if (!reg.test(data.field.single_recharge)) {   // js正则验证  单次充值金额
+                                layer.msg(ssmsg, { icon: 2 });
+                                return false;
+                            }
+                        }
+                        admin.req({
+                            url: "/index.php/webPromotePromoteadd/",
+                            type: "post",
+                            data: {
+                                number: data.field.number, //编号
+                                levelname: data.field.levelname, //级别名称
+                                total_integral: $.trim(data.field.total_integral), //累计总积分
+                                total_integral_time: $.trim(data.field.total_integral_time), //累计总积分 限定天数
+                                total_amount: $.trim(data.field.total_amount), //消费总金额
+                                total_amount_time: $.trim(data.field.total_amount_time), // 消费总金额 限定天数
+                                first_amount: $.trim(data.field.first_amount), //首次消费金额
+                                single_amount: $.trim(data.field.single_amount), //单次消费金额
+                                single_recharge: $.trim(data.field.single_recharge), //单次充值金额
+                                introduction: $.trim(data.field.introduction), //转介绍人数
+                                introduction_time: $.trim(data.field.introduction_time), //转介绍人数 限定天数
+                                state: data.field.state, //晋升状态
+                                notification: data.field.notification, //短信通知
+                                splb_dtrr_id:  data.field.splb //组织机构code
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.close(index);
+                                    promote('/index.php/webPromoteslist/');
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        };
+
+        //监听工具条
+        table.on('tool(crm-vip-viprights-promotetest)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'crm-vip-viprights-del') {
+                layer.confirm('确定要删除这条信息么?', function (index) {
+                    admin.req({
+                        url: "/index.php/webPromotesdel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                promote('/index.php/webPromoteslist/');
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+            } else if (obj.event === 'crm-vip-viprights-edit') {
+                var formStr = '';
+                if (obj.data.state == '是') {//控制开关
+                    formStr += '<form class="layui-form" action="" lay-filter="crm-vip-viprights-promoteEdit"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">编号</label><div class="layui-input-inline"><input type="text" name="number" autocomplete="off" lay-verify="required" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">级别名称</label><div class="layui-input-inline"><select name="levelname" id="crm-vip-discount-Pjbmc1" lay-verify="required" lay-search></select></div></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-block"><div class="layui-form-mid layui-bg-green" id="promote_edit_id" style="width:190px;text-align:center;margin-right:57px">点击选择组织机构</div><div class="layui-input-inline"><input type="text" name="splb_name" id="promote_edit_name" required autocomplete="off" disabled class="layui-input" style="width:263px"></div><input type="hidden" name="splb" id="promote_edit_splb_id" class="layui-input"></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">累计总积分≧</label><div class="layui-input-inline"><input type="text" name="total_integral" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="total_integral_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">消费总金额≧</label><div class="layui-input-inline"><input type="text" name="total_amount" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="total_amount_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">转介绍人数≧</label><div class="layui-input-inline"><input type="text" name="introduction" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="introduction_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">首次消费金额≧</label><div class="layui-input-inline"><input type="text" name="first_amount" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">单次消费金额≧</label><div class="layui-input-inline"><input type="text" name="single_amount" autocomplete="off" class="layui-input"></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">单次充值金额≧</label><div class="layui-input-inline"><input type="text" name="single_recharge" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">自动升级</label><div class="layui-input-block"><input type="checkbox" checked name="state" lay-skin="switch" lay-text="是|否"></div></div></div>';
+                } else {
+                    formStr += '<form class="layui-form" action="" lay-filter="crm-vip-viprights-promoteEdit"><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">编号</label><div class="layui-input-inline"><input type="text" name="number" autocomplete="off" lay-verify="required" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">级别名称</label><div class="layui-input-inline"><select name="levelname" id="crm-vip-discount-Pjbmc1" lay-verify="required" lay-search></select></div></div></div><div class="layui-form-item"><label class="layui-form-label">组织机构<span style="color:red">*</span></label><div class="layui-input-block"><div class="layui-form-mid layui-bg-green" id="promote_edit_id" style="width:190px;text-align:center;margin-right:57px">点击选择组织机构</div><div class="layui-input-inline"><input type="text" name="splb_name" id="promote_edit_name" required autocomplete="off" disabled class="layui-input" style="width:263px"></div><input type="hidden" name="splb" id="promote_edit_splb_id" class="layui-input"></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">累计总积分≧</label><div class="layui-input-inline"><input type="text" name="total_integral" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="total_integral_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">消费总金额≧</label><div class="layui-input-inline"><input type="text" name="total_amount" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="total_amount_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">转介绍人数≧</label><div class="layui-input-inline"><input type="text" name="introduction" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">限定时间</label><div class="layui-input-inline"><input type="text" name="introduction_time" autocomplete="off" placeholder="最近多少天" class="layui-input"></div><div class="layui-form-mid">天</div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">首次消费金额≧</label><div class="layui-input-inline"><input type="text" name="first_amount" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">单次消费金额≧</label><div class="layui-input-inline"><input type="text" name="single_amount" autocomplete="off" class="layui-input"></div></div></div><div class="layui-form-item"><div class="layui-inline"><label class="layui-form-label">单次充值金额≧</label><div class="layui-input-inline"><input type="text" name="single_recharge" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">自动升级</label><div class="layui-input-block"><input type="checkbox" value="null" name="state" lay-skin="switch" lay-text="是|否"></div></div></div>';
+                }
+
+                formStr += '<div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit lay-filter="crm-vip-viprights-promoteSub">确认修改</button></div></div></form>';
+                layer.open({
+                    title: "编辑信息",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["730px", "600px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: formStr,
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+
+                        // form表单渲染
+                        form.render(null, "crm-vip-viprights-promoteEdit");
+
+                        admin.req({ // 用于查询组织机构并赋值
+                            url: "/index.php/webViprightSplbvalue/",
+                            type: "post",
+                            data: {
+                                code: obj.data.org_code,
+                            },
+                            done: function (res) {
+                                $('#promote_edit_name').val(res.data);
+                            }
+                        });
+
+                        // 表单初始赋值
+                        form.val("crm-vip-viprights-promoteEdit", {
+                            number: obj.data.number,//编号
+                            levelname: obj.data.levelname, //级别名称
+                            total_integral: obj.data.total_integral == '无规则' ? '' : obj.data.total_integral, //累计总积分
+                            total_integral_time: obj.data.total_integral_time == '无规则' ? '' : obj.data.total_integral_time, //限定天数
+                            total_amount: obj.data.total_amount == '无规则' ? '' : obj.data.total_amount,//消费总金额
+                            total_amount_time: obj.data.total_amount_time == '无规则' ? '' : obj.data.total_amount_time, //限定天数
+                            first_amount: obj.data.first_amount == '无规则' ? '' : obj.data.first_amount, //首次消费金额
+                            single_amount: obj.data.single_amount == '无规则' ? '' : obj.data.single_amount,//单次消费金额
+                            single_recharge: obj.data.single_recharge == '无规则' ? '' : obj.data.single_recharge,//单次充值金额
+                            introduction: obj.data.introduction == '无规则' ? '' : obj.data.introduction,//转介绍人数
+                            introduction_time: obj.data.introduction_time == '无规则' ? '' : obj.data.introduction_time, //限定天数
+                            splb: obj.data.org_code
+                        });
+
+                        initList("/index.php/webDroplevel/", "#crm-vip-discount-Pjbmc1", data.levelname);
+
+                        form.render(null, "crm-vip-viprights-promoteEdit");
+
+                        //组织结构
+                        $("#promote_edit_id").click(function () {
+                            layer.open({
+                                type: 1,
+                                title: "选择组织机构",
+                                area: ["400px", "80%"],
+                                content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                                btn: ['确认选择'],
+                                success: function (layero, index) {
+                                    dtree.render({
+                                        elem: "#dTree",
+                                        url: "/index.php/webViprightdtree/?tree="+obj.data.org_code +"&access_token="+ layui.data(layui.setter.tableName).access_token,
+                                        method: 'get',
+                                        skin: "theme",
+                                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                        // dot: false, //前面的小黑点取消
+                                        checkbar: true,
+                                        checkbarType: "only" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                    });
+                                    // 绑定节点的双击
+                                    dtree.on("nodedblclick('dTree')", function (obj) {
+                                        $("#promote_edit_splb_id").val(obj.param.nodeId);
+                                        $("#promote_edit_name").val(obj.param.context);
+                                        layer.close(index);
+                                    });
+                                },
+                                yes: function (index, layero) {
+                                    var flag = true;
+                                    var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                    if (params.length == 0) {
+                                        layer.msg("请至少选择一个节点", { icon: 2 });
+                                        flag = false;
+                                    }
+
+                                    var ids = [], names = [];
+                                    for (var key in params) {
+                                        var param = params[key];
+                                        ids.push(param.nodeId);
+                                        names.push(param.context);
+                                    }
+                                    $("#promote_edit_splb_id").val(ids.join(","));
+                                    $("#promote_edit_name").val(names.join(","));
+                                    if (flag) {
+                                        layer.close(index);
+                                    }
+                                }
+                            });
+                        });
+
+                        // 表单提交事件
+                        form.on("submit(crm-vip-viprights-promoteSub)", function (data) {
+                            var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                            var tmsg = '输入消费总金额格式错误';
+                            var fmsg = '输入首次消费金额格式错误';
+                            var smsg = '输入单次消费金额格式错误';
+                            var ssmsg = '输入单次充值金额格式错误';
+                            if (data.field.total_amount != '') {
+                                if (!reg.test(data.field.total_amount)) {   // js正则验证  消费总金额
+                                    layer.msg(tmsg, { icon: 2 });
+                                    return false;
+                                }
+                            }
+                            if (data.field.first_amount != '') {
+                                if (!reg.test(data.field.first_amount)) {   // js正则验证  首次消费金额
+                                    layer.msg(fmsg, { icon: 2 });
+                                    return false;
+                                }
+                            }
+                            if (data.field.single_amount != '') {
+                                if (!reg.test(data.field.single_amount)) {   // js正则验证  单次消费金额
+                                    layer.msg(smsg, { icon: 2 });
+                                    return false;
+                                }
+                            }
+                            if (data.field.single_recharge != '') {
+                                if (!reg.test(data.field.single_recharge)) {   // js正则验证  单次充值金额
+                                    layer.msg(ssmsg, { icon: 2 });
+                                    return false;
+                                }
+                            }
+                            admin.req({
+                                url: "/index.php/webPromotePromoteedit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    number: data.field.number,
+                                    levelname: data.field.levelname,
+                                    total_integral: $.trim(data.field.total_integral),//累计总积分
+                                    total_integral_time: $.trim(data.field.total_integral_time),
+                                    total_amount: $.trim(data.field.total_amount), //消费总金额
+                                    total_amount_time: $.trim(data.field.total_amount_time),
+                                    first_amount: $.trim(data.field.first_amount),//首次消费金额
+                                    single_amount: $.trim(data.field.single_amount),//单次消费金额
+                                    single_recharge: $.trim(data.field.single_recharge),//单次充值金额
+                                    introduction: $.trim(data.field.introduction),//转介绍人数
+                                    introduction_time: $.trim(data.field.introduction_time),
+                                    state: data.field.state, //晋升状态
+                                    notification: data.field.notification, //短信通知
+                                    org_code: data.field.splb
+                                },
+                                done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.close(index);
+                                        promote('/index.php/webPromoteslist/');
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

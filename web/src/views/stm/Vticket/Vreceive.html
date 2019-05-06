@@ -1,0 +1,277 @@
+<title>V票领取记录</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+
+                    <!-- 列表遍历开始 -->
+                    <table id="vip_vreceive_list" lay-filter="vip_vreceive_list"></table>
+                    <!-- 列表遍历结束 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--列表头工具栏目-->
+<script type="text/html" id="vip-vreceive-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">领取</button>
+        <button class="layui-btn layui-btn-sm" lay-event="search">搜索</button>
+    </div>
+</script>
+
+<!--列表行工具栏-->
+<script type="text/html" id="vip-vreceive-bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="exchange">兑换</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+
+
+<script>
+    layui.use(['admin', 'table', 'checkbox'], function () {
+        var $ = layui.jquery,
+            table = layui.table,
+            form = layui.form,
+            checkbox = layui.checkbox,
+            admin = layui.admin
+
+        table.on('toolbar(vip_vreceive_list)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    vreceive_add();
+                    break;
+                case 'search':
+                    vreceive_search()
+                    break;
+            }
+        })
+
+        // 查找
+        var vreceive_search = function () {
+            layer.open({
+                title: "查找",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["537px", "180px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="vreceive-search"><div class="layui-form-item"><label class="layui-form-label">名字搜索</label><div class="layui-input-inline" style="width:75%"><input name="search" id="stock_search_value" lay-verify="required|title" placeholder="请输入领取人名字关键字搜索" autocomplete="off" class="layui-input" type="text" style="width:340px"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="pro-stm-vreceive-search-submit">查找</button></div></div></form>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    // 执行搜索
+                    form.on("submit(pro-stm-vreceive-search-submit)", function (data) {
+                        vreceiveTable(data.field.search);
+                        layer.close(index);
+                        return false;
+
+                    })
+                }
+            })
+        }
+        //表格数据遍历  表格重载
+        var vreceiveTable = function (where = '') {
+            table.render({
+                elem: '#vip_vreceive_list', //table 的 id
+                url: '/index.php/webVreceiveIndex/', //数据接口路由
+                where: { search: where, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                page: true, //开启分页
+                loading: true, //开启加载条
+                cols: [[ //表头
+                    { type: 'checkbox', fixed: 'left' },
+                    { field: 'name', title: 'V票领取人', width: 320, align: 'center', sort: true },
+                    { field: 'receive_number', title: '数量', width: 320, align: 'center', sort: true },
+                    { field: 'receive_standard', title: 'V奖励标准', minwidth: 320, align: 'center', sort: true },
+                    { field: 'receive_time', title: '领取时间', width: 320, align: 'center', sort: true },
+                    { title: '操作', width: 320, align: 'center', toolbar: '#vip-vreceive-bar', fixed: 'right' }
+                ]],
+
+                height: 'full-150', //高度自适应
+                toolbar: '#vip-vreceive-toor',
+                limit: 20,
+                limits: [20, 50, 100, 200, 500]
+            })
+        }
+        vreceiveTable();
+
+        // 领取
+        var vreceive_add = function () {
+            layer.open({
+                title: "领取信息",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                offset: 'auto',
+                area: ["500px", "310px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="crm-Vticket-Vreceive"><div class="layui-form-item"><label class="layui-form-label" style="width:30%">V票领取人：</label><div class="layui-input-inline" style="width:65%"><select name="receive_claim" id="receive_claim" lay-verify="required" lay-search></select></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">V票数量：</label><div class="layui-input-inline" style="width:65%"><input name="receive_number" placeholder="请输入数量" autocomplete="off" class="layui-input" type="text" lay-verify="required|number"></div></div><div class="layui-form-item"><label class="layui-form-label" style="width:30%">V票奖励标准：</label><div class="layui-input-inline" style="width:65%"><input name="receive_standard" placeholder="请输入奖励标准" autocomplete="off" class="layui-input" type="text"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="add_receive">添加</button></div></div></form>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    // 循环得到员工下拉表信息
+                    admin.req({
+                        url: "/index.php/webVreceiveReceiveList/",
+                        done: function (res) {
+                            var jsona = res.data;
+                            var listDj = $('#receive_claim');
+                            listDj.empty();
+                            listDj.append("<option value=''>请输入 / 选择</option>");
+                            for (var i = 0, l = jsona.length; i < l; i++) {
+                                listDj.append("<option value='" + jsona[i].code + "'>" + jsona[i].name + "</option>");
+                            }
+                            form.render(null, "crm-Vticket-Vreceive");
+                        }
+                    });
+
+                    // 提交表单
+                    form.on("submit(add_receive)", function (date) {
+                        admin.req({
+                            url: "/index.php/webVreceiveReceival/",
+                            type: "post",
+                            data: {
+                                receive_claim: date.field.receive_claim, //领取人
+                                receive_number: $.trim(date.field.receive_number), //数量
+                                receive_standard: $.trim(date.field.receive_standard), //奖励标准
+                            },
+                            done: function (res) { // 控制器返回状态
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2 });
+                                } else if (res.msg == 'yes') {
+                                    layer.closeAll();
+                                    vreceiveTable();
+                                    layer.msg(res.data, { icon: 1 });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+                }
+            })
+        }
+        // 兑换 监听行工具栏目
+        table.on("tool(vip_vreceive_list)", function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM 对象
+            if (layEvent == 'exchange') {
+                exchange_one(obj);
+            } else if (layEvent == 'del') {
+                del_vreceiveCord(obj);
+            }
+        })
+
+        // 封装成函数
+        var exchange_one = function (obj) {
+            layer.open({
+                title: "兑换信息",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                offset: 'auto',
+                area: ["500px", "400px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" action="" lay-filter="pro-stm-Vticket-exchange"><div class="layui-form-item"><label class="layui-form-label">兑换人：</label><div class="layui-input-block"><input name="changer_name" id="exchanger_name" autocomplete="off" class="layui-input" type="text" disabled></div></div><div class="layui-form-item"><label class="layui-form-label">兑换数量：</label><div class="layui-input-block"><input name="changer_Vnumber" id="exchanger_Vnumber" placeholder="请输入数量" autocomplete="off" class="layui-input" type="text" lay-verify="required|number"></div></div><div class="layui-form-item"><label class="layui-form-label">V票汇率：</label><div class="layui-input-block"><input name="changer_Vmoney" id="exchanger_Vmoney" autocomplete="off" class="layui-input" type="text" readonly></div></div><div class="layui-form-item"><label class="layui-form-label">兑换总金额</label><div class="layui-input-block"><input name="changer_total" id="exchanger_total" autocomplete="off" class="layui-input" type="text" readonly></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn" id="stm_vticket__exchange_sub">确认兑换</button></div></div></form>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    // 给兑换人赋值
+                    $("#exchanger_name").val(obj.data.name);
+                    // 计算汇率
+                    $("#exchanger_Vnumber").blur(function () {
+                        admin.req({
+                            url: "/index.php/webVreceiveExchangeOne/",
+                            type: "post",
+                            data: {
+                                id: obj.data.id,
+                                receive_claim: obj.data.receive_claim, // 兑换人code
+                                val: $("#exchanger_Vnumber").val(), // 获得兑换的数量
+                                amount: obj.data.receive_number // 总数量
+                            },
+                            done: function (res) {
+                                if (res.msg == 'yes') {
+                                    $("#exchanger_Vmoney").val(res.data.rate)  //V票汇率：
+                                    $("#exchanger_total").val(res.data.totalPrice) //兑换总金额
+                                } else {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                    });
+
+                    // 表单提交 确认兑换
+                    $("#stm_vticket__exchange_sub").click(function () {
+                        admin.req({
+                            url: "/index.php/webVreceiveConfirmExchange/",
+                            type: "post",
+                            data: {
+                                id: obj.data.id, // 记录的id
+                                receive_claim: obj.data.receive_claim, // 兑换人code
+                                name: obj.data.name,                // 兑换人名字
+                                val: $("#exchanger_Vnumber").val(), // 获得兑换的数量
+                                rate: $("#exchanger_Vmoney").val(), // v票汇率
+                                totalPrice: $("#exchanger_total").val() // 兑换总金额
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2 });
+                                } else if (res.msg == 'yes') {
+                                    layer.closeAll();
+                                    vreceiveTable();
+                                    layer.msg(res.data, { icon: 1 });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+                }
+            })
+        }
+
+        // 删除领取记录
+        var del_vreceiveCord = function (obj) {
+            layer.confirm('确认删除这条数据么？', function (index) {
+                admin.req({
+                    url: "/index.php/webVreceiveDel/",
+                    type: "post",
+                    data: {
+                        id: obj.data.id
+                    },
+                    done: function (res) {
+                        if (res.msg == 'error') {
+                            layer.msg(res.data, { icon: 2, title: res.msg });
+                        } else if (res.msg == 'yes') {
+                            layer.closeAll();
+                            vreceiveTable();
+                            layer.msg(res.data, { icon: 1, title: '提示' });
+                        } else if (res.msg == 'no') {
+                            layer.msg(res.data, { icon: 2, title: '提示' });
+                        }
+                    }
+                });
+            });
+        }
+    })
+</script>

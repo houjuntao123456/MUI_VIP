@@ -1,0 +1,143 @@
+<title>退货记录</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <!-- 列表遍历 -->
+                    <table id="pro-refundsList-demo" lay-filter="pro-refundsList-demo"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="pro-refunds-detail-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">明细</a>
+</script>
+
+<script type="text/html" id="pro-refunds-look-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="search">查询</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['table', 'layedit'], function () {
+
+        var table = layui.table;
+        var $ = layui.jquery;
+        var form = layui.form;
+        var layedit = layui.layedit;
+        var admin = layui.admin;
+
+        //表格数据遍历  表格重载
+        var refundsList = function (where = '') {
+            table.render({
+                elem: '#pro-refundsList-demo', //table 的 id
+                height: 315,
+                url: '/index.php/webRefundsListIndex/', //数据接口路由
+                where: { search: where, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件    
+                page: true, //开启分页
+                loading: true, //开启加载条
+                text: {
+                    none: '暂无数据'
+                },
+                cols: [[ //表头
+                    { field: 'code', title: '退货单号', width: 200, sort: true, align: 'center', fixed: 'left' },
+                    { field: 'vip_name', title: '会员名称', width: 120, sort: true, align: 'center', fixed: 'left' },
+                    { field: 'store_name', title: '门店名称', width: 120, sort: true, align: 'center' },
+                    { field: 'operate_name', title: '操作人', width: 100, sort: true, align: 'center' },
+                    { field: 'number', title: '退货数量', width: 100, sort: true, align: 'center' },
+                    { field: 'money', title: '退货金额', width: 120, sort: true, align: 'center' },
+                    { field: 'returns_way', title: '退款方式', width: 120, sort: true, align: 'center' },
+                    { field: 'balance', title: '退款储值', width: 120, sort: true, align: 'center' },
+                    { field: 'integral', title: '退回积分', width: 120, sort: true, align: 'center' },
+                    { field: 'recycle_integral', title: '回收积分', width: 120, sort: true, align: 'center' },
+                    { field: 'recycle_balance', title: '回收储值', width: 120, sort: true, align: 'center' },
+                    { field: 'create_time', title: '退货时间', width: 200, sort: true, align: 'center' },
+                    { field: 'remark', title: '备注', width: 200, sort: true, align: 'center' },
+                    { field: 'right', title: '操作', width: 100, align: 'center', toolbar: '#pro-refunds-detail-bar', fixed: 'right' },  //#相应的操作图标 
+                ]],
+                height: 'full-140', //高度自适应
+                toolbar: '#pro-refunds-look-toor',
+                limit: 20,
+                limits: [20,50,100,200,500]
+            });
+        }
+        refundsList(); // 封装成函数
+
+        // 监听行工具栏事件
+        table.on('tool(pro-refundsList-demo)', function (obj) {
+            switch (obj.event) {
+                case 'detail':
+                    detail(obj.data.code);
+                    break;
+            }
+        });
+
+        var detail = function (code) {
+            layer.open({
+                title: '订单明细',
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["1080px", "650px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<table class="layui-hide" id="pro-com-refunds-detail" lay-filter="pro-com-refunds-detail"></table>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    var refundsInfo = function () {
+                        table.render({
+                            elem: '#pro-com-refunds-detail', //table 的 id
+                            url: '/index.php/webRefundsListDetail/', //数据接口路由
+                            where: { code: code, access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                            cols: [[ //表头
+                                { field: 'returns_code', title: '退货单号', width: 160, align: 'center', sort: true },
+                                { field: 'goods_code', title: '商品条码', width: 160, align: 'center', sort: true },
+                                { field: 'name', title: '商品名称', width: 120, align: 'center', sort: true },
+                                { field: 'color', title: '颜色', width: 120, align: 'center', sort: true },
+                                { field: 'size', title: '尺码', width: 120, align: 'center', sort: true },
+                                { field: 'pro_code', title: '促销员工号', width: 120, align: 'center', sort: true },
+                                { field: 'pro_name', title: '促销员名字', width: 120, align: 'center', sort: true },
+                                { field: 'price', title: '退货单价', width: 120, align: 'center', sort: true },
+                                { field: 'number', title: '退货数量', width: 120, align: 'center', sort: true },
+                                { field: 'return_integral', title: '退回积分', width: 120, align: 'center', sort: true },
+                                { field: 'replace_integral', title: '赠送积分', width: 120, align: 'center', sort: true },
+                                { field: 'return_blanace', title: '退货储值', width: 120, align: 'center', sort: true },
+                                { field: 'replace_blanace', title: '返利储值', width: 120, align: 'center', sort: true },
+                                { field: 'money', title: '退货金额小计', width: 120, align: 'center', sort: true },
+                            ]],
+                            height: 540, //高度自适应
+                            toolbar: true
+                        });
+                    }
+                    refundsInfo(); // 封装成函数
+                }
+            })
+        }
+
+        //监听头工具栏事件
+        table.on('toolbar(pro-refundsList-demo)', function (obj) {
+            // var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'search':
+                    layer.prompt({ title: '按(退货单号,操作人,购买人)查询', formType: 0 }, function (text, index) {
+                        refundsList(text);
+                        layer.close(index);
+                        return false;
+                    });
+                    break;
+            };
+        });
+
+    });
+</script>
+

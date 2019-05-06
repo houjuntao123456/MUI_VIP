@@ -1,0 +1,311 @@
+<title>V票规则</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+
+                    <!-- 列表遍历开始 -->
+                    <table id="vp_rule_list" lay-filter="vp_rule_list"></table>
+                    <!-- 列表遍历结束 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--列表头工具栏目-->
+<script type="text/html" id="pro-stm-Vrule-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+
+<!--员工列表头工具栏目-->
+<script type="text/html" id="pro-stm-vrule-staff-list-toor">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">提交</button>
+    </div>
+</script>
+
+<!--列表行工具栏-->
+<script type="text/html" id="pro-stm-Vrule-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use(['admin', 'table', 'checkbox'], function () {
+        var $ = layui.jquery,
+            table = layui.table,
+            form = layui.form,
+            checkbox = layui.checkbox,
+            admin = layui.admin
+
+        //表格数据遍历  表格重载
+        var vpTableRule = function (obj) {
+            table.render({
+                elem: '#vp_rule_list', //table 的 id
+                url: '/index.php/webVmanageIndex/', //数据接口路由
+                where: { access_token: layui.data(layui.setter.tableName).access_token },    //搜索时的 where 条件  
+                page: true, //开启分页
+                loading: true, //开启加载条
+                cols: [[ //表头
+                    { field: 'name', title: '规则名', width: 400, align: 'center', sort: true },
+                    { field: 'staff_names', title: '包含人员', width: 435, align: 'center', sort: true },
+                    { field: 'staff_name', title: '负责人', width: 400, align: 'center', sort: true },
+                    { title: '操作', width: 400, align: 'center', toolbar: '#pro-stm-Vrule-bar', fixed: 'right' }
+                ]],
+
+                height: 'full-150', //高度自适应
+                toolbar: '#pro-stm-Vrule-toor',
+                limit: 20,
+                limits: [20, 50, 100, 200, 500]
+            })
+        }
+        vpTableRule();
+
+        // 添加规则
+        var rule_add = function () {
+            layer.open({
+                title: '添加规则',
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                area: ["600px", "280px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form layui-form-pane" lay-filter="rule_add"><input type="hidden" name="staff" id="stm_vticket_vrule_add_staff"><div class="layui-form-item"><label class="layui-form-label">员工</label><div class="layui-input-block" style="width:80%"><div class="layui-btn layui-btn-primary" id="rule_select_staff" style="width:101%;text-align:left;padding-left:10px">请选择员工</div></div></div><div class="layui-form-item"><label class="layui-form-label">规则名称:</label><div class="layui-input-block"><input type="text" name="name" autocomplete="off" placeholder="请输入规则名称" class="layui-input"></div></div><div class="layui-form-item"><div class="layui-input-block"><button class="layui-btn" lay-submit="" lay-filter="rule_add_submit">立即提交</button></div></div></form>',
+                success: function (layero, index) {
+                    // 右上角叉号
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    // form表单渲染
+                    form.render(null, 'rule_add');
+
+                    // 选择员工
+                    $("#rule_select_staff").on("click", function (e) {
+                        layer.open({
+                            title: '选择员工',
+                            type: 1,
+                            shade: 0.3,
+                            shadeClose: false,
+                            anim: 1,
+                            area: ["600px", "400px"],
+                            skin: "layui-layer-admin layui-anim",
+                            content: '<table id="pro-stm-vrule-staff-list" lay-filter="pro-stm-vrule-staff-list"></table>',
+                            success: function (layero, addindex) {
+                                // 右上角叉号
+                                var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                layero.append(elemClose);
+                                elemClose.on('click', function () {
+                                    layer.close(addindex);
+                                });
+                                table.render({
+                                    elem: "#pro-stm-vrule-staff-list",
+                                    where: { access_token: layui.data(layui.setter.tableName).access_token, staff: $('#stm_vticket_vrule_add_staff').val() },
+                                    url: '/index.php/webVmanageStaffList/',
+                                    cols: [[
+                                        { type: 'checkbox', fixed: 'left' },
+                                        { field: 'code', width: 150, title: '工号' },
+                                        { field: 'name', minwidth: 150, title: '名称' },
+                                        { field: 'phone', minwidth: 150, title: '电话' }
+                                    ]],
+                                    height: 260,
+                                    toolbar: '#pro-stm-vrule-staff-list-toor',
+                                });
+
+                                // 监听员工列表的提交按钮
+                                table.on('toolbar(pro-stm-vrule-staff-list)', function (objk) {
+                                    str = '';
+                                    var num = table.checkStatus('pro-stm-vrule-staff-list').data.length;
+                                    if (num == 0) {
+                                        layer.msg('请勾选要选择的员工', { icon: 2, title: '警告' });
+                                        return false;
+                                    }
+                                    // 循环得到勾选的code
+                                    for (var i = 0; i < num; i++) {
+                                        str += table.checkStatus('pro-stm-vrule-staff-list').data[i].code + ',';
+                                    }
+                                    $('#stm_vticket_vrule_add_staff').val(str);
+                                    layer.close(addindex);
+                                })
+                            }
+                        })
+                    });
+
+                    // 表单提交
+
+                    form.on("submit(rule_add_submit)", function (data) {
+                        admin.req({
+                            url: "/index.php/webVmanageVRuleAdd/",
+                            type: "post",
+                            data: {
+                                name: data.field.name, // 规则名称
+                                staff: data.field.staff // 员工工号
+                            },
+                            done: function (res) { // 控制器返回状态
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2});
+                                } else if (res.msg == 'yes') {
+                                    layer.closeAll();
+                                    vpTableRule();
+                                    layer.msg(res.data, { icon: 1 });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+
+                }
+            })
+        }
+
+        // 监听行工具栏目
+        table.on("tool(vp_rule_list)", function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM 对象
+            if (layEvent === 'edit') {
+                layer.open({
+                    title: '编辑规则',
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["600px", "280px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form layui-form-pane" lay-filter="edit_Vticket_rule"><input type="hidden" name="staff" id="edit_stm_vticket_vrule_edit_staff"><div class="layui-form-item"><label class="layui-form-label">员工</label><div class="layui-input-block" style="width:80%"><div class="layui-btn layui-btn-primary" id="edit_rule_select_staff" style="width:101%;text-align:left;padding-left:10px">请选择员工</div></div></div><div class="layui-form-item"><label class="layui-form-label">规则名称:</label><div class="layui-input-block"><input type="text" name="name" autocomplete="off" placeholder="请输入规则名称" class="layui-input"></div></div><div class="layui-form-item"><div class="layui-input-block"><button class="layui-btn" lay-submit="" lay-filter="edit_rule_submit">立即提交</button></div></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        form.render(null, 'edit_Vticket_rule');  // 表单渲染
+                        form.val("edit_Vticket_rule", {        // 表单初始化赋值
+                            name: obj.data.name, // 货号
+                        });
+                        $('#edit_stm_vticket_vrule_edit_staff').val(obj.data.staff_codes);
+                        // 员工的点击事件以及默认赋值
+                        $("#edit_rule_select_staff").on("click", function (e) {
+                            layer.open({
+                                title: '选择员工',
+                                type: 1,
+                                shade: 0.3,
+                                shadeClose: false,
+                                anim: 1,
+                                area: ["600px", "400px"],
+                                skin: "layui-layer-admin layui-anim",
+                                content: '<table id="edit-pro-stm-vrule-staff-list" lay-filter="edit-pro-stm-vrule-staff-list"></table>',
+                                success: function (layero, editindex) {
+                                    // 右上角叉号
+                                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                                    layero.append(elemClose);
+                                    elemClose.on('click', function () {
+                                        layer.close(editindex);
+                                    });
+                                    table.render({
+                                        elem: "#edit-pro-stm-vrule-staff-list",
+                                        where: { access_token: layui.data(layui.setter.tableName).access_token, staff: $('#edit_stm_vticket_vrule_edit_staff').val() },
+                                        url: '/index.php/webVmanageStaffList/',
+                                        cols: [[
+                                            { type: 'checkbox', fixed: 'left' },
+                                            { field: 'code', width: 150, title: '工号' },
+                                            { field: 'name', minwidth: 150, title: '名称' },
+                                            { field: 'phone', minwidth: 150, title: '电话' }
+                                        ]],
+                                        height: 260,
+                                        toolbar: '#pro-stm-vrule-staff-list-toor',
+                                    });
+
+                                    // 监听员工列表的提交按钮
+                                    table.on('toolbar(edit-pro-stm-vrule-staff-list)', function (objk) {
+                                        str = '';
+                                        var num = table.checkStatus('edit-pro-stm-vrule-staff-list').data.length;
+                                        if (num == 0) {
+                                            layer.msg('请勾选要选择的员工', { icon: 2, title: '警告' });
+                                            return false;
+                                        }
+                                        // 循环得到勾选的code
+                                        for (var i = 0; i < num; i++) {
+                                            str += table.checkStatus('edit-pro-stm-vrule-staff-list').data[i].code + ',';
+                                        }
+
+                                        $('#edit_stm_vticket_vrule_edit_staff').val(str);
+                                        layer.close(editindex);
+                                    });
+
+
+                                }
+                            })
+                        });
+
+                        // 编辑的表单提交
+                        form.on("submit(edit_rule_submit)", function (data) {
+                            admin.req({
+                                url: "/index.php/webVmanageEdit/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    name: data.field.name, // 规则名称
+                                    staff: data.field.staff // 员工工号
+                                },
+                                done: function (res) { // 控制器返回状态
+                                    if (res.msg == 'error') {
+                                        layer.closeAll();
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.closeAll();
+                                        vpTableRule();
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                    } else if (res.msg == 'no') {
+                                        layer.closeAll();
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            })
+                            return false;
+                        })
+                    }
+                })
+            } else if (layEvent === 'del') {
+                layer.confirm('确认删除这条数据么？', function (index) {
+                    admin.req({
+                        url: "/index.php/webVmanageDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.closeAll();
+                                vpTableRule();
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+            }
+        })
+
+        table.on('toolbar(vp_rule_list)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    rule_add();
+                    break;
+            }
+        })
+    });
+</script>

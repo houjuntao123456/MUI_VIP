@@ -1,0 +1,167 @@
+    <title>组织机构</title>
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-body">
+                <table id="OrganizationList" lay-filter="organization_list" style="margin-top: 5px"></table>
+            </div>
+        </div>
+    </div>
+    <script>
+        layui.use(['table', 'form', 'admin', 'treetable', 'layedit', 'dtree'], function () {     //  加载表格
+
+            var $ = layui.$, form = layui.form, table = layui.table, admin = layui.admin, treetable = layui.treetable, layedit = layui.layedit, dtree = layui.dtree;
+
+            // 渲染表格
+            var OrganizationTable = function () {      // 定义函数
+                treetable.render({
+                    treeColIndex: 0,     // 树形图标显示在第几列
+                    treeSpid: 0,        // 最上级的父级id
+                    treeIdName: 'id',    // id字段的名称
+                    treePidName: 'pid',     // pid字段的名称
+                    treeDefaultClose: false,     // 是否默认折叠
+                    treeLinkage: false,         // 父级展开时是否自动展开所有子级
+                    elem: '#OrganizationList',         // 表格id
+                    url: '/index.php/webOrganization/?access_token=' + layui.data(layui.setter.tableName).access_token,
+                    cols: [[ // 表格的头
+                        { field: 'name', title: '名称' },
+                        { templet: '#Organization_bar',align: 'center', title: '操作', width: 220 }  // 操作的id
+                    ]],
+                    height: "full-200"  //  高度
+                });
+            }
+            OrganizationTable();
+
+            // 表格监听事件
+            table.on('tool(organization_list)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+                if (layEvent === 'del') {
+                    layer.confirm('确认删除这条数据(以及所有子类)么？', function (index) {
+                        admin.req({
+                            url: "/index.php/webOrganizationDel/",
+                            type: "post",
+                            data: {
+                                id: obj.data.zid
+                            },
+                            done: function (res) {
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    OrganizationTable();
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                    });
+
+                } else if (layEvent === 'add') {   // --------------------------------添加子类
+                    layer.open({
+                        title: "添加组织",
+                        type: 1,
+                        shade: 0.3,
+                        shadeClose: false,
+                        area: ["500px", "300px"],
+                        skin: "layui-layer-admin",
+
+                        content: '<form class="layui-form" action="" lay-filter="classifyadd" style="margin-top:15px;width:95%"><div class="layui-form-item"><label class="layui-form-label">组织名称</label><div class="layui-input-block"><input type="text" name="name" autocomplete="off" id="organ_name" placeholder="请填写组织名称" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">排序</label><div class="layui-input-block"><input type="text" name="sort" autocomplete="off" placeholder="默认升序" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="classifyadd1">添加</button></div></div></form>',
+                        success: function (layero, index) {
+
+                            // 右上角叉号
+                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                            layero.append(elemClose);
+                            elemClose.on('click', function () {
+                                layer.close(index);
+                            });
+                            $("#organ_name").focus();
+                            // 表单提交事件
+                            form.on("submit(classifyadd1)", function (data) {
+                                admin.req({
+                                    url: "/index.php/webOrganizationAdd/",
+                                    type: "post",
+                                    data: {
+                                        id: obj.data.id,
+                                        name: data.field.name, // 分类名称
+                                        sort: data.field.sort,// 排序
+                                        path: obj.data.path
+                                    },
+                                    done: function (res) {
+                                        if (res.msg == 'error') {
+                                            layer.msg(res.data, { icon: 2, title: res.msg });
+                                        } else if (res.msg == 'yes') {
+                                            layer.close(layer.index);
+                                            OrganizationTable();
+                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                        } else if (res.msg == 'no') {
+                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                        }
+                                    }
+                                });
+                                return false;
+                            });
+                        }
+                    })
+                } else if (layEvent === 'edit') { // 编辑
+                    layer.open({
+                        title: "编辑组织",
+                        type: 1,
+                        shade: 0.3,
+                        shadeClose: false,
+                        anim: 1,
+                        area: ["500px", "300px"],
+                        skin: "layui-layer-admin layui-anim",
+                        content: '<form class="layui-form" action="" lay-filter="classogzEdit" style="margin-top:15px;width:95%"><div class="layui-form-item"><label class="layui-form-label">组织名称</label><div class="layui-input-block"><input type="text" name="name" autocomplete="off" placeholder="请填写组织名称" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">排序</label><div class="layui-input-block"><input type="text" name="sort" autocomplete="off" placeholder="默认升序" class="layui-input"></div></div><div class="layui-form-item"><div style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="classogzEditsub">确认修改</button></div></div></form>',
+                        success: function (layero, index) {
+
+                            // 右上角叉号
+                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                            layero.append(elemClose);
+                            elemClose.on('click', function () {
+                                layer.close(index);
+                            });
+                            // form表单渲染
+                            form.render(null, 'classogzEdit');
+                            // 表单初始赋值
+                            form.val("classogzEdit", {
+                                name: obj.data.name,    // 分类名称
+                                sort: obj.data.sort    // 排序
+                            });
+                            // 执行修改 
+                            form.on("submit(classogzEditsub)", function (data) {
+                                admin.req({   // ajax请求
+                                    url: "/index.php/webOrganizationEdit/",
+                                    type: "post",
+                                    data: {     // 给控制器传递数据
+                                        id: obj.data.zid,
+                                        name: data.field.name,    //  分类名称
+                                        sort: data.field.sort    // 排序
+                                    },
+                                    done: function (res) { // 控制器返回状态
+                                        if (res.msg == 'error') {
+                                            layer.msg(res.data, { icon: 2, title: res.msg });
+                                        } else if (res.msg == 'yes') {
+                                            layer.close(layer.index);
+                                            OrganizationTable();
+                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                        } else if (res.msg == 'no') {
+                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                        }
+                                    }
+                                });
+                                return false;
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    </script> 
+
+    <script type="text/html" id="Organization_bar">
+        <a class="layui-btn layui-btn-xs layui-btn-xs" lay-event="add"><i class="layui-icon">&#xe608;</i> 添加</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="edit"><i class="layui-icon"></i>编辑</a>
+        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="del"><i class="layui-icon"></i>删除</a>
+    </script>

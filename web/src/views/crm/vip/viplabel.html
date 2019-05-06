@@ -1,0 +1,125 @@
+<title>会员标签</title>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-form-item">
+                        <form class="layui-form layui-form-pane" lay-filter="crm-vip-viplabel">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">会员标签名</label>
+                                <div class="layui-input-inline">
+                                    <input name="name" id="viplabel_name" autocomplete="off" class="layui-input"
+                                        type="text">
+                                </div>
+                                <label class="layui-form-label">标签类型</label>
+                                <div class="layui-input-inline">
+                                    <select name="type" lay-verify="required">
+                                        <option value="文本型">文本型</option>
+                                        <option value="日期型">日期型</option>
+                                        <option value="扩展型">扩展型</option>
+                                    </select>
+                                </div>
+                                <button class="layui-btn layui-btn-normal layui-btn-radius" lay-submit="" lay-filter="viplabel-submit">添加字段</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <ul id="viplabel_ul_box"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(["index", "admin", "form", "table", "checkbox"], function () {
+        var $ = layui.$
+            , admin = layui.admin
+            , form = layui.form
+            , table = layui.table
+            , checkbox = layui.checkbox;
+        form.render(null, "crm-vip-viplabel");   //渲染表单
+        form.on("submit(viplabel-submit)", function (data) { //---------------------------------------添加会员标签
+            admin.req({
+                url: "/index.php/webViplabelAdd/",
+                type: 'post',
+                data: {
+                    name: data.field.name,
+                    type: data.field.type
+                }, done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: res.msg });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                    infoinit(1);
+                    $("#viplabel_name").val('');
+                    $("#viplabel_name").focus();
+                }
+            });
+            form.render(null, "crm-vip-viplabel");
+            return false;
+        });
+
+        var edit_status = function (id) {
+            admin.req({
+                url: "/index.php/webViplabelEdit/",
+                type: 'post',
+                data: {
+                    id: id
+                }, done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: res.msg });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                    infoinit();
+                }
+            });
+            return false;
+        }
+
+        function infoinit() { //--------------------------------------------------------------------------------标签列表
+            $("#viplabel_ul_box").children("li").remove();
+            admin.req({
+                url: "/index.php/webViplabelList/",
+                type: 'post',
+                done: function (res) {
+                    checkbox({
+                        elem: "#viplabel_ul_box"
+                        , nodes: res.data//默认选择的位置  
+                        , click: function (node) {
+                            edit_status(node.id);
+                        }
+                        , del: function (node) {
+                            admin.req({
+                                url: "/index.php/webViplabelDel/", //-------------------------------------------删除标签
+                                type: 'post',
+                                data: {
+                                    id: node.id
+                                }, done: function (res) {
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return true;
+                        }
+                    })
+                }
+            });
+        }
+        infoinit();
+    });
+</script>

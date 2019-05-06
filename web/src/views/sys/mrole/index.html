@@ -1,0 +1,189 @@
+<title>角色管理</title>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table id="sys_rolem" lay-filter="sys_rolem"></table>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="sys_rolem_tool">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+<script type="text/html" id="sys_rolem_right_bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script>
+    layui.use(['admin', 'table', 'form', 'dtree'], function () {
+        var $ = layui.$,
+            admin = layui.admin,
+            table = layui.table,
+            dtree = layui.dtree,
+            form = layui.form;
+
+        var roleList = function () {
+            table.render({
+                elem: '#sys_rolem'
+                , height: 'full-150'
+                , toolbar: '#sys_rolem_tool'
+                , url: '/index.php/webRolem/'//数据接口
+                , where: { access_token: layui.data(layui.setter.tableName).access_token }
+                , cols: [[ //表头  
+                    { field: 'name', title: '角色名称' },
+                    { fixed: 'right', title: '操作', width: 150, align: 'center', toolbar: '#sys_rolem_right_bar' }
+                ]]
+                , page: true
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        roleList();
+
+        table.on('toolbar(sys_rolem)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add':
+                    roleAdd();
+                    break;
+            };
+        });
+
+        table.on('tool(sys_rolem)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+            if (layEvent === 'del') { //删除
+                layer.confirm('确认删除？', function (index) {
+                    roleDel(obj.data.code);
+                });
+            } else if (layEvent === 'edit') { //编辑
+                roleEdit(obj.data);
+            }
+        });
+
+        var roleAdd = function () {
+            layer.open({
+                title: '添加角色'
+                , type: 1
+                , area: ["800px", "480px"] // 弹出层的大小
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<div class="layui-form layui-form-pane"><div class="layui-form-item"><label class="layui-form-label">角色名称</label><div class="layui-input-block"><input type="text" name="title" id="sys_rolem_add_title" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">权限节点</label><div class="layui-input-block"><table id="sys_rolem_add_table" lay-filter="sys_rolem_add_table"></table></div></div><div class="layui-form-item"><div class="layui-input-block"><div class="layui-btn" id="sys_rolem_add_sub">提交</div></div></div></div>'
+                //关闭弹出层
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    dtree.render({
+                        elem: "#sys_rolem_add_table",
+                        url: "/index.php/webRolemGetRules/?access_token="+layui.data(layui.setter.tableName).access_token,
+                        initLevel: 1,
+                        method: 'get',
+                        skin: "theme",
+                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                        // dot: false,
+                        checkbar: true,
+                        checkbarType: "no-all", // 默认就是all，其他的值为： no-all  p-casc   self  only
+                    });
+
+                    // dtree.getCheckbarNodesParam
+                    $('#sys_rolem_add_sub').click(function () {
+                        var dtreeNodes = dtree.getCheckbarNodesParam('sys_rolem_add_table');
+                        var dtreeLength = dtreeNodes.length;
+                        if (dtreeLength < 1) {
+                            layer.msg('请选择权限节点', { icon: 2 });
+                            return false;
+                        }
+                        var dtreeRules = '';
+                        for (var i = 0; i < dtreeLength; i++) {
+                            dtreeRules += dtreeNodes[i].nodeId + ',';
+                        }
+                        admin.req({
+                            url: '/index.php/webRolemAdd/',
+                            type: 'post',
+                            data: { name: $('#sys_rolem_add_title').val(), rules: dtreeRules },
+                            done: function (res) {
+                                if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1 });
+                                    layer.closeAll();
+                                    roleList();
+                                } else {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+                }
+            })
+        }
+        
+        var roleEdit = function (data) {
+            layer.open({
+                title: '编辑角色'
+                , type: 1
+                , area: ["800px", "480px"] // 弹出层的大小
+                , skin: "layui-layer-admin layui-anim"
+                , content: '<div class="layui-form layui-form-pane"><div class="layui-form-item"><label class="layui-form-label">角色名称</label><div class="layui-input-block"><input type="text" name="title" id="sys_rolem_edit_title" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">权限节点</label><div class="layui-input-block"><table id="sys_rolem_edit_table" lay-filter="sys_rolem_edit_table"></table></div></div><div class="layui-form-item"><div class="layui-input-block"><div class="layui-btn" id="sys_rolem_edit_sub">提交</div></div></div></div>'
+                //关闭弹出层
+                , success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    $('#sys_rolem_edit_title').val(data.name);
+
+                    dtree.render({
+                        elem: "#sys_rolem_edit_table",
+                        url: "/index.php/webRolemGetRules/?code="+data.code+"&access_token="+layui.data(layui.setter.tableName).access_token,
+                        initLevel: 1,
+                        method: 'get',
+                        skin: "theme",
+                        dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                        response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                        // dot: false,
+                        checkbar: true,
+                        checkbarType: "no-all", // 默认就是all，其他的值为： no-all  p-casc   self  only
+                    });
+
+                    // dtree.getCheckbarNodesParam
+                    $('#sys_rolem_edit_sub').click(function () {
+                        var dtreeNodes = dtree.getCheckbarNodesParam('sys_rolem_edit_table');
+                        var dtreeLength = dtreeNodes.length;
+                        if (dtreeLength < 1) {
+                            layer.msg('请选择权限节点', { icon: 2 });
+                            return false;
+                        }
+                        var dtreeRules = '';
+                        for (var i = 0; i < dtreeLength; i++) {
+                            dtreeRules += dtreeNodes[i].nodeId + ',';
+                        }
+                        admin.req({
+                            url: '/index.php/webRolemEdit/',
+                            type: 'post',
+                            data: { name: $('#sys_rolem_edit_title').val(), rules: dtreeRules },
+                            done: function (res) {
+                                if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1 });
+                                    layer.closeAll();
+                                    roleList();
+                                } else {
+                                    layer.msg(res.data, { icon: 2 });
+                                }
+                            }
+                        })
+                        return false;
+                    })
+                }
+            });
+        }
+    })
+</script>

@@ -1,0 +1,959 @@
+<title>
+    员工列表</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a>
+            <cite>测试</cite>
+        </a>
+        <a>
+            <cite>模板</cite>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* 这段样式只是用于演示 */
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table class="layui-hide" id="staff_personnel_table" lay-filter="staff_personnel_tablelist"></table>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="staff_personnel_toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="add_manage">添加管理</button>
+        <button class="layui-btn layui-btn-sm" lay-event="add_personnel">添加员工</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="lookup">查找</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+
+<script type="text/html" id="staff_personnel_Demo">
+    <a class="layui-btn layui-btn-xs" lay-event="Personnel_edit">编辑</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="Personnel_editpass">修改密码</a>
+    <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="Personnel_org_look">管理</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="Personnel_del">删除</a>
+</script>
+
+<script type="text/html" id="sfpersonnel_m_switch">
+    <input type="checkbox" {{# if (d.m_status==1 ) { }} checked="" {{# } }} name="{{# if (d.m_status == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="sfpersonnel_m_status_switch" lay-text="启用|禁用" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.m_status == 1) { }}启用{{# } else { }}禁用{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<script type="text/html" id="sfpersonnel_pc_switch">
+    <input type="checkbox" {{# if (d.pc_status==1 ) { }} checked="" {{# } }} name="{{# if (d.pc_status == 1) { }}open{{# } else { }}close{{# } }}"
+    lay-skin="switch" lay-filter="sfpersonnel_pc_status_switch" lay-text="启用|禁用" value="{{d.id}}">
+    <div class="layui-unselect layui-form-switch layui-form-onswitch" lay-skin="_switch">
+        <em>{{# if (d.pc_status == 1) { }}启用{{# } else { }}禁用{{# } }}</em>
+        <i></i>
+    </div>
+</script>
+
+<!-- 引用密码加密 -->
+<script src="/libs/js/md5.js"></script>
+
+<script>
+    layui.use(['admin', 'layer', 'form', 'table', 'dtree'], function () {
+        var $ = layui.$,
+            layer = layui.layer,
+            admin = layui.admin,
+            form = layui.form,
+            table = layui.table,
+            dtree = layui.dtree,
+            router = layui.router();
+
+        //所属结构
+        var organization = function (u, i, n) {
+            $(u).click(function () {
+                layer.open({
+                    type: 1,
+                    //type:0 也行
+                    title: "选择所属机构",
+                    area: ["400px", "80%"],
+                    content: '<ul id="openTree1" class="dtree" data-id="0"></ul>',
+                    btn: ['确认选择'],
+                    success: function (layero, index) {
+                        dtree.render({
+                            elem: "#openTree1",
+                            url: "/index.php/webCategoryList/?access_token=" + layui.data(layui.setter.tableName).access_token,
+                            method: 'get',
+                            skin: "theme",
+                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                            // dot: false, //前面的小黑点取消
+                            checkbar: true,
+                            checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                        });
+                        // 绑定节点的双击
+                        dtree.on("nodedblclick('openTree1')", function (obj) {
+                            $(i).val(obj.param.nodeId);
+                            $(n).val(obj.param.context);
+                            layer.close(index);
+                        });
+                    },
+                    yes: function (index, layero) {
+                        var param = dtree.getNowParam("openTree1"); // 获取当前选中节点
+
+                        $(i).val(param.nodeId);
+                        $(n).val(param.context);
+                        layer.close(index);
+                    }
+                });
+            });
+        }
+
+        //管理结构
+        var subordinate_org = function (u, i, n) {
+            $(u).click(function () {
+                layer.open({
+                    type: 1,
+                    title: "选择管理机构",
+                    area: ["400px", "80%"],
+                    content: '<ul id="personnel_dTree" class="dtree" data-id="0"></ul>',
+                    btn: ['确认选择'],
+                    success: function (layero, index) {
+                        var org_s = $('#subordinate_personnel_splb_id').val();
+                        dtree.render({
+                            elem: "#personnel_dTree",
+                            url: "/index.php/webSfpersonnelStaffTree/?access_token=" + layui.data(layui.setter.tableName).access_token + "&org_s=" + org_s,
+                            method: 'get',
+                            skin: "theme",
+                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                            // dot: false, //前面的小黑点取消
+                            checkbar: true,
+                            checkbarType: "p-casc" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                        });
+                        // 绑定节点的双击
+                        dtree.on("nodedblclick('personnel_dTree')", function (obj) {
+                            $(i).val(obj.param.nodeId);
+                            $(n).val(obj.param.context);
+                            layer.close(index);
+                        });
+                    },
+                    yes: function (index, layero) {
+                        var flag = true;
+                        var params = dtree.getCheckbarNodesParam("personnel_dTree"); // 获取选中值
+                        if (params.length == 0) {
+                            layer.msg("请至少选择一个节点", { icon: 2 });
+                            flag = false;
+                        }
+
+                        var ids = [], names = [];
+                        for (var key in params) {
+                            var param = params[key];
+                            ids.push(param.nodeId);
+                            names.push(param.context);
+                        }
+                        $(i).val(ids.join(","));
+                        $(n).val(names.join(","));
+                        if (flag) {
+                            layer.close(index);
+                        }
+                    }
+                });
+            });
+        }
+
+        //PC端权限
+        var pc_auth_codefun = function (d, f, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelPcAuthority/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择权限</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, f);
+                }
+            });
+        }
+
+        //手机端权限
+        var m_auth_codefun = function (d, f, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelMAuthority/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择权限</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name + "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, f);
+                }
+            });
+        }
+
+        //职位
+        var positionfun = function (d, f, v) {
+            admin.req({
+                url: "/index.php/webSfpositionSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择职位</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].vgname + ':' + json[i].name +
+                            "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, f);
+                }
+            });
+        }
+
+        //门店
+        var shop_frontfun = function (d, f, v) {
+            admin.req({
+                url: "/index.php/webSfpersonnelStoreSel/",
+                done: function (res) {
+                    var json = res.data;
+                    var dw = $(d);
+                    dw.empty();
+                    dw.append("<option value=''>请选择门店</option>");
+                    for (var i = 0, l = json.length; i < l; i++) {
+                        dw.append("<option value='" + json[i].code + "'>" + json[i].name +
+                            "</option>");
+                    }
+                    dw.val(v);
+                    form.render(null, f);
+                }
+            });
+        }
+
+        //添加员工
+        var personnelAdd = function () {
+
+            layer.open({
+                title: "新建员工",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                offset: 'auto',
+                area: ["700px", "520px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form" lay-filter="staff_personnel_form_add"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>工号:</label><div class="layui-input-inline"><input type="text" name="code" id="sfpersonnel_code_id" lay-verify="code" autocomplete="off" placeholder="请输入工号" class="layui-input"></div><label class="layui-form-label"><span style="color:red">*</span>姓名:</label><div class="layui-input-inline"><input type="text" name="name" autocomplete="off" lay-verify="required" placeholder="请输入姓名" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>密码:</label><div class="layui-input-inline"><input type="password" name="password" lay-verify="pass" required autocomplete="off" placeholder="请输入密码" class="layui-input"></div><label class="layui-form-label"><span style="color:red">*</span>确认密码:</label><div class="layui-input-inline"><input type="password" name="passwords" lay-verify="pass" required autocomplete="off" placeholder="请输入密码" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>手机号:</label><div class="layui-input-inline"><input type="tel" name="phone" lay-verify="required|phone" autocomplete="off" placeholder="请输入手机号" class="layui-input"></div><label class="layui-form-label">员工职位:</label><div class="layui-input-inline"><select name="position_code" lay-search id="personnel_position_codes"></select></div></div><div class="layui-form-item"><label class="layui-form-label">PC端权限:</label><div class="layui-input-inline"><select name="pc_auth_code" lay-search id="personnel_pc_auth_code"></select></div><label class="layui-form-label">手机端权限:</label><div class="layui-input-inline"><select name="m_auth_code" lay-search id="personnel_m_pc_auth_code"></select></div></div><div class="layui-form-item"><label class="layui-form-label">PC端状态:</label><div class="layui-input-inline"><input type="checkbox" name="pc_status" lay-skin="switch" lay-filter="switchTest_pc" lay-text="启用|禁用" id="switchTest_pc"></div><label class="layui-form-label">手机端状态:</label><div class="layui-input-inline"><input type="checkbox" name="m_status" lay-skin="switch" id="switchTest_m" lay-filter="switchTest_m" lay-text="启用|禁用"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所属机构:</label><div class="layui-input-inline" style="width:358px"><input type="text" name="splb_name" id="personnel_splb_name_id" required autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="personnel_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="personnel_list_classtree" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item"><label class="layui-form-label">所属门店:</label><div class="layui-input-block" style="width:500px"><select name="store_code" lay-search id="personnel_stores"></select></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="stm_staff_personnel_Edit">确认添加</button></div></form>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+
+                    //pc端权限
+                    pc_auth_codefun('#personnel_pc_auth_code', "staff_personnel_form_add");
+                    //手机端权限
+                    m_auth_codefun('#personnel_m_pc_auth_code', "staff_personnel_form_add");
+                    //职位
+                    positionfun('#personnel_position_codes', "staff_personnel_form_add");
+                    //所属机构
+                    organization("#personnel_list_classtree", "#personnel_splb_id", "#personnel_splb_name_id");
+                    //门店
+                    shop_frontfun('#personnel_stores', "staff_personnel_form_add");
+
+                    //获取焦点
+                    $("#sfpersonnel_code_id").focus();
+
+                    //自定义验证规则
+                    form.verify({
+                        code: [
+                            /^\d{3,}$/
+                            , '工号不能少于3位, 且是纯数字!'
+                        ]
+                        , pass: [
+                            /^[\S]{6,}$/
+                            , '密码必须不少于6位，且不能出现空格!'
+                        ]
+                    });
+                    //PC端状态
+                    form.on('switch(switchTest_pc)', function (data) {
+                        var mobileText = $('#switchTest_m').next().children('em').text();
+                        if ((data.elem.checked == true && mobileText == '禁用') || (data.elem.checked == false && mobileText == '启用')) {
+                            $('#switchTest_m').next().click();
+                        }
+                    });
+                    //手机端状态
+                    form.on('switch(switchTest_m)', function (data) {
+                        var pcText = $('#switchTest_pc').next().children('em').text();
+                        if (data.elem.checked == false && pcText == '启用') {
+                            layer.msg('PC端权限已启用,不能关闭手机端权限', { icon: 2 });
+                            $('#switchTest_m').next().click();
+                            return false;
+                        }
+                    });
+                    //渲染表单
+                    form.render(null, "staff_personnel_form_add");
+                    //表单提交事件
+                    form.on("submit(stm_staff_personnel_Edit)", function (data) {
+                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                        var msg = '所属机构不能为空!';
+                        if (data.field.splb_name == '') {
+                            layer.msg(msg, { icon: 2 });
+                            layer.close(loadindex);
+                            return false;
+                        }
+                        admin.req({
+                            url: "/index.php/webSfpersonnelAdd/",
+                            type: "post",
+                            data: {
+                                code: data.field.code,
+                                name: data.field.name,
+                                password: md5(data.field.password),
+                                passwords: md5(data.field.passwords),
+                                phone: data.field.phone,
+                                splb: data.field.splb,
+                                pc_auth_code: data.field.pc_auth_code,
+                                m_auth_code: data.field.m_auth_code,
+                                position_code: data.field.position_code,
+                                store_code: data.field.store_code,
+                                pc_status: data.field.pc_status,
+                                m_status: data.field.m_status
+                            },
+                            done: function (res) {
+                                layer.close(loadindex);
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    personnel();
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        }
+
+        //添加管理
+        var manageAdd = function () {
+
+            layer.open({
+                title: "新建管理",
+                type: 1,
+                shade: 0.3,
+                shadeClose: false,
+                anim: 1,
+                offset: 'auto',
+                area: ["700px", "480px"],
+                skin: "layui-layer-admin layui-anim",
+                content: '<form class="layui-form" lay-filter="manage_personnel_form_add"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>工号:</label><div class="layui-input-inline"><input type="text" name="code" id="sfpersonnel_code_manage" lay-verify="code" autocomplete="off" placeholder="请输入工号" class="layui-input"></div><label class="layui-form-label"><span style="color:red">*</span>姓名:</label><div class="layui-input-inline"><input type="text" name="name" autocomplete="off" lay-verify="required"  placeholder="请输入姓名" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>密码:</label><div class="layui-input-inline"><input type="password" name="password" lay-verify="pass" required autocomplete="off" placeholder="请输入密码" class="layui-input"></div><label class="layui-form-label"><span style="color:red">*</span>确认密码:</label><div class="layui-input-inline"><input type="password" name="passwords" lay-verify="pass" required autocomplete="off" placeholder="请输入密码" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>手机号:</label><div class="layui-input-inline"><input type="tel" name="phone" lay-verify="required|phone" autocomplete="off" placeholder="请输入手机号" class="layui-input"></div><label class="layui-form-label">员工职位:</label><div class="layui-input-inline"><select name="position_code" lay-search id="manage_personnel_position_codes"></select></div></div><div class="layui-form-item"><label class="layui-form-label">PC端权限:</label><div class="layui-input-inline"><select name="pc_auth_code" lay-search id="manage_personnel_pc"></select></div><label class="layui-form-label">手机端权限:</label><div class="layui-input-inline"><select name="m_auth_code" lay-search id="manage_personnel_m"></select></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所属机构:</label><div class="layui-input-inline" style="width:358px"><input type="text" name="splb_name" id="subordinate_personnel_splb_name" autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="subordinate_personnel_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="subordinate_personnel_list_classtree" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>管理机构:</label><div class="layui-input-inline" style="width:358px"><input type="text" name="m_splb_name" id="manage_personnel_splb_name" autocomplete="off" disabled placeholder="管理机构" class="layui-input"></div><input type="hidden" name="m_splb" id="manage_personnel_splb_id" class="layui-input"><div class="layui-form-mid layui-bg-green" id="manage_personnel_list_classtree" style="text-align:center;width:130px">点击选择管理机构</div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="staff_personnel_Edit_manage">确认添加</button></div></form>',
+                success: function (layero, index) {
+                    var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                    layero.append(elemClose);
+                    elemClose.on('click', function () {
+                        layer.close(index);
+                    });
+                    //获取焦点
+                    $("#sfpersonnel_code_manage").focus();
+                    //PC端权限
+                    pc_auth_codefun('#manage_personnel_pc', "manage_personnel_form_add");
+                    //手机端权限
+                    m_auth_codefun('#manage_personnel_m', "manage_personnel_form_add");
+                    //职位
+                    positionfun('#manage_personnel_position_codes', "manage_personnel_form_add");
+                    //所属机构
+                    organization("#subordinate_personnel_list_classtree", "#subordinate_personnel_splb_id", "#subordinate_personnel_splb_name");
+                    //管理机构
+                    subordinate_org("#manage_personnel_list_classtree", "#manage_personnel_splb_id", "#manage_personnel_splb_name");
+                    //自定义验证规则
+                    form.verify({
+                        code: [
+                            /^\d{3,}$/
+                            , '工号不少于3位, 且是纯数字!'
+                        ]
+                        , pass: [
+                            /^[\S]{6,}$/
+                            , '密码必须不少于6位，且不能出现空格!'
+                        ]
+                    });
+                    //渲染表单
+                    form.render(null, "manage_personnel_form_add");
+                    //表单提交事件
+                    form.on("submit(staff_personnel_Edit_manage)", function (data) {
+                        var loadindex = layer.load(1, { time: 10 * 1000 });
+                        var msg = '所属机构不能为空!';
+                        if (data.field.splb_name == '') {
+                            layer.msg(msg, { icon: 2 });
+                            layer.close(loadindex);
+                            return false;
+                        }
+                        var m_msg = '管理机构不能为空!';
+                        if (data.field.m_splb_name == '') {
+                            layer.msg(m_msg, { icon: 2 });
+                            layer.close(loadindex);
+                            return false;
+                        }
+                        admin.req({
+                            url: "/index.php/webSfpersonnelAddManage/",
+                            type: "post",
+                            data: {
+                                code: data.field.code,
+                                name: data.field.name,
+                                password: md5(data.field.password),
+                                passwords: md5(data.field.passwords),
+                                phone: data.field.phone,
+                                splb: data.field.splb,
+                                m_splb: data.field.m_splb,
+                                pc_auth_code: data.field.pc_auth_code,
+                                m_auth_code: data.field.m_auth_code,
+                                position_code: data.field.position_code
+                            },
+                            done: function (res) {
+                                layer.close(loadindex);
+                                if (res.msg == 'error') {
+                                    layer.msg(res.data, { icon: 2, title: res.msg });
+                                } else if (res.msg == 'yes') {
+                                    layer.msg(res.data, { icon: 1, title: '提示' });
+                                    layer.close(index);
+                                    personnel();
+                                } else if (res.msg == 'no') {
+                                    layer.msg(res.data, { icon: 2, title: '提示' });
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+
+        }
+
+        //员工列表
+        var personnel = function (where = '') {
+            table.render({
+                elem: '#staff_personnel_table'
+                , height: 'full-150'
+                , toolbar: '#staff_personnel_toolbar'
+                , url: '/index.php/webSfpersonnelSel/' //数据接口
+                , where: { search: where, access_token: layui.data(layui.setter.tableName).access_token }
+                , page: true //开启分页
+                , cols: [[ //表头 
+                    { type: 'checkbox', fixed: 'left' },
+                    { field: 'code', title: '工号', width: 100, fixed: 'left', sort: true },
+                    { field: 'name', title: '姓名', width: 100, sort: true },
+                    { field: 'phone', title: '手机号', width: 120, sort: true },
+                    { field: 'vqname', title: 'PC权限', width: 100, sort: true },
+                    { field: 'vmname', title: '手机端权限', width: 120, sort: true },
+                    { field: 'vpname', title: '职位', width: 100, sort: true },
+                    { field: 'vgname', title: '所属机构', width: 130, sort: true },
+                    { field: 'vsname', title: '所属门店', width: 130, sort: true },
+                    { field: 'role_g', title: '角色', width: 110, sort: true },
+                    { field: 'time_g', title: '到期时间', width: 170, sort: true },
+                    { field: 'pc_status', title: 'PC端状态', templet: '#sfpersonnel_pc_switch', unresize: true, width: 100, sort: true, fixed: 'right' },
+                    { field: 'm_status', title: '手机端状态', templet: '#sfpersonnel_m_switch', unresize: true, width: 110, sort: true, fixed: 'right' },
+                    { fixed: 'right', title: '操作', align: 'center', toolbar: '#staff_personnel_Demo', width: 240 }
+                ]]
+                , limit: 20
+                , limits: [20, 50, 100, 200, 500]
+            });
+        }
+        personnel();
+
+        // 表头事件监听
+        table.on('toolbar(staff_personnel_tablelist)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'add_manage':
+                    manageAdd();
+                    break;
+                case 'add_personnel':
+                    personnelAdd();
+                    break;
+                case 'del':
+                    if (checkStatus.data.length < 1) {
+                        layer.msg('请选择至少一条数据', { icon: 2, title: '提示' });
+                        return false;
+                    }
+                    var ids = '';
+                    var exptimes = '';
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        ids += checkStatus.data[i].id + ',';
+                        exptimes += checkStatus.data[i].exptime + ',';
+                    }
+                    layer.confirm('确认删除？', { icon: 3, title: '提示' }, function (index) {
+                        personnelDel(ids, exptimes);
+                    })
+                    break;
+                case 'lookup':
+                    layer.prompt({ title: '按(所属机构，工号，姓名，手机号，职位)查询', formType: 0 }, function (text, index) {
+                        personnel($.trim(text));
+                        layer.close(index);
+                        return false;
+                    });
+                    break;
+            };
+        });
+
+        // 批量删除
+        var personnelDel = function (ids, exptimes) {
+            admin.req({
+                url: '/index.php/webSfpersonnelDelAll/',
+                type: 'post',
+                data: {
+                    ids: ids,
+                    exptimes: exptimes
+                },
+                done: function (res) {
+                    if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '警告' });
+                    } else if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        personnel();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                    }
+                }
+            });
+            return false;
+        }
+
+        // 监听表事件
+        table.on('tool(staff_personnel_tablelist)', function (obj) { //注：tool是工具条事件名，test table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+
+            if (layEvent === 'Personnel_del') { //删除
+
+                layer.confirm('确认删除该条数据？', function (index) {
+                    admin.req({
+                        url: "/index.php/webSfpersonnelDel/",
+                        type: "post",
+                        data: {
+                            id: obj.data.id
+                            // ,
+                            // exp_time: obj.data.sf_exptime
+                        },
+                        done: function (res) {
+                            if (res.msg == 'error') {
+                                layer.msg(res.data, { icon: 2, title: res.msg });
+                            } else if (res.msg == 'yes') {
+                                layer.msg(res.data, { icon: 1, title: '提示' });
+                                layer.close(index);
+                                personnel();
+                            } else if (res.msg == 'no') {
+                                layer.msg(res.data, { icon: 2, title: '提示' });
+                            }
+                        }
+                    });
+                });
+
+            } else if (layEvent === 'Personnel_edit') { //编辑
+                //判断是否是管理
+                if (obj.data.role !== 1) {
+
+                    layer.open({
+                        title: "修改管理",
+                        type: 1,
+                        shade: 0.3,
+                        shadeClose: false,
+                        anim: 1,
+                        offset: 'auto',
+                        area: ["700px", "440px"],
+                        skin: "layui-layer-admin layui-anim",
+                        content: '<form class="layui-form" lay-filter="manage_personnel_form_edit"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>工号:</label><div class="layui-input-inline"><input type="text" name="code" disabled class="layui-input"></div><label class="layui-form-label"><span style="color:red">*</span>姓名:</label><div class="layui-input-inline"><input type="text" name="name" id="sfpersonnel_name_manage_edit" autocomplete="off" lay-verify="required"  placeholder="请输入姓名" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>手机号:</label><div class="layui-input-inline"><input type="tel" name="phone" lay-verify="required|phone" autocomplete="off" placeholder="请输入手机号" class="layui-input"></div><label class="layui-form-label">员工职位:</label><div class="layui-input-inline"><select name="position_code" lay-search id="manage_personnel_position_codes_edit"></select></div></div><div class="layui-form-item"><label class="layui-form-label">PC端权限:</label><div class="layui-input-inline"><select name="pc_auth_code" lay-search id="manage_personnel_pc_edit"></select></div><label class="layui-form-label">手机端权限:</label><div class="layui-input-inline"><select name="m_auth_code" lay-search id="manage_personnel_m_edit"></select></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所属机构:</label><div class="layui-input-inline" style="width:358px"><input type="text" name="splb_name" id="subordinate_personnel_splb_name_edit" autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="subordinate_personnel_splb_id_edit" class="layui-input"><div class="layui-form-mid layui-bg-green" id="subordinate_personnel_list_classtree_edit" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>管理机构:</label><div class="layui-input-inline" style="width:358px"><input type="text" name="m_splb_name" id="manage_personnel_splb_name_edit" autocomplete="off" disabled placeholder="管理机构" class="layui-input"></div><input type="hidden" name="m_splb" id="manage_personnel_splb_id_edit" class="layui-input"><div class="layui-form-mid layui-bg-green" id="manage_personnel_list_classtree_edit" style="text-align:center;width:130px">点击选择管理机构</div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="personnel_manage_edit_Demo">执行修改</button></div></form>',
+                        success: function (layero, index) {
+                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                            layero.append(elemClose);
+                            elemClose.on('click', function () {
+                                layer.close(index);
+                            });
+                            //获取焦点
+                            $("#sfpersonnel_name_manage_edit").focus();
+                            //PC端权限
+                            pc_auth_codefun('#manage_personnel_pc_edit', "manage_personnel_form_edit", obj.data.pc_auth_code);
+                            //手机端权限
+                            m_auth_codefun('#manage_personnel_m_edit', "manage_personnel_form_edit", obj.data.m_auth_code);
+                            //职位
+                            positionfun('#manage_personnel_position_codes_edit', "manage_personnel_form_edit", obj.data.position_code);
+                            //所属机构
+                            organization("#subordinate_personnel_list_classtree_edit", "#subordinate_personnel_splb_id_edit", "#subordinate_personnel_splb_name_edit");
+                            //管理机构
+                            $("#manage_personnel_list_classtree_edit").click(function () {
+                                layer.open({
+                                    type: 1,
+                                    title: "选择管理机构",
+                                    area: ["400px", "80%"],
+                                    content: '<ul id="dTree" class="dtree" data-id="0"></ul>',
+                                    btn: ['确认选择'],
+                                    success: function (layero, index) {
+                                        var org_s = $('#subordinate_personnel_splb_id_edit').val();
+                                        dtree.render({
+                                            elem: "#dTree",
+                                            url: "/index.php/webSfpersonnelStaffTree/?tree=" + obj.data.admin_org_code + "&access_token=" + layui.data(layui.setter.tableName).access_token + "&org_s=" + org_s,
+                                            method: 'get',
+                                            skin: "theme",
+                                            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                            response: { message: "msg", statusCode: 0 },  //修改response中返回数据的定义
+                                            // dot: false, //前面的小黑点取消
+                                            checkbar: true,
+                                            checkbarType: "p-casc" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                                        });
+                                        // 绑定节点的双击
+                                        dtree.on("nodedblclick('dTree')", function (obj) {
+                                            $("#manage_personnel_splb_id_edit").val(obj.param.nodeId);
+                                            $("#manage_personnel_splb_name_edit").val(obj.param.context);
+                                            layer.close(index);
+                                        });
+                                    },
+                                    yes: function (index, layero) {
+                                        var flag = true;
+                                        var params = dtree.getCheckbarNodesParam("dTree"); // 获取选中值
+                                        if (params.length == 0) {
+                                            layer.msg("请至少选择一个节点", { icon: 2 });
+                                            flag = false;
+                                        }
+
+                                        var ids = [], names = [];
+                                        for (var key in params) {
+                                            var param = params[key];
+                                            ids.push(param.nodeId);
+                                            names.push(param.context);
+                                        }
+                                        $("#manage_personnel_splb_id_edit").val(ids.join(","));
+                                        $("#manage_personnel_splb_name_edit").val(names.join(","));
+                                        if (flag) {
+                                            layer.close(index);
+                                        }
+                                    }
+                                });
+                            });
+
+                            //用于查询管理机构并赋值
+                            admin.req({
+                                url: "/index.php/webViprightSplbvalue/",
+                                type: "post",
+                                data: {
+                                    code: obj.data.admin_org_code,
+                                },
+                                done: function (res) {
+                                    $('#manage_personnel_splb_name_edit').val(res.data);
+                                }
+                            });
+                            // 表单赋值
+                            form.val("manage_personnel_form_edit", {
+                                code: obj.data.code,
+                                name: obj.data.name,
+                                phone: obj.data.phone,
+                                splb_name: obj.data.vgname,
+                                splb: obj.data.org_code,
+                                m_splb: obj.data.admin_org_code
+                            });
+                            //渲染表单
+                            form.render(null, "manage_personnel_form_edit");
+                            //表单提交事件
+                            form.on("submit(personnel_manage_edit_Demo)", function (data) {
+                                var loadindex = layer.load(1, { time: 10 * 1000 });
+                                var msg = '所属机构不能为空!';
+                                if (data.field.splb_name == '') {
+                                    layer.msg(msg, { icon: 2 });
+                                    layer.close(loadindex);
+                                    return false;
+                                }
+                                var m_msg = '管理机构不能为空!';
+                                if (data.field.m_splb_name == '') {
+                                    layer.msg(m_msg, { icon: 2 });
+                                    layer.close(loadindex);
+                                    return false;
+                                }
+                                admin.req({
+                                    url: "/index.php/webSfpersonnelEdit/",
+                                    type: "post",
+                                    data: {
+                                        id: obj.data.id,
+                                        role: obj.data.role,
+                                        name: data.field.name,
+                                        phone: data.field.phone,
+                                        splb: data.field.splb,
+                                        m_splb: data.field.m_splb,
+                                        pc_auth_code: data.field.pc_auth_code,
+                                        m_auth_code: data.field.m_auth_code,
+                                        position_code: data.field.position_code
+                                    },
+                                    done: function (res) {
+                                        layer.close(loadindex);
+                                        if (res.msg == 'error') {
+                                            layer.msg(res.data, { icon: 2, title: res.msg });
+                                        } else if (res.msg == 'yes') {
+                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                            layer.close(index);
+                                            personnel();
+                                        } else if (res.msg == 'no') {
+                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                        }
+                                    }
+                                });
+                                return false;
+                            });
+                        }
+                    });
+
+                } else {
+
+                    layer.open({
+                        title: "修改员工",
+                        type: 1,
+                        shade: 0.3,
+                        shadeClose: false,
+                        anim: 1,
+                        offset: 'auto',
+                        area: ["700px", "440px"],
+                        skin: "layui-layer-admin layui-anim",
+                        content: '<form class="layui-form" lay-filter="staff_personnel_form_edit"><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>工号:</label><div class="layui-input-inline"><input type="text" name="code" disabled class="layui-input"></div><label class="layui-form-label"><span style="color:red">*</span>姓名:</label><div class="layui-input-inline"><input type="text" name="name" id="sfpersonnel_name_edit" autocomplete="off" lay-verify="required" placeholder="请输入姓名" class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>手机号:</label><div class="layui-input-inline"><input type="tel" name="phone" lay-verify="required|phone" autocomplete="off" placeholder="请输入手机号" class="layui-input"></div><label class="layui-form-label">员工职位:</label><div class="layui-input-inline"><select name="position_code" lay-search id="personnel_position_codes_edit"></select></div></div><div class="layui-form-item"><label class="layui-form-label">PC端权限:</label><div class="layui-input-inline"><select name="pc_auth_code" lay-search id="personnel_pc_auth_code_edit"></select></div><label class="layui-form-label">手机端权限:</label><div class="layui-input-inline"><select name="m_auth_code" lay-search id="personnel_m_pc_auth_code"></select></div></div><div class="layui-form-item"><label class="layui-form-label"><span style="color:red">*</span>所属机构</label><div class="layui-input-inline" style="width:358px"><input type="text" name="splb_name" id="personnel_splb_name_edit" required autocomplete="off" disabled placeholder="所属机构" class="layui-input"></div><input type="hidden" name="splb" id="personnel_splb_id_edit" class="layui-input"><div class="layui-form-mid layui-bg-green" id="personnel_list_classtree_edit" style="text-align:center;width:130px">点击选择所属机构</div></div><div class="layui-form-item"><label class="layui-form-label">所属门店:</label><div class="layui-input-block" style="width:500px"><select name="store_code" lay-search id="personnel_stores_edit"></select></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn layui-btn-radius" lay-submit="" lay-filter="personnel_edit_Demo">执行修改</button></div></form>',
+                        success: function (layero, index) {
+                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                            layero.append(elemClose);
+                            elemClose.on('click', function () {
+                                layer.close(index);
+                            });
+
+                            //PC端权限
+                            pc_auth_codefun('#personnel_pc_auth_code_edit', "staff_personnel_form_edit", obj.data.pc_auth_code);
+                            //手机端权限
+                            m_auth_codefun('#personnel_m_pc_auth_code', "staff_personnel_form_edit", obj.data.m_auth_code);
+                            //职位
+                            positionfun('#personnel_position_codes_edit', "staff_personnel_form_edit", obj.data.position_code);
+                            //所属机构
+                            organization("#personnel_list_classtree_edit", "#personnel_splb_id_edit", "#personnel_splb_name_edit");
+                            //门店
+                            shop_frontfun('#personnel_stores_edit', "staff_personnel_form_edit", obj.data.store_code);
+
+                            //获取焦点
+                            $("#sfpersonnel_name_edit").focus();
+
+                            // 表单赋值
+                            form.val("staff_personnel_form_edit", {
+                                code: obj.data.code,
+                                name: obj.data.name,
+                                phone: obj.data.phone,
+                                splb_name: obj.data.vgname,
+                                splb: obj.data.org_code
+                            });
+
+                            // form.on('switch(switchTest_pc)', function (data) {
+                            //     // console.log(); //开关是否开启，true或者false
+                            //     if (data.elem.checked){
+                            //         $("#switchTest_m").html('<input type="checkbox" name="m_status" checked="" lay-skin="switch" lay-filter="switchTest_m" lay-text="启用|禁用">');
+                            //     }
+                            // });
+
+                            //渲染表单
+                            form.render(null, "staff_personnel_form_edit");
+                            //表单提交事件
+                            form.on("submit(personnel_edit_Demo)", function (data) {
+                                var loadindex = layer.load(1, { time: 10 * 1000 });
+                                var msg = '所属机构不能为空!';
+                                if (data.field.splb_name == '') {
+                                    layer.msg(msg, { icon: 2 });
+                                    layer.close(loadindex);
+                                    return false;
+                                }
+                                admin.req({
+                                    url: "/index.php/webSfpersonnelEdit/",
+                                    type: "post",
+                                    data: {
+                                        id: obj.data.id,
+                                        role: obj.data.role,
+                                        name: data.field.name,
+                                        phone: data.field.phone,
+                                        splb: data.field.splb,
+                                        pc_auth_code: data.field.pc_auth_code,
+                                        m_auth_code: data.field.m_auth_code,
+                                        position_code: data.field.position_code,
+                                        store_code: data.field.store_code
+                                    },
+                                    done: function (res) {
+                                        layer.close(loadindex);
+                                        if (res.msg == 'error') {
+                                            layer.msg(res.data, { icon: 2, title: res.msg });
+                                        } else if (res.msg == 'yes') {
+                                            layer.msg(res.data, { icon: 1, title: '提示' });
+                                            layer.close(index);
+                                            personnel();
+                                        } else if (res.msg == 'no') {
+                                            layer.msg(res.data, { icon: 2, title: '提示' });
+                                        }
+                                    }
+                                });
+                                return false;
+                            });
+                        }
+                    });
+
+                }
+
+            } else if (layEvent === 'Personnel_editpass') {// 修改密码
+
+                layer.open({
+                    title: "修改员工密码",
+                    type: 1,
+                    shade: 0.3,
+                    shadeClose: false,
+                    anim: 1,
+                    area: ["500px", "251px"],
+                    skin: "layui-layer-admin layui-anim",
+                    content: '<form class="layui-form layui-form-pane" lay-filter="stm_staff_personnel_Reset"><div class="layui-form-item"><label class="layui-form-label">新密码</label><div class="layui-input-block"><input type="password" name="password" autocomplete="off" placeholder="请输入密码" lay-verify="pass" required class="layui-input"></div></div><div class="layui-form-item"><label class="layui-form-label">确认密码</label><div class="layui-input-block"><input type="password" name="passwords" autocomplete="off" placeholder="请确认密码" lay-verify="pass" required class="layui-input"></div></div><div class="layui-form-item" style="text-align:center"><button class="layui-btn" lay-submit="" lay-filter="stm_staff_personnel_Resetbutton">修改密码</button></div></form>',
+                    success: function (layero, index) {
+                        // 右上角叉号
+                        var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                        layero.append(elemClose);
+                        elemClose.on('click', function () {
+                            layer.close(index);
+                        });
+                        // form表单渲染
+                        form.render(null, 'stm_staff_personnel_Reset');
+
+                        //自定义验证规则
+                        form.verify({
+                            pass: [
+                                /^[\S]{6,}$/
+                                , '密码必须不少于6位，且不能出现空格!'
+                            ]
+                        });
+
+                        // 表单提交事件
+                        form.on("submit(stm_staff_personnel_Resetbutton)", function (data) {
+                            var loadindex = layer.load(1, { time: 10 * 1000 });
+                            admin.req({
+                                url: "/index.php/webSfpersonnelResetPass/",
+                                type: "post",
+                                data: {
+                                    id: obj.data.id,
+                                    password: md5(data.field.password),
+                                    passwords: md5(data.field.passwords)
+                                },
+                                done: function (res) {
+                                    layer.close(loadindex);
+                                    if (res.msg == 'error') {
+                                        layer.msg(res.data, { icon: 2, title: res.msg });
+                                    } else if (res.msg == 'yes') {
+                                        layer.msg(res.data, { icon: 1, title: '提示' });
+                                        layer.close(index);
+                                        personnel();
+                                    } else if (res.msg == 'no') {
+                                        layer.msg(res.data, { icon: 2, title: '提示' });
+                                    }
+                                }
+                            });
+                            return false;
+                        });
+                    }
+                });
+
+            } else if (layEvent === 'Personnel_org_look') { // 管理
+                //判断是否是管理
+                if (obj.data.role !== 1) {
+
+                    layer.open({
+                        title: "查看管理机构",
+                        type: 1,
+                        shade: 0.3,
+                        shadeClose: false,
+                        anim: 1,
+                        area: ["700px", "150px"],
+                        skin: "layui-layer-admin layui-anim",
+                        content: '<form class="layui-form layui-form-pane" lay-filter="staff_personnel_org_look"><div class="layui-form-item"><label class="layui-form-label">管理机构:</label><div class="layui-input-block"><input type="text" name="m_splb_name" id="manage_personnel_splb_name_look" disabled class="layui-input"></div></div></form>',
+                        success: function (layero, index) {
+                            // 右上角叉号
+                            var elemClose = $('<i class="layui-icon" close>&#x1006;</i>');
+                            layero.append(elemClose);
+                            elemClose.on('click', function () {
+                                layer.close(index);
+                            });
+                            // form表单渲染
+                            form.render(null, 'staff_personnel_org_look');
+                            //用于查询管理机构并赋值
+                            admin.req({
+                                url: "/index.php/webViprightSplbvalue/",
+                                type: "post",
+                                data: {
+                                    code: obj.data.admin_org_code,
+                                },
+                                done: function (res) {
+                                    $('#manage_personnel_splb_name_look').val(res.data);
+                                }
+                            });
+                        }
+                    });
+
+                } else {
+
+                    layer.msg('员工没有管理机构!');
+                    return false;
+
+                }
+
+            }
+
+        });
+
+        //pc端状态
+        form.on("switch(sfpersonnel_pc_status_switch)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webSfpersonnelPcReplace/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        personnel();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        personnel();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        personnel();
+                    }
+                }
+            });
+        });
+
+        //手机端状态
+        form.on("switch(sfpersonnel_m_status_switch)", function (data) {
+            var loadindex = layer.load(1, { time: 10 * 1000 });
+            admin.req({
+                url: "/index.php/webSfpersonnelMReplace/",
+                type: "post",
+                data: { id: data.value },
+                done: function (res) {
+                    layer.close(loadindex);
+                    if (res.msg == 'yes') {
+                        layer.msg(res.data, { icon: 1, title: '提示' });
+                        personnel();
+                    } else if (res.msg == 'no') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        personnel();
+                    } else if (res.msg == 'error') {
+                        layer.msg(res.data, { icon: 2, title: '提示' });
+                        personnel();
+                    }
+                }
+            });
+        });
+
+    });
+</script>
